@@ -1,0 +1,9 @@
+name = "AgentsIntegration"
+uuid = "077028cc-e17d-460b-8f3e-2c5a70355062"
+version = "0.1.0"
+
+[deps]
+Agents = "46ada45e-f475-11e8-01d0-f70cc89e6671"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+AlgebraicAgents = "f6eb0ae3-10fa-40e6-88dd-9006ba45093a"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"

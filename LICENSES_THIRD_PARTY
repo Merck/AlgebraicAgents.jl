@@ -1,0 +1,26 @@
+AlgebraicAgents.jl depends on third-party Julia packages which may be distributed under different licenses. We have listed all of these third party packages and their licenses below. For the most up-to-date information, see `Project.toml`.
+
+You must agree to the terms of these licenses, in addition to the OperadicAgents.jl source code license, in order to use this software.
+
+--------------------------------------------------
+Third party software listed by License type
+--------------------------------------------------
+
+MIT License (or adaptations) (https://www.opensource.org/licenses/MIT)
+  * The Julia Language - https://github.com/JuliaLang/julia/blob/master/LICENSE.md
+  * Agents.jl - https://github.com/JuliaDynamics/Agents.jl
+  * Crayons - https://github.com/KristofferC/Crayons.jl
+  * DataStructures.jl - https://github.com/JuliaCollections/DataStructures.jl
+  * Glob - https://github.com/vtjnash/Glob.jl
+  * MacroTools.jl - https://github.com/FluxML/MacroTools.jl
+
+Available package integrations further rely on the following third-party software
+
+MIT License (or adaptations) (https://www.opensource.org/licenses/MIT)
+  * DataFrames.jl - https://github.com/JuliaData/DataFrames.jl
+  * DiffEqBase.jl - https://github.com/SciML/DiffEqBase.jl
+  * DifferentialEquations.jl - https://github.com/SciML/DifferentialEquations.jl
+  * SciMLBase.jl - https://github.com/SciML/SciMLBase.jl
+  * Plots - https://github.com/JuliaPlots/Plots.jl
+
+The tutorials, unit tests, and the documentation generating script may rely on additional third-party software listed in the respective `Project.toml` dependency files.

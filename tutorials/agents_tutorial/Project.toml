@@ -1,0 +1,5 @@
+[deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+AlgebraicAgents = "f6eb0ae3-10fa-40e6-88dd-9006ba45093a"
