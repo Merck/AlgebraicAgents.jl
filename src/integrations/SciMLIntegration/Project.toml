@@ -8,3 +8,11 @@ DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 AlgebraicAgents = "f6eb0ae3-10fa-40e6-88dd-9006ba45093a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+
+[compat]
+julia = "1.7"
+DifferentialEquations = "7.5"
+Plots = "1.35"
+AlgebraicAgents = "0.2"
+DiffEqBase = "6.105"
+SciMLBase = "1.59"
