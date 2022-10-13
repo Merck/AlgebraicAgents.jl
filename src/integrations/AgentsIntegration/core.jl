@@ -1,16 +1,12 @@
-module AgentsIntegration
-
-using AlgebraicAgents
-import Agents
-import DataFrames
-import Plots
+import .Agents
+import .Agents.DataFrames
 
 export ABMAgent, AAgent
-export @get_oagent, @get_omodel, @o
+export @get_model, @a
 
 # algebraic wrap for AgentBasedModel type
 ## algebraic agent types
-@oagent ABMAgent begin
+@aagent ABMAgent begin
     abm::Agents.AgentBasedModel
 
     agent_step!; model_step! # evolutionary functions
@@ -30,6 +26,8 @@ export @get_oagent, @get_omodel, @o
     df_model::DataFrames.DataFrame
 end
 
+@doc "Wrap of an Agent Based Model."
+
 ## implement constructor
 """
     ABMAgent(name, abm; kwargs...)
@@ -46,7 +44,7 @@ Configure the evolutionary step, logging, and step size by keyword arguments bel
 - `step_size`: how far the step advances, either a float or a function (model, t) -> size::Float64
 - `tspan`: solution horizon, defaults to `(0., Inf)`
 """
-function ABMAgent(name::String, abm::Agents.AgentBasedModel; 
+function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel; 
         agent_step! =Agents.dummystep, model_step! =Agents.dummystep,
         when=true, when_model=when, step_size=1.,
         tspan::NTuple{2, Float64}=(0., Inf), kwargs...
@@ -62,21 +60,25 @@ function ABMAgent(name::String, abm::Agents.AgentBasedModel;
     
     i.df_agents = DataFrames.DataFrame(); i.df_model = DataFrames.DataFrame()
 
-    i.abm.properties[:__oagent__] = i
+    i.abm.properties[:__aagent__] = i
     i.abm0 = deepcopy(i.abm)
     i.t0 = i.t
 
     # initialize contained agents
     for (id, _) in abm.agents
-        AlgebraicAgents.entangle!(i, AAgent(string(id))) 
+        entangle!(i, AAgent(string(id))) 
     end
 
     i
 end
 
+function _construct_agent(name::AbstractString, abm::Agents.AgentBasedModel, args...; kwargs...)
+    ABMAgent(name, abm, args...; kwargs...)
+end
+
 ## implement common interface
-function AlgebraicAgents._step!(a::ABMAgent, t)
-    if AlgebraicAgents.projected_to(a) === t
+function _step!(a::ABMAgent, t)
+    if projected_to(a) === t
         step_size = a.step_size isa Number ? a.step_size : a.step_size(a.abm, t)
         collect_agents = a.when isa AbstractVector ? (t ∈ a.when) : a.when isa Bool ? a.when : a.when(a.abm, t)
         collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) : a.when isa Bool ? a.when : a.when_model(a.abm, t)
@@ -121,13 +123,13 @@ function fix_float!(df, val)
     end
 end
 
-AlgebraicAgents._projected_to(a::ABMAgent)::Float64 = a.tspan[2] <= a.t ? true : a.t
+_projected_to(a::ABMAgent)::Float64 = a.tspan[2] <= a.t ? true : a.t
 
-function AlgebraicAgents.getobservable(a::ABMAgent, obs)
+function getobservable(a::ABMAgent, obs)
     getproperty(a.abm.properties, Symbol(obs))
 end
 
-function AlgebraicAgents.gettimeobservable(a::ABMAgent, t::Float64, obs)
+function gettimeobservable(a::ABMAgent, t::Float64, obs)
     df = a.df_model
     @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
     
@@ -135,7 +137,7 @@ function AlgebraicAgents.gettimeobservable(a::ABMAgent, t::Float64, obs)
     df[df.step .== Int(t), obs] |> first
 end
 
-function AlgebraicAgents._reinit!(a::ABMAgent)
+function _reinit!(a::ABMAgent)
     a.t = a.t0; a.abm = a.deepcopy(a.abm0)
     empty!(a.df_agents); empty!(a.df_model)
 
@@ -143,7 +145,7 @@ function AlgebraicAgents._reinit!(a::ABMAgent)
 end
 
 # algebraic wrappers for AbstractAgent type
-@oagent AAgent begin end
+@aagent AAgent begin end
 
 @doc "Algebraic wrap for `AbstractAgent` type." AAgent
 
@@ -157,14 +159,14 @@ function Base.getproperty(a::AAgent, prop::Symbol)
 end
 
 ## implement common interface
-AlgebraicAgents._step!(::AAgent, ::Float64) = nothing
-AlgebraicAgents._projected_to(::AAgent) = nothing
+_step!(::AAgent, ::Float64) = nothing
+_projected_to(::AAgent) = nothing
 
-function AlgebraicAgents.getobservable(a::AAgent, obs)
+function getobservable(a::AAgent, obs)
     getproperty(a.agent, Symbol(obs))
 end
 
-function AlgebraicAgents.gettimeobservable(a::AAgent, t::Float64, obs)
+function gettimeobservable(a::AAgent, t::Float64, obs)
     df = getparent(a).df_agents
     @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
     
@@ -172,51 +174,42 @@ function AlgebraicAgents.gettimeobservable(a::AAgent, t::Float64, obs)
     df[(df.step .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
 end
 
-function AlgebraicAgents.print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)
+function print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)
     indent = get(io, :indent, 0)
     print(io, "\n", " "^(indent+3), "custom properties:\n")
-    print(io, " "^(indent+3), AlgebraicAgents.crayon"italics", "abm", ": ", AlgebraicAgents.crayon"reset", "\n")
+    print(io, " "^(indent+3), crayon"italics", "abm", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.abm)
 
-    print(io, "\n" * " "^(indent+3), AlgebraicAgents.crayon"italics", "df_agents", ": ", AlgebraicAgents.crayon"reset", "\n")
+    print(io, "\n" * " "^(indent+3), crayon"italics", "df_agents", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.df_model)
 
-    print(io, "\n" * " "^(indent+3), AlgebraicAgents.crayon"italics", "df_model", ": ", AlgebraicAgents.crayon"reset", "\n")
+    print(io, "\n" * " "^(indent+3), crayon"italics", "df_model", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.df_agents)
 end
 
-function AlgebraicAgents.print_custom(io::IO, mime::MIME"text/plain", a::AAgent)
+function print_custom(io::IO, mime::MIME"text/plain", a::AAgent)
     indent = get(io, :indent, 0)
     print(io, "\n", " "^(indent+3), "custom properties:\n")
-    print(io, " "^(indent+3), AlgebraicAgents.crayon"italics", "agent", ": ", AlgebraicAgents.crayon"reset", "\n")
+    print(io, " "^(indent+3), crayon"italics", "agent", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.agent)
 end
 
 # macros to retrieve algebraic model's, agent's wrappers
-"""
-    @get_oagent model agent 
-Retrieve agent's algebraic wrap from ABM's algebraic wrap.
-
-# Examples
-```julia
-algebraic_agent = @get_oagent abm_model abm_agent
-```
-"""
-macro get_oagent(model, agent)
-    :($(esc(model)).properties[:__oagent__].inners[string($(esc(agent)).id)])
+function _get_agent(model::Agents.ABM, agent::Agents.AbstractAgent)
+    model.properties[:__aagent__].inners[string(agent.id)]
 end
 
 """
-    @get_omodel model
+    @get_model model
 Retrieve model's algebraic wrap.
 
 # Examples
 ```julia
-algebraic_model = @get_omodel abm_model
+algebraic_model = @get_model abm_model
 ```
 """
-macro get_omodel(model)
-    :($(esc(model)).properties[:__oagent__])
+macro get_model(model)
+    :($(esc(model)).properties[:__aagent__])
 end
 
 # macros to add, kill agents
@@ -229,51 +222,42 @@ function get_model(args...; kwargs...)
 end
 
 """
-    @o operation
+    @a operation
 Algebraic extension of `add_agent!`, `kill_agent!`.
 
 # Examples
 ```julia
-@o add_agent!(model, 0.5)
-@o disentangle!(agent, model)
+@a add_agent!(model, 0.5)
+@a disentangle!(agent, model)
 ```
 """
-macro o(call)
+macro a(call)
     @assert Meta.isexpr(call, :call) && (call.args[1] ∈ [:kill_agent!, :add_agent!])
-    model_call = deepcopy(call); model_call.args[1] = :(AgentsIntegration.get_model)
+    model_call = deepcopy(call); model_call.args[1] = :(AlgebraicAgents.get_model)
     
     if call.args[1] == :add_agent!
         quote
             model = $(esc(model_call))
-            omodel = model isa AgentsIntegration.ABMAgent ? model : model.properties[:__oagent__]
+            omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
             agent = $(esc(call))
             
-            AlgebraicAgents.entangle!(omodel, AgentsIntegration.ABAModel(string(agent.id), a)) 
+            entangle!(omodel, ABAModel(string(agent.id), a)) 
         end
     else
         agent = model_call.args[2]
         quote
             model = $(esc(model_call))
-            omodel = model isa AgentsIntegration.ABMAgent ? model : model.properties[:__oagent__]
+            omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
             
             agent = $(esc(agent))
             agent = agent isa Number ? string(agent) : string(agent.id)
-            AlgebraicAgents.disentangle!(omodel.inners[agent])    
+            disentangle!(omodel.inners[agent])    
 
             $(esc(call))
         end
     end
 end
 
-# plot reduction
-function AlgebraicAgents._draw(a::ABMAgent, args...; df_only=true, kwargs...)
-    if df_only
-        plot_model = isempty(a.df_model) ? nothing : AlgebraicAgents.@plot_df a.df_model
-        plot_agents = isempty(a.df_agents) ? nothing : AlgebraicAgents.@plot_df a.df_agents
-        isnothing(plot_model) ? plot_agents : 
-            isnothing(plot_agents) ? plot_model : plot([plot_agents, plot_model])
-    else InteractiveDynamics.abmplot(a.abm, args...; kwargs...) end
-end
-
-
+function _draw(a::ABMAgent, args...; kwargs...)
+    @warn "`ABMAgent` requires package `Plots` to be loaded for plotting"
 end

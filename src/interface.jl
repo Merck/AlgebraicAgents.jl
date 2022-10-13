@@ -2,7 +2,7 @@
 
 """
 A container of algebraic agents.
-Doesn't implement standalone evolutionary rule; delegates evolution to internal agents.
+Doesn't implement a standalone evolutionary rule; delegates evolution to internal agents.
 """
 mutable struct FreeAgent <: AbstractAlgebraicAgent
     uuid::UUID;; name::AbstractString
@@ -13,10 +13,15 @@ mutable struct FreeAgent <: AbstractAlgebraicAgent
     relpathrefs::Dict{AbstractString, UUID}
     opera::Opera
 
-    """
+    @doc """
         FreeAgent(name, agents=[])
     Initialize an algebraic agent. Optionally provide contained agents at the time of instantiation.
     See also [`entangle!`](@ref) and [`disentangle!`](@ref).
+
+    # Examples 
+    ```julia
+    FreeAgent("agent", [agent1, agent2])
+    ```
     """
     function FreeAgent(name::AbstractString, agents::Vector{<:AbstractAlgebraicAgent}=AbstractAlgebraicAgent[])
         m = new()
@@ -88,44 +93,44 @@ Retrieve parameter space of an algebraic agent.
 _getparameters(::AbstractAlgebraicAgent) = nothing
 
 """
-    _set_parameters!
+    _setparameters!
 Mutate algebraic agent's parameter space.
 
 # Examples
 ```julia
-_set_parameters!(agent, Dict(:α=>1))
-_set_parameters!(agent, [1., 2.])
+_setparameters!(agent, Dict(:α=>1))
+_setparameters!(agent, [1., 2.])
 ```
 """
-function _set_parameters!(a::AbstractAlgebraicAgent, parameters)
+function _setparameters!(a::AbstractAlgebraicAgent, parameters)
     params = _getparameters(a)
     if params isa Dict
         merge!(params, parameters)
     elseif params isa AbstractArray
         params .= parameters
-    else @error("type $(typeof(t)) doesn't implement `_set_parameters!`") end
+    else @error("type $(typeof(t)) doesn't implement `_setparameters!`") end
 
     params
 end
 
 """
-    set_parameters!(agent, parameters)
+    setparameters!(agent, parameters)
 
 Assign algebraic agent's parameters.
 Parameters are accepted in the form of a dictionary containing `path => params` pairs.
 
 # Examples
 ```julia
-set_parameters!(agent, Dict("agent1/agent2" => Dict(:α=>1)))
+setparameters!(agent, Dict("agent1/agent2" => Dict(:α=>1)))
 ```
 """
-function set_parameters!(a::AbstractAlgebraicAgent, parameters, path=".")
+function setparameters!(a::AbstractAlgebraicAgent, parameters, path=".")
     if haskey(parameters, path)
-        _set_parameters!(a, parameters[path])
+        _setparameters!(a, parameters[path])
     end
 
     for a in values(inners(a))
-        set_parameters!(a, parameters,normpath(joinpath(path, getname(a), ".")))
+        setparameters!(a, parameters,normpath(joinpath(path, getname(a), ".")))
     end
 
     a
@@ -249,10 +254,10 @@ end
 gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any) = @error "algebraic agent $(typeof(a)) doesn't implement `gettimeobservable`"
 
 "Return a list of algebraic agent's inner ports (subjective observables)."
-in_observables(::AbstractAlgebraicAgent) = nothing
+ports_in(::AbstractAlgebraicAgent) = nothing
 
 "Return a list of algebraic agent's outer ports (objective observables)."
-out_observables(::AbstractAlgebraicAgent) = nothing
+exposed_ports(::AbstractAlgebraicAgent) = nothing
 
 "Get algebraic agent's [`Opera`](@ref)."
 getopera(a::AbstractAlgebraicAgent) = a.opera
@@ -333,7 +338,7 @@ Base.show(io::IO, a::AbstractAlgebraicAgent) = print_header(io, a)
 #    print(io, " "^indent * "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
 #end
 
-"Plot an algebraic agent's state. See also [`_draw`](@ref)."
+"Plot an algebraic agent's state. For internal implementation, see [`_draw`](@ref)."
 function draw end
 
 """
@@ -346,4 +351,4 @@ function draw(a::AbstractAlgebraicAgent, path=".", args...; kwargs...)
 end
 
 "Return plot of an algebraic agent's state. Defaults to `nothing`."
-_draw(::AbstractAlgebraicAgent) = nothing
+_draw(a::AbstractAlgebraicAgent) = @warn "`_draw` for algebraic agent type $(typeof(a)) not implemented"

@@ -4,9 +4,6 @@ We make use of a SIR model constructor from an Agents.jl' [SIR model for the spr
 
 ```@example 1
 using AlgebraicAgents
-
-# provide integration of AgentBasedModel, incl. AbstractAgent
-add_integration(:AgentsIntegration); using AgentsIntegration
 ```
 
 ```@setup 1

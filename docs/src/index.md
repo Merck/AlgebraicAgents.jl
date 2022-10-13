@@ -9,11 +9,12 @@ CurrentModule = AlgebraicAgents
 ```@docs
 AbstractAlgebraicAgent
 FreeAgent
+FreeAgent(::AbstractString, ::Vector{<:AbstractAlgebraicAgent})
 ```
 
 ## Implementing custom types
 
-To implement a custom algebraic agent type, you may want to use the convenience macro [`@oagent`](@ref) which supplies type fields expected (not required, though) by the interface. 
+To implement a custom algebraic agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface. 
 
 Next step is to implement the required interface functions:
 
@@ -27,12 +28,34 @@ For a deeper integration of the agent type, you may specialize the following fun
 
 ```@docs
 AlgebraicAgents._getparameters(::AbstractAlgebraicAgent)
-AlgebraicAgents._set_parameters!(::AbstractAlgebraicAgent, ::Any)
+AlgebraicAgents._setparameters!(::AbstractAlgebraicAgent, ::Any)
 AlgebraicAgents._draw(::AbstractAlgebraicAgent)
 AlgebraicAgents._reinit!(::AbstractAlgebraicAgent)
 AlgebraicAgents._interact!(::AbstractAlgebraicAgent)
 AlgebraicAgents._prestep!(::AbstractAlgebraicAgent, ::Float64)
+_construct_agent(::AbstractString, args...)
+_get_agent(::Any, args...)
 ```
+
+## Loading third-party package integrations
+
+So far, integrations of [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl), [Agents.jl](https://github.com/JuliaDynamics/Agents.jl), and [AlgebraicDynamics.jl](https://github.com/AlgebraicJulia/AlgebraicDynamics.jl) are provided.
+
+Loading of the integrations is facilitated by [Requires.jl](https://github.com/JuliaPackaging/Requires.jl); the integration will automatically be included once the respective third-party package is loaded.
+
+For example,
+
+```@example 0
+using AlgebraicAgents
+@isdefined DiffEqAgent
+```
+
+```@example 1
+using AlgebraicAgents, DifferentialEquations
+@wrap my_model ODEProblem((u, p, t) -> 1.01*u, [1/2], (0., 10.))
+```
+
+For plotting, you will want to load `Plots` as well. Nevertheless, function `draw` will inform you when necessary.
 
 ## Common interface
 
@@ -46,7 +69,7 @@ inners
 getopera
 getdirectory
 getparameters
-set_parameters!
+setparameters!
 ```
 ### Accessors
 
@@ -57,8 +80,8 @@ gettimeobservable
 
 ### List observables observed by an agent and exported by an agent
 ```@docs
-in_observables
-out_observables
+ports_in
+exposed_ports
 ```
 
 ### Solving & plotting
@@ -69,18 +92,17 @@ simulate
 draw
 ```
 
-## Paths
+### Paths
 
-Implements path-like structure of algebraic agents.
+Implements path-like structure of agents.
 
 ```@docs
 @glob_str
 @uuid_str
 getagent
-disentangle!
 ```
 
-## Opera, a dynamic structure to facilitate complex interactions
+### Opera, a dynamic structure to facilitate complex interactions
 
 ```@docs
 Opera
@@ -89,44 +111,46 @@ AgentCall
 opera_enqueue!
 ```
 
-## Operad
+### Operations
 
-Defines general sums and products of algebraic models.
+Defines sums of agents.
 
 ```@docs
 ⊕
 @sum
 ```
 
-## Agent types macros
-
-Supports convenient algebraic agent subtyping.
+Entangle and disentangle agents hierarchies.
 
 ```@docs
-@oagent
+entangle!
+disentangle!
 ```
 
-## Walks
+### Agent types macros
 
-Walk algebraic agents' hierarchy.
+Supports convenient agent subtyping.
+
+```@docs
+@aagent
+```
+
+### Walks
+
+Walk agents' hierarchy.
 
 ```@docs
 prewalk
 postwalk
 ```
 
-# Utility functions
+## Utility functions
 
-### Add integration
-
-```@docs
-add_integration
-```
-
-### Expression wrappers
+### Initialize wrap, extract wrap
 
 ```@docs
 @wrap
+@get_agent
 ```
 
 ### Observable accessor, interaction schedulers
@@ -141,4 +165,10 @@ add_integration
 
 ```@docs
 flatten
+```
+
+### Default plots for custom agent types
+
+```@docs
+@draw_df
 ```

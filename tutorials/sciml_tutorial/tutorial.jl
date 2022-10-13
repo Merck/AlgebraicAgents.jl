@@ -1,8 +1,5 @@
 using AlgebraicAgents
 
-# provide integration of common SciML problem, integrator, and solution types
-add_integration(:SciMLIntegration); using SciMLIntegration
-
 # declare problems (models in OA's type system)
 using DifferentialEquations, Plots
 
@@ -12,14 +9,14 @@ u0 = 1/2
 tspan = (0.0,10.0)
 prob = ODEProblem(f,u0,tspan)
 
-## atomic models: each will reference the wrapping agent under key `:__oagent__` (by default)
+## atomic models
 m1 = DiffEqAgent("model1", prob)
 m2 = DiffEqAgent("model2", prob)
 m3 = DiffEqAgent("model3", prob)
 
 ## declare observables (out ports) for a model
 ## it will be possible to reference m3's first variable as both `o1`, `o2`
-push_out_observables!(m3, "o1" => 1, "o2" => 1)
+push_exposed_ports!(m3, "o1" => 1, "o2" => 1)
 
 ## simple function, calls to which will be scheduled during the model integration
 custom_function(agent, t) = 1#println(name(agent), " ", t)
@@ -27,7 +24,7 @@ custom_function(agent, t) = 1#println(name(agent), " ", t)
 ## a bit more intricate logic - 
 function f_(u,p,t)
     # access the wrapping agent (hierarchy bond)
-    agent = @get_oagent
+    agent = @get_agent p
     
     # access observables 
     ## first via convenient macro syntax
@@ -51,9 +48,10 @@ end
 
 ## yet another atomic model
 prob_ = ODEProblem(f_,u0,tspan)
-m4 = DiffEqAgent("model4", prob_)
+m4 = @wrap "model4" prob_ # convenience macro
+
 ### alternative way to set-up reference 
-# m4 = DiffEqAgent("model4", prob_; oref=:__oagent__)
+# m4 = DiffEqAgent("model4", prob_)
 
 # hierarchical sum of atomic models
 m = ⊕(m1, m2; name="diagram1") ⊕ ⊕(m3, m4; name="diagram2")
@@ -77,4 +75,4 @@ getagent(m, glob"**/model?"s)
 sol = AlgebraicAgents.simulate(m)
 
 # plot solution
-plot(sol)
+draw(sol, "diagram1/model1")

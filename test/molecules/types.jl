@@ -22,7 +22,7 @@ abstract type Molecule <: AbstractAlgebraicAgent end
 const N = 3 # molecule params granularity
 
 ## drug entity, lives in a therapeutic area 
-@oagent SmallMolecule Molecule begin
+@aagent SmallMolecule Molecule begin
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -37,7 +37,7 @@ end
 @doc "Parametrized drug entity, lives in a therapeutic area." SmallMolecule
 
 ## drug entity, lives in a therapeutic area
-@oagent LargeMolecule Molecule begin
+@aagent LargeMolecule Molecule begin
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -53,7 +53,7 @@ end
 
 ## toy discovery unit - outputs small/large molecules
 ## to a given therapeutic area
-@oagent Discovery begin
+@aagent Discovery begin
     rate_small::Float64
     rate_large::Float64
     productivity::Float64
@@ -63,7 +63,7 @@ end
 
     t0::Float64
 
-    killed_mols::Vector{Tuple{String, Float64}}
+    removed_mols::Vector{Tuple{String, Float64}}
 
     df_output::DataFrame
 end
@@ -76,7 +76,7 @@ function Discovery(name, rate_small, rate_large, t=.0; dt=2.)
     i = Discovery(name)
 
     i.rate_small = rate_small; i.rate_large = rate_large; i.productivity = .0
-    i.killed_mols = Tuple{String, Float64}[]
+    i.removed_mols = Tuple{String, Float64}[]
     i.df_output = DataFrame(time=Float64[], small=Int[], large=Int[], removed=Int[])
     i.t = i.t0 = t; i.dt = dt
 
@@ -105,7 +105,7 @@ function AlgebraicAgents._step!(mol::SmallMolecule, t)
 
         if (mol.sales <= 10) || (rand() >= exp(-0.2*mol.age))
             mol.kill_time = t
-            push!(getagent(mol, "../dx").killed_mols, (mol.mol, t))
+            push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
             disentangle!(mol)
         end
     end
@@ -124,7 +124,7 @@ function AlgebraicAgents._step!(mol::LargeMolecule, t)
 
         if (mol.sales <= 10) || (rand() >= exp(-0.3*mol.age))
             mol.kill_time = t
-            push!(getagent(mol, "../dx").killed_mols, (mol.mol, t))
+            push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
             disentangle!(mol)
         end
     end
@@ -144,9 +144,9 @@ function AlgebraicAgents._step!(dx::Discovery, t)
         ν = dx.productivity * dx.dt
         small, large = rand(Poisson(ν * dx.rate_small)), rand(Poisson(ν * dx.rate_large))
         killed = 0
-        ix = 1; while ix <= length(dx.killed_mols)
-            if (dx.killed_mols[ix][2] < t)
-                killed += 1; deleteat!(dx.killed_mols, ix)
+        ix = 1; while ix <= length(dx.removed_mols)
+            if (dx.removed_mols[ix][2] < t)
+                killed += 1; deleteat!(dx.removed_mols, ix)
             else ix += 1 end
         end
         push!(dx.df_output, (t, small, large, killed))

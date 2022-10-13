@@ -1,7 +1,7 @@
 # adapted content from https://github.com/JuliaDynamics/Agents.jl/blob/83129042f01673f832e4a32de53b93ecd6af80ab/src/core/agents.jl
 
 """
-    @oagent agent_name begin
+    @aagent agent_name begin
         extra_fields...
     end
 
@@ -9,7 +9,7 @@ Create a custom algebraic agent type, and include fields expected by default int
 
 # Example 
 ```julia
-@oagent Molecule begin
+@aagent Molecule begin
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -22,7 +22,7 @@ Create a custom algebraic agent type, and include fields expected by default int
 end
 ```
 """
-macro oagent(new_name, extra_fields)
+macro aagent(new_name, extra_fields)
     # This macro was generated with the guidance of @rdeits on Discourse:
     # https://discourse.julialang.org/t/
     # metaprogramming-obtain-actual-type-from-symbol-for-field-inheritance/84912
@@ -71,7 +71,7 @@ macro oagent(new_name, extra_fields)
 end
 
 """
-    @oagent agent_name supertype begin
+    @aagent agent_name supertype begin
         extra_fields...
     end
 
@@ -79,7 +79,7 @@ Create a custom algebraic agent type, and include fields expected by default int
 
 # Example 
 ```julia
-@oagent SmallMolecule Molecule begin
+@aagent SmallMolecule Molecule begin
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -92,7 +92,7 @@ Create a custom algebraic agent type, and include fields expected by default int
 end
 ```
 """
-macro oagent(new_name, super_type, extra_fields)
+macro aagent(new_name, super_type, extra_fields)
     # This macro was generated with the guidance of @rdeits on Discourse:
     # https://discourse.julialang.org/t/
     # metaprogramming-obtain-actual-type-from-symbol-for-field-inheritance/84912

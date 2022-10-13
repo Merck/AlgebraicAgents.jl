@@ -28,16 +28,13 @@ entangle!(therapeutic_area2, Discovery("dx", 6., 8.; dt=5.))
 using DifferentialEquations
 
 dt = 1//2^(4); tspan = (0.0,100.)
-f(u,p,t) = p[:α]*u; g(u,p,t) = p[:β]*u
+f(u,p,t) = p[1]*u; g(u,p,t) = p[2]*u
 
-prob_1 = SDEProblem(f,g,.9,tspan,Dict{Symbol, Any}(:α=>.01, :β=>.01))
-prob_2 = SDEProblem(f,g,1.2,tspan,Dict{Symbol, Any}(:α=>.005, :β=>.02))
+prob_1 = SDEProblem(f,g,.9,tspan,[.01, .01])
+prob_2 = SDEProblem(f,g,1.2,tspan,[.005, .02])
 
-# provide integration of common SciML problem, integrator, and solution types
-add_integration(:SciMLIntegration); using SciMLIntegration
-
-demand_model_1 = DiffEqAgent("demand", prob_1, EM(); out_observables=Dict("demand" => 1), dt)
-demand_model_2 = DiffEqAgent("demand", prob_2, EM(); out_observables=Dict("demand" => 1), dt)
+demand_model_1 = DiffEqAgent("demand", prob_1, EM(); exposed_ports=Dict("demand" => 1), dt)
+demand_model_2 = DiffEqAgent("demand", prob_2, EM(); exposed_ports=Dict("demand" => 1), dt)
 
 # push market demand units to therapeutic areas
 entangle!(therapeutic_area1, demand_model_1)
@@ -46,7 +43,7 @@ entangle!(therapeutic_area2, demand_model_2)
 # extract parameters
 getparameters(pharma_model)
 # set parameters
-set_parameters!(pharma_model, Dict("therapeutic_area1/demand" => Dict(:α=>.02, :β=>.02)))
+setparameters!(pharma_model, Dict("therapeutic_area1/demand" => [.02, .02]))
 
 #=
 discovery units will adjust its productivity based on market demand:
@@ -67,10 +64,10 @@ draw(getagent(pharma_model, "therapeutic_area2/demand"))
 
 # return a function which maps params to simulation results
 # for optimization etc.
-o = objective(pharma_model, 100)
+o = objective(pharma_model, 100.)
 
 ## get results given params
-o(Dict("therapeutic_area1/demand" => Dict(:α=>.02, :β=>.02)))
+o(Dict("therapeutic_area1/demand" => [.02, .02]))
 ## a bit more intricate example
 using Statistics
 
@@ -86,4 +83,4 @@ o_avg = function (params)
   end
 end
 
-@time o_avg(Dict("therapeutic_area1/demand" => Dict(:α=>.02, :β=>.02)))
+@time o_avg(Dict("therapeutic_area1/demand" => [.02, .02]))

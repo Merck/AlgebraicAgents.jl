@@ -1,7 +1,6 @@
-using AlgebraicAgents
+using AlgebraicAgents, Plots
 
 # provide integration of AgentBasedModel, incl. AbstractAgent
-add_integration(:AgentsIntegration); using AgentsIntegration
 
 # SIR agent based model (ABM) model constructors, evolutionary functions
 include("sir_agents_model.jl")
@@ -16,7 +15,8 @@ to_collect = [(:status, f) for f in (infected, recovered, length)]
 
 m = ABMAgent("sir_model", abm; agent_step!, tspan=(0., 50.), adata=to_collect)
 
-first(m.inners)[2].agent
+# simulate the model
+simulate(m)
 
-# solving the problems
-sol = simulate(m)
+# plot results
+draw(m)

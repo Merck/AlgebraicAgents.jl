@@ -116,8 +116,8 @@ function create_params(;
 end
 
 function agent_step!(agent, model)
-    @get_omodel model
-    @get_oagent model agent
+    @get_model model
+    @get_agent model agent
     migrate!(agent, model)
     transmit!(agent, model)
     update!(agent, model)
@@ -161,7 +161,7 @@ update!(agent, model) = agent.status == :I && (agent.days_infected += 1)
 function recover_or_die!(agent, model)
     if agent.days_infected ≥ model.infection_period
         if rand(model.rng) ≤ model.death_rate
-            @o kill_agent!(agent, model)
+            @a kill_agent!(agent, model)
         else
             agent.status = :R
             agent.days_infected = 0

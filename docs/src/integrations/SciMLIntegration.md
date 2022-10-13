@@ -1,31 +1,15 @@
-# SciML Integration in AlgebraicAgents.jl
+# SciML Integration
 
-The integration can be loaded as:
-
-```julia
-using AlgebraicAgents
-add_integration(:SciMLIntegration); using SciMLIntegration
-```
-
-```@meta
-CurrentModule = SciMLIntegration
-```
-
-## Model, Integrator, and Solution Wrap Types
+## Problem Wrap Type
 
 ```@docs
 DiffEqAgent
-```
-
-## Algebraic Bindings
-
-```@docs
-@get_oagent
+DiffEqAgent(::AbstractString, ::DifferentialEquations.DEProblem)
 ```
 
 ## Observables
 
 ```@docs
-push_in_observables!
-push_out_observables!
+push_ports_in!
+push_exposed_ports!
 ```

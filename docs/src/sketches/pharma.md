@@ -20,7 +20,7 @@ include("tutorials/molecules/types.jl")
 
 ```@example 1
 # drug entity, lives in a therapeutic area 
-@oagent SmallMolecule Molecule begin
+@aagent SmallMolecule Molecule begin
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -33,7 +33,7 @@ include("tutorials/molecules/types.jl")
 end
 ```
 
-Note the use of a conveniency macro `@oagent` which appends additional fields expected (not required, though) by default interface methods.
+Note the use of a conveniency macro `@aagent` which appends additional fields expected (not required, though) by default interface methods.
 
 Next we provide an evolutionary law for `SmallMolecule` type. This is done by extending the interface function `AlgebraicAgents._step!(agent, t::Float64)`.
 
@@ -54,7 +54,7 @@ function AlgebraicAgents._step!(mol::SmallMolecule, t)
         # 2) also account for some random effect - prob of removal increases in time
         if (mol.sales <= 10) || (rand() >= exp(-0.2*mol.age))
             mol.kill_time = t
-            push!(getagent(mol, "../dx").killed_mols, (mol.mol, t))
+            push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
             # remove mol from the system
             disentangle!(mol)
         end
@@ -83,17 +83,10 @@ Let's define toy market demand model and represent this as a stochastic differen
 using DifferentialEquations
 
 dt = 1//2^(4); tspan = (0.0,100.)
-f(u,p,t) = p[:α]*u; g(u,p,t) = p[:β]*u
+f(u,p,t) = p[1]*u; g(u,p,t) = p[2]*u
 
-prob_1 = SDEProblem(f,g,.9,tspan,Dict{Symbol, Any}(:α=>.01, :β=>.01))
-prob_2 = SDEProblem(f,g,1.2,tspan,Dict{Symbol, Any}(:α=>.005, :β=>.01))
-```
-
-To wrap the problem within `AlgebraicAgents.jl`, we make use of a provided integration module:
-
-```@example 1
-# provide integration of common SciML problem, integrator, and solution types
-add_integration(:SciMLIntegration); using SciMLIntegration
+prob_1 = SDEProblem(f,g,.9,tspan,[.01, .01])
+prob_2 = SDEProblem(f,g,1.2,tspan,[.01, .01])
 ```
 
 Internally, a discovery unit will adjust its productivity according to the observed market demand:
@@ -121,8 +114,8 @@ entangle!(therapeutic_area1, Discovery("dx", 5.2, 10.; dt=3.))
 entangle!(therapeutic_area2, Discovery("dx", 6., 8.; dt=5.))
 
 # add SDE models for drug demand in respective areas
-demand_model_1 = DiffEqAgent("demand", prob_1, EM(); out_observables=Dict("demand" => 1), dt)
-demand_model_2 = DiffEqAgent("demand", prob_2, EM(); out_observables=Dict("demand" => 1), dt)
+demand_model_1 = DiffEqAgent("demand", prob_1, EM(); exposed_ports=Dict("demand" => 1), dt)
+demand_model_2 = DiffEqAgent("demand", prob_2, EM(); exposed_ports=Dict("demand" => 1), dt)
 
 # push market demand units to therapeutic areas
 entangle!(therapeutic_area1, demand_model_1)
@@ -155,10 +148,11 @@ getagent(pharma_model, "therapeutic_area1/demand")
 
 ## Plotting
 
-It's possible to provide custom plotting recipes by specializing the interface method `AlgebraicAgents._draw(agent)`. Whenever a dynamical system's state is logged into a single DataFrame - as is the case with `Discovery` type - you may utilize a convenience macro `@draw_df`:
+It's possible to provide custom plotting recipes by specializing the interface method `AlgebraicAgents._draw(agent)`. Whenever a dynamical system's state is logged into a single DataFrame - as is the case with `Discovery` type - you may utilize a convenience macro `@draw_df`. To that end, we need to load `DataFrames` and `Plots`.
 
 ```julia
 # implement plots
+using DataFrames, Plots
 AlgebraicAgents.@draw_df Discovery df_output
 ```
 

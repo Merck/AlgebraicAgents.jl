@@ -13,6 +13,7 @@ MIT License (or adaptations) (https://www.opensource.org/licenses/MIT)
   * DataStructures.jl - https://github.com/JuliaCollections/DataStructures.jl
   * Glob - https://github.com/vtjnash/Glob.jl
   * MacroTools.jl - https://github.com/FluxML/MacroTools.jl
+  * Requires.jl - https://github.com/JuliaPackaging/Requires.jl
 
 Available package integrations further rely on the following third-party software
 
@@ -22,5 +23,8 @@ MIT License (or adaptations) (https://www.opensource.org/licenses/MIT)
   * DifferentialEquations.jl - https://github.com/SciML/DifferentialEquations.jl
   * SciMLBase.jl - https://github.com/SciML/SciMLBase.jl
   * Plots - https://github.com/JuliaPlots/Plots.jl
+
+2-Clause BSD License (https://opensource.org/licenses/BSD-2-Clause)
+  * AlgebraicDynamics.jl - https://github.com/AlgebraicJulia/AlgebraicDynamics.jl
 
 The tutorials, unit tests, and the documentation generating script may rely on additional third-party software listed in the respective `Project.toml` dependency files.

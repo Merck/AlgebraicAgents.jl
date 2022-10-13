@@ -30,7 +30,7 @@ A lightweight framework to enable **hierarchical, heterogeneous** dynamical syst
 
 The package solves a typical **scaling problem**: while modeling a complex system, one tears the joint dynamics into several parts, but inevitably runs into troubles when trying to put these parts together. 
 
-We provide a minimalistic **interface** featuring compositions of dynamical systems, to **approximate the joint dynamics** from separate systems' evolutionary laws. In practice, one only has to define a **wrap type** for a custom dynamical system class and implement a handful of **common interface methods**. So far, integrations of [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl) and [Agents.jl](https://github.com/JuliaDynamics/Agents.jl) are provided.
+We provide a minimalistic **interface** featuring compositions of dynamical systems, to **approximate the joint dynamics** from separate systems' evolutionary laws. In practice, one only has to define a **wrap type** for a custom dynamical system class and implement a handful of **common interface methods**. So far, integrations of [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl), [Agents.jl](https://github.com/JuliaDynamics/Agents.jl), and [AlgebraicDynamics.jl](https://github.com/AlgebraicJulia/AlgebraicDynamics.jl) are provided, see the [docs](https://merck.github.io/AlgebraicAgents.jl/#Loading-third-party-package-integrations).
 
 The dynamical systems are organized into **hierarchies**. That is, a dynamical system may contain an embedded hierarchy of dynamical systems. Each system is then assigned a **path** in the overarching hierarchy, like a folder in a file system. A dynamical system typically indexes and retrieves other systems in the hierarchy via relative paths.
 
@@ -50,10 +50,9 @@ Another package is **[GeneratedExpressions.jl](https://github.com/Merck/Generate
 
 ## Integrating a Custom Dynamical System
 
-
 ```julia
 # drug entity, lives in a therapeutic area
-@oagent SmallMolecule Molecule begin
+@aagent SmallMolecule Molecule begin
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -67,7 +66,7 @@ end
 ```
 
 
-Note the use of a conveniency macro `@oagent` which appends additional fields expected (not required, though) by default interface methods.
+Note the use of a conveniency macro `@aagent` which appends additional fields expected (not required, though) by default interface methods.
 
 
 Next we provide an evolutionary law for `SmallMolecule` type. This is done by extending the interface function `AlgebraicAgents._step!(agent, t::Float64)`.
@@ -91,7 +90,7 @@ function AlgebraicAgents._step!(mol::SmallMolecule, t)
         # 2) also account for some random effect - prob of removal increases in time
         if (mol.sales <= 10) || (rand() >= exp(-0.2*mol.age))
             mol.kill_time = t
-            push!(getagent(mol, "../dx").killed_mols, (mol.mol, t))
+            push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
             # remove mol from the system
             disentangle!(mol)
         end
@@ -137,24 +136,7 @@ timespan: (0.0, 100.0)
 u0: 1.2
 ```
 
-
-To wrap the problem within `AlgebraicAgents.jl`, we make use of a provided integration module:
-
-
-```julia
-# provide integration of common SciML problem, integrator, and solution types
-add_integration(:SciMLIntegration); using SciMLIntegration
-```
-
-
-```julia
-  Activating project at `~/AlgebraicAgents.jl/src/integrations/SciMLIntegration`
-  Activating project at `~/AlgebraicAgents.jl/docs`
-```
-
-
 Internally, a discovery unit will adjust its productivity according to the observed market demand:
-
 
 ```julia
 # sync with market demand
@@ -165,7 +147,6 @@ dx.productivity, = @observables dx "../demand":"demand"
 
 
 Next step is to initiate the actual dynamical systems.
-
 
 ```julia
 # define therapeutic areas
@@ -181,8 +162,8 @@ entangle!(therapeutic_area1, Discovery("dx", 5.2, 10.; dt=3.))
 entangle!(therapeutic_area2, Discovery("dx", 6., 8.; dt=5.))
 
 # add SDE models for drug demand in respective areas
-demand_model_1 = DiffEqAgent("demand", prob_1, EM(); out_observables=Dict("demand" => 1), dt)
-demand_model_2 = DiffEqAgent("demand", prob_2, EM(); out_observables=Dict("demand" => 1), dt)
+demand_model_1 = DiffEqAgent("demand", prob_1, EM(); exposed_ports=Dict("demand" => 1), dt)
+demand_model_2 = DiffEqAgent("demand", prob_2, EM(); exposed_ports=Dict("demand" => 1), dt)
 
 # push market demand units to therapeutic areas
 entangle!(therapeutic_area1, demand_model_1)
@@ -191,7 +172,6 @@ entangle!(therapeutic_area2, demand_model_2)
 # show the model
 pharma_model
 ```
-
 
 ```julia
 agent pharma_model with uuid 05e79978 of type FreeAgent 
@@ -250,7 +230,7 @@ agent dx with uuid af488692 of type Main.Discovery
    t: 102.0
    dt: 3.0
    t0: 0.0
-   killed_mols: [("DGSLp", 99.0), ("Grjue", 99.0), ("s8c3x", 99.0), ("NLbHs", 99.0), ("DsTSW", 99.0), ("Qzokp", 99.0), ("8BFqZ", 99.0), ("YVKb0", 99.0), ("pRKig", 99.0), ("x3Sbn", 99.0)  …  ("Qq6Rs", 99.0), ("C4bqV", 99.0), ("Ic9YH", 99.0), ("D5emm", 99.0), ("VW0lS", 99.0), ("Dez7v", 99.0), ("z0VjL", 99.0), ("w9LBP", 99.0), ("0Aq1f", 99.0), ("i27ZG", 99.0)]
+   removed_mols: [("DGSLp", 99.0), ("Grjue", 99.0), ("s8c3x", 99.0), ("NLbHs", 99.0), ("DsTSW", 99.0), ("Qzokp", 99.0), ("8BFqZ", 99.0), ("YVKb0", 99.0), ("pRKig", 99.0), ("x3Sbn", 99.0)  …  ("Qq6Rs", 99.0), ("C4bqV", 99.0), ("Ic9YH", 99.0), ("D5emm", 99.0), ("VW0lS", 99.0), ("Dez7v", 99.0), ("z0VjL", 99.0), ("w9LBP", 99.0), ("0Aq1f", 99.0), ("i27ZG", 99.0)]
    df_output: 34×4 DataFrame
  Row │ time     small  large  removed
      │ Float64  Int64  Int64  Int64
@@ -292,11 +272,12 @@ u: 2.3580108744816726
 
 ### Plotting
 
-It's possible to provide custom plotting recipes by specializing the interface method `AlgebraicAgents._draw(agent)`. Whenever a dynamical system's state is logged into a single DataFrame - as is the case with `Discovery` type - you may utilize a convenience macro `@draw_df`:
+It's possible to provide custom plotting recipes by specializing the interface method `AlgebraicAgents._draw(agent)`. Whenever a dynamical system's state is logged into a single DataFrame - as is the case with `Discovery` type - you may utilize a convenience macro `@draw_df`. To that end, we need to load both `DataFrames` and `Plots`.
 
 
 ```julia
 # implement plots
+using DataFrames, Plots
 AlgebraicAgents.@draw_df Discovery df_output
 ```
 
