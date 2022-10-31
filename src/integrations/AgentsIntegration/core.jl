@@ -26,7 +26,7 @@ export @get_model, @a
     df_model::DataFrames.DataFrame
 end
 
-@doc "Wrap of an Agent Based Model."
+@doc "Wrap of an Agent Based Model." ABMAgent
 
 ## implement constructor
 """
