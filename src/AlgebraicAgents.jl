@@ -1,11 +1,12 @@
 module AlgebraicAgents
 
+using Requires
+
 using Glob
 using UUIDs
 using DataStructures
 using MacroTools
 using Crayons
-using Requires
 
 # abstract algebraic agent types
 include("abstract.jl")
@@ -70,12 +71,6 @@ export prewalk, postwalk
 include("ops.jl")
 export ⊕, @sum
 
-function __init__()
-    include(joinpath(@__DIR__, "integrations/loading.jl"))
-    # DataFrame log out-of-the-box plots
-    @require DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0" begin
-        @require Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("utils_plots.jl")
-    end 
-end
+include("integrations/requires.jl")
 
 end
