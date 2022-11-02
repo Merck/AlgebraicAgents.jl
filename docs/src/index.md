@@ -14,7 +14,7 @@ FreeAgent(::AbstractString, ::Vector{<:AbstractAlgebraicAgent})
 
 ## Implementing custom types
 
-To implement a custom algebraic agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface. 
+To implement a custom algebraic agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface.
 
 Next step is to implement the required interface functions:
 
@@ -127,12 +127,19 @@ entangle!
 disentangle!
 ```
 
-### Agent types macros
+### Agent type constructors
 
 Supports convenient agent subtyping.
 
 ```@docs
 @aagent
+```
+
+To provide custom specialization of [`@aagent`](@ref) convenience macros, see [`AlgebraicAgents.define_agent`](@ref) and [`AlgebraicAgents.define_agent_with_supertype`](@ref).
+
+```@docs
+AlgebraicAgents.define_agent
+AlgebraicAgents.define_agent_with_supertype
 ```
 
 ### Walks
