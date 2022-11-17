@@ -102,7 +102,7 @@ Return flat representation of algebraic agents hierarchy.
 """
 function flatten(a::AbstractAlgebraicAgent)
     dir = getdirectory(a); flat_repr = Dict{String, AbstractAlgebraicAgent}()
-    for (p, v) in relpathrefs(a)
+    for (p, v) in get_relpathrefs!(a)
         push!(flat_repr, p => dir[v])
     end
 
@@ -139,7 +139,7 @@ _construct_agent(::AbstractString, args...) = @error "`_construct_agent` for typ
 function args_kwargs(args)
     filtered_args = Any[]; filtered_kwargs = Any[]
     map(args) do x
-        if isexpr(x, :(=))
+        if Meta.isexpr(x, :(=))
             push!(filtered_kwargs, Expr(:kw, x.args[1], x.args[2]))
         else push!(filtered_args, x) end
     end

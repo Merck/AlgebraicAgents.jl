@@ -66,6 +66,13 @@ draw(getagent(pharma_model, "therapeutic_area2/demand"))
 # for optimization etc.
 o = objective(pharma_model, 100.)
 
+# queries
+## filter queries
+filter(pharma_model, f"_.age < 5", f"'m' ∈ _.name")
+i = 5; pharma_model |> @filter(_.age < $i) |> @filter('m' ∈ _.name)
+## transform queries
+pharma_model |> @transform(name=_.name, _.age)
+
 ## get results given params
 o(Dict("therapeutic_area1/demand" => [.02, .02]))
 ## a bit more intricate example

@@ -90,6 +90,8 @@ function get_relpathrefs!(agent::AbstractAlgebraicAgent)
     relpath_walk(agent) do agent_, path
         push!(relpathrefs(agent), path => getuuid(agent_))
     end
+
+    relpathrefs(agent)
 end
 
 # insert, remove agent

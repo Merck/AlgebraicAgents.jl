@@ -55,6 +55,13 @@ dx.productivity, = @observables dx "../demand":"demand"
 # let the problem evolve
 simulate(pharma_model, 100)
 
+# queries
+## filter queries
+filter(pharma_model, f"_.age < 5", f"'m' ∈ _.name")
+i = 5; pharma_model |> @filter(_.age < $i) |> @filter('m' ∈ _.name)
+## transform queries
+pharma_model |> @transform(name=_.name, _.age)
+
 # plot the results
 ## dynamic dispatch on agent types
 draw(getagent(pharma_model, "therapeutic_area1/dx"))

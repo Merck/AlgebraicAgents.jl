@@ -179,3 +179,30 @@ flatten
 ```@docs
 @draw_df
 ```
+
+## Queries
+
+It is possible to run filter and transform queries on agent hierarchies.
+
+### Filter queries
+
+```@docs
+GeneralFilterQuery
+@f_str
+@filter
+AlgebraicAgents.filter(::AbstractAlgebraicAgent, ::GeneralFilterQuery)
+```
+
+To provide custom filter query types, you need to implement [`AlgebraicAgents._filter`](@ref) low-level matching method.
+
+```@docs
+AlgebraicAgents._filter
+```
+
+### Transform queries
+
+```@docs
+GeneralTransformQuery
+@transform
+transform
+```

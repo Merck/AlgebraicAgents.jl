@@ -71,6 +71,13 @@ export prewalk, postwalk
 include("ops.jl")
 export ⊕, @sum
 
+# filter, transform queries in agent hierarchies
+include("queries.jl")
+export GeneralFilterQuery
+export @f_str, @filter, filter
+export GeneralTransformQuery
+export @transform, transform
+
 include("integrations/requires.jl")
 
 end

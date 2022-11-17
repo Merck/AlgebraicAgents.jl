@@ -65,15 +65,11 @@ Another package is **[GeneratedExpressions.jl](https://github.com/Merck/Generate
 end
 ```
 
-
 Note the use of a conveniency macro `@aagent` which appends additional fields expected (not required, though) by default interface methods.
-
 
 Next we provide an evolutionary law for `SmallMolecule` type. This is done by extending the interface function `AlgebraicAgents._step!(agent, t::Float64)`.
 
-
 Here, `t` is the maximal time to which all the systems in a hierarchy have been projected. Once `t` reaches the time point to which `mol` has been projected, then it's time for another step:
-
 
 ```julia
 # implement evolution
