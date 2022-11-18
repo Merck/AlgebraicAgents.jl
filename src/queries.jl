@@ -54,11 +54,19 @@ end
 
 """
     @filter query
-Turn general filter query into a function of agents' hierarchy. See also [`GeneralFilterQuery`](@ref).
+Turnfilter query into a function of agents' hierarchy.
+Accepts expressions (corresponding to q-strings) and query string.
+
+See also [`GeneralFilterQuery`](@ref).
 """
 macro filter(query)
+    # if query is a raw expression (not a query string), transform explicitly
+    query = if !Meta.isexpr(query, :macrocall) || Meta.isexpr(query, :string)
+        :(GeneralFilterQuery($(interpolate_underscores(query))))
+    else Expr(:escape, query) end
+
     quote
-        query = GeneralFilterQuery($(interpolate_underscores(query)))
+        query = $(query)
         a -> filter(a, query)
     end
 end

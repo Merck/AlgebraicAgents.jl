@@ -58,7 +58,9 @@ simulate(pharma_model, 100)
 # queries
 ## filter queries
 filter(pharma_model, f"_.age < 5", f"'m' ∈ _.name")
-i = 5; pharma_model |> @filter(_.age < $i) |> @filter('m' ∈ _.name)
+i = 5; q1 = pharma_model |> @filter(_.age < $i) |> @filter('m' ∈ _.name)
+q2 = pharma_model |> @filter(f"_.age < $i") |> @filter(f"'m' ∈ _.name")
+@test q1 == q2
 ## transform queries
 pharma_model |> @transform(name=_.name, _.age)
 
