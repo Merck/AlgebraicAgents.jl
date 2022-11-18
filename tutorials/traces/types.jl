@@ -263,6 +263,7 @@ function AlgebraicAgents._step!(a::Preclinical, t)
             for c in rand(collect(values(inners(getagent(a, "accepted")))), 2)
                 mol = Molecule(randstring(5), c.fingerprint .+ .1 .* Tuple(rand(N)), t, [c.path; "succ"; c.name])
                 entangle!(getagent(a, "candidates"), mol)
+                println(mol.path)
             end
         end
         a.t += a.dt

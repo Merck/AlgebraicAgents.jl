@@ -28,7 +28,7 @@ pharma_model = ⊕(preclinical, discovery; name="pharma_model")
 # let the problem evolve
 simulate(pharma_model, 100)
 
-filter(pharma_model, s"""_ ≺ ["succ"]""")
+filter(pharma_model, s"""_ ≺ "succ" """)
 
 # remove molecules with more than two parents
 pharma_model |> @filter("length(_.path)>2") .|> disentangle!
