@@ -59,7 +59,7 @@ Turn general filter query into a function of agents' hierarchy. See also [`Gener
 macro filter(query)
     quote
         query = GeneralFilterQuery($(interpolate_underscores(query)))
-        a -> println(a, query)
+        a -> filter(a, query)
     end
 end
 
