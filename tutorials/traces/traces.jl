@@ -1,9 +1,12 @@
 using AlgebraicAgents
 import Distributions: Poisson
 import Random: randstring
+using MacroTools
 
 # type system
 include("types.jl")
+# successor queries
+include("succ_queries.jl")
 
 # preclinical: orchestrates experiments; is a directory of candidate/accepted/rejected candidates
 ## reject (filter) queries
@@ -25,7 +28,9 @@ pharma_model = ⊕(preclinical, discovery; name="pharma_model")
 # let the problem evolve
 simulate(pharma_model, 100)
 
+filter(pharma_model, s"""_ ≺ ["succ"]""")
+
 # remove molecules with more than two parents
 pharma_model |> @filter("length(_.path)>2") .|> disentangle!
 # remove candidate molecules with more than two parents
-pharma_model |> @filter("length(_.path)>2 && (_.decision_time === missing)") .|> disentangle!
+pharma_model |> @filter(length(_.path)>2) |> @filter(_.decision_time === missing) .|> disentangle!
