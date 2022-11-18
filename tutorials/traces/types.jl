@@ -69,6 +69,8 @@ end
     queries_reject::Vector{AlgebraicAgents.AbstractQuery}
 
     total_costs::Float64
+    
+    perturb_rate::Float64 # expected number of perturbed mols (successors) born per a unit step
 
     t::Float64; t0::Float64
     dt::Float64
@@ -115,12 +117,13 @@ function Assay(name, duration::Float64, cost::Float64, capacity::Float64, belief
 end
 
 "Initialize a preclinical unit comprising candidate molecules and parametrized by removal queries."
-function Preclinical(name, t, dt=1.; queries_accept=AlgebraicAgents.AbstractQuery[], queries_reject=AlgebraicAgents.AbstractQuery[])
+function Preclinical(name, perturb_rate::Float64, t=.0; dt=1.,
+        queries_accept=AlgebraicAgents.AbstractQuery[], queries_reject=AlgebraicAgents.AbstractQuery[])
     i = Preclinical(name)
 
     i.queries_accept = queries_accept
     i.queries_reject = queries_reject
-    i.total_costs = .0
+    i.total_costs = .0; i.perturb_rate = perturb_rate
 
     i.t = i.t0 = t; i.dt = dt
 
@@ -260,10 +263,9 @@ function AlgebraicAgents._step!(a::Preclinical, t)
 
         # add perturbed candidates (from accepted)
         if !isempty(inners(getagent(a, "accepted")))
-            for c in rand(collect(values(inners(getagent(a, "accepted")))), 2)
-                mol = Molecule(randstring(5), c.fingerprint .+ .1 .* Tuple(rand(N)), t, [c.path; "succ"; c.name])
+            for c in rand(collect(values(inners(getagent(a, "accepted")))), rand(Poisson(a.dt * a.perturb_rate)))
+                mol = Molecule(randstring(5), c.fingerprint .+ .1 .* Tuple(rand(N)), t, [c.path; "parent_$(rand(1:2))"; c.name])
                 entangle!(getagent(a, "candidates"), mol)
-                println(mol.path)
             end
         end
         a.t += a.dt

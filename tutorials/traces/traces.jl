@@ -6,12 +6,12 @@ using MacroTools
 # type system
 include("types.jl")
 # successor queries
-include("succ_queries.jl")
+include("successors_queries.jl")
 
 # preclinical: orchestrates experiments; is a directory of candidate/accepted/rejected candidates
 ## reject (filter) queries
 q = [f"""any(t -> (t.name == "assay_1") && (t.readout > .5), _.trace)"""]
-preclinical = Preclinical("preclinical", 0., 1.; queries_reject=q)
+preclinical = Preclinical("preclinical", 3.; queries_reject=q)
 
 ## add assays: assay directory firs
 superassay = entangle!(preclinical, FreeAgent("assays"))
@@ -28,9 +28,13 @@ pharma_model = ⊕(preclinical, discovery; name="pharma_model")
 # let the problem evolve
 simulate(pharma_model, 100)
 
-filter(pharma_model, s"""_ ≺ "succ" """)
+# queries
+## successor query
+i = 2; filter(pharma_model, p"""_ ≺ "parent_$($i)" """)
+pharma_model |> @filter(p"""_ ≺ "parent_$($i)" """)
 
-# remove molecules with more than two parents
-pharma_model |> @filter("length(_.path)>2") .|> disentangle!
-# remove candidate molecules with more than two parents
-pharma_model |> @filter(length(_.path)>2) |> @filter(_.decision_time === missing) .|> disentangle!
+## simple queries
+### molecules with more than two parents
+i = 2; pharma_model |> @filter(f"length(_.path)>$i")
+### remove candidate molecules with more than two parents
+pharma_model |> @filter(length(_.path)>$i) |> @filter(_.decision_time === missing) .|> disentangle!

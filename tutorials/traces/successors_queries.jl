@@ -1,8 +1,8 @@
 "If `ex` is a macrocall, return the macro's name, else return `nothing`."
 macroname(e) = Meta.isexpr(e, :macrocall) ? Symbol(strip(string(e.args[1]), '@')) : nothing
 
-"Turn underscores into references of `x`, and wrap filter query as a function of `x`."
-function interpolate_underscores_succ(s, __module__=AlgebraicAgents)::Expr
+"Interpret predecessor filter queries."
+function interpolate_underscores_predecessor(s, __module__=AlgebraicAgents)::Expr
     ex = s isa AbstractString ? Meta.parse(s) : s
     sym = gensym()
     ex = MacroTools.prewalk(ex) do x
@@ -18,17 +18,16 @@ function interpolate_underscores_succ(s, __module__=AlgebraicAgents)::Expr
 end
 
 """
-    f"query"
-Turn a query string into a query instance, see also [`GeneralFilterQuery`](@ref).
+    p"query"
+Turn a predecessor query string into a query instance, see also [`GeneralFilterQuery`](@ref).
 
 Supports string interpolations.
 
 # Examples
 ```julia
-filter(agents, f"_.age > 1 && _.name ∈ ['a', 'b']")
-i = 1; filter(agents, f"_.age > \$i && _.name ∈ ['a', 'b']")
+filter(agents, p\"""_ ≺ "parent" \""")
 ```
 """
-macro s_str(query)
-    :(GeneralFilterQuery($(interpolate_underscores_succ(query))))
+macro p_str(query)
+    :(GeneralFilterQuery($(interpolate_underscores_predecessor(query))))
 end
