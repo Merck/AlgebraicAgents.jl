@@ -1,8 +1,8 @@
 "If `ex` is a macrocall, return the macro's name, else return `nothing`."
 macroname(e) = Meta.isexpr(e, :macrocall) ? Symbol(strip(string(e.args[1]), '@')) : nothing
 
-"Interpret predecessor filter queries."
-function interpolate_underscores_predecessor(s, __module__=AlgebraicAgents)::Expr
+"Interpret a sucessor query."
+function interpolate_underscores_sucessor(s, __module__=AlgebraicAgents)::Expr
     ex = s isa AbstractString ? Meta.parse(s) : s
     sym = gensym()
     ex = MacroTools.prewalk(ex) do x
@@ -19,7 +19,9 @@ end
 
 """
     p"query"
-Turn a predecessor query string into a query instance, see also [`GeneralFilterQuery`](@ref).
+Turn a sucessor query string into a query instance, see also [`GeneralFilterQuery`](@ref).
+
+Use `p"_ ≺ parent"` to check if a given agent is a successor of `parent` (when applicable, false by default).
 
 Supports string interpolations.
 
@@ -29,5 +31,5 @@ filter(agents, p\"""_ ≺ "parent" \""")
 ```
 """
 macro p_str(query)
-    :(GeneralFilterQuery($(interpolate_underscores_predecessor(query))))
+    :(GeneralFilterQuery($(interpolate_underscores_sucessor(query))))
 end

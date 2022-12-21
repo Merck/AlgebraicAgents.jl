@@ -6,14 +6,14 @@ using MacroTools
 # type system
 include("types.jl")
 # successor queries
-include("successors_queries.jl")
+include("successor_queries.jl")
 
-# preclinical: orchestrates experiments; is a directory of candidate/accepted/rejected candidates
-## reject (filter) queries
+# preclinical: wraps candidates/rejected/accepted molecules, schedules experiments
+## (filter) queries - candidate rejection
 q = [f"""any(t -> (t.name == "assay_1") && (t.readout > .5), _.trace)"""]
 preclinical = Preclinical("preclinical", 3.; queries_reject=q)
 
-## add assays: assay directory firs
+## add assays: first a directory of assays (free agent)
 superassay = entangle!(preclinical, FreeAgent("assays"))
 N_assays = 5; for i in 1:N_assays
     entangle!(superassay, Assay("assay_$i", rand(1.:5.), 10e3*rand(), rand(10.:20.)))
