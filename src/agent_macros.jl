@@ -86,13 +86,14 @@ function define_agent_with_supertype(new_name, base_type, super_type, extra_fiel
     end
 end
 
-
 """
     @aagent agent_name begin
         extra_fields...
     end
 
 Create a custom algebraic agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
+
+Provides a constructor which takes agent's name at the input, and populates the common fields.
 
 # Example 
 ```julia
@@ -111,9 +112,9 @@ end
 """
 macro aagent(new_name, extra_fields)
     define_agent(new_name, FreeAgent, extra_fields, __module__, quote
-            function $(new_name)(name::AbstractString)
+            function $(new_name)(name::Vararg{<:AbstractString})
                 m = new()
-                m.name = name; m.uuid = AlgebraicAgents.uuid4()
+                !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
                 m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
                 m.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
                 m.opera = AlgebraicAgents.Opera(m.uuid => m)
@@ -130,6 +131,8 @@ end
     end
 
 Create a custom algebraic agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
+
+Provides a constructor which takes agent's name at the input, and populates the common fields.
 
 # Example 
 ```julia
@@ -148,9 +151,9 @@ end
 """
 macro aagent(new_name, super_type, extra_fields)
     define_agent_with_supertype(new_name, FreeAgent, super_type, extra_fields, __module__, quote
-            function $(new_name)(name::AbstractString)
+            function $(new_name)(name::Vararg{<:AbstractString})
                 m = new()
-                m.name = name; m.uuid = AlgebraicAgents.uuid4()
+                !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
                 m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
                 m.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
                 m.opera = AlgebraicAgents.Opera(m.uuid => m)
