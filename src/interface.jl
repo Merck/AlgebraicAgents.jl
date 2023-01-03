@@ -108,7 +108,7 @@ function _setparameters!(a::AbstractAlgebraicAgent, parameters)
         merge!(params, parameters)
     elseif params isa AbstractArray
         params .= parameters
-    else @error("type $(typeof(t)) doesn't implement `_setparameters!`") end
+    else @error("type $(typeof(a)) doesn't implement `_setparameters!`") end
 
     params
 end
