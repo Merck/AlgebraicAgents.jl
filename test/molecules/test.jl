@@ -43,7 +43,9 @@ entangle!(therapeutic_area2, demand_model_2)
 # extract parameters
 getparameters(pharma_model)
 # set parameters
-setparameters!(pharma_model, Dict("therapeutic_area1/demand" => [.02, .02]))
+@test getparameters(pharma_model)["therapeutic_area1/demand/"] == [.01, .01]
+setparameters!(pharma_model, Dict("therapeutic_area1/demand/" => [.02, .02]))
+@test getparameters(pharma_model)["therapeutic_area1/demand/"] == [.02, .02]
 
 #=
 discovery units will adjust its productivity based on market demand:
