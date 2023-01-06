@@ -65,7 +65,7 @@ export @aagent
 
 # algebraic agents' structure walking
 include("walks.jl")
-export prewalk, postwalk
+export prewalk, postwalk, topmost
 
 # defines general sums and products of algebraic models
 include("ops.jl")
