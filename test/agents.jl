@@ -68,4 +68,14 @@ using Test, AlgebraicAgents
             @test fieldtype(DerivedAgent_w_immutables, :mutable4) == Int
         end
     end
+
+    @testset "parametric types" begin
+        @aagent struct MyAgent{T <: Real, P <: Real}
+            myname1::T
+            myname2::P
+        end
+
+        a = MyAgent{Float64, Int}("myagent")
+        @test a isa MyAgent{Float64, Int}
+    end
 end
