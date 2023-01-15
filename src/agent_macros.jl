@@ -30,8 +30,7 @@ function define_agent(base_type, super_type, type, __module, constructor)
             # We have to do this to be able to interpolate them into an inner quote.
             name = $(QuoteNode(new_name))
             additional_fields = $(QuoteNode(extra_fields.args))
-            additional_fieldnames = [Meta.isexpr(f, :(::)) ? f.args[1] : f for f in $(QuoteNode(extra_fields.args))]
-            
+
             # Now we start an inner quote. This is because our macro needs to call `eval`
             # However, this should never happen inside the main body of a macro
             # There are several reasons for that, see the cited discussion at the top
@@ -46,7 +45,7 @@ function define_agent(base_type, super_type, type, __module, constructor)
                 end
             end
             # it is important to evaluate the macro in the module of the toplevel eval
-            Core.eval($(__module), expr)
+            Base.eval($__module, expr)
         end
 
         Core.@__doc__($(esc(Docs.namify(new_name))))
@@ -91,10 +90,22 @@ Optional base type and a super type:
     sales::Float64
 end
 ```
+
+Parametric types:
+```julia
+@aagent struct MyAgent{T <: Real, P <: Real}
+    field1::T
+    field2::P
+end
+
+MyAgent{Float64, Int}("myagent")
+```
 """
 macro aagent(type)
+    tname, param_tnames_constraints = get_param_tnames(type)
+
     define_agent(FreeAgent, AbstractAlgebraicAgent, type, __module__, quote
-            function $(type.args[2])(name::Vararg{<:AbstractString})
+            function $(tname)(name::Vararg{AbstractString}) where $(param_tnames_constraints...)
                 m = new()
                 !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
                 m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
@@ -108,8 +119,10 @@ macro aagent(type)
 end
 
 macro aagent(base_type, type)
+    tname, param_tnames_constraints = get_param_tnames(type)
+
     define_agent(base_type, AbstractAlgebraicAgent, type, __module__, quote
-            function $(type.args[2])(name::Vararg{<:AbstractString})
+        function $(tname)(name::Vararg{AbstractString}) where $(param_tnames_constraints...)
                 m = new()
                 !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
                 m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
@@ -123,8 +136,10 @@ macro aagent(base_type, type)
 end
 
 macro aagent(base_type, super_type, type)
+    tname, param_tnames_constraints = get_param_tnames(type)
+
     define_agent(base_type, super_type, type, __module__, quote
-            function $(type.args[2])(name::Vararg{<:AbstractString})
+        function $(tname)(name::Vararg{AbstractString}) where $(param_tnames_constraints...)
                 m = new()
                 !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
                 m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
@@ -135,4 +150,25 @@ macro aagent(base_type, super_type, type)
             end
         end
     )
+end
+
+"Extract type names and type constraints from struct definition."
+function get_param_tnames(type)
+    name = type.args[2]
+    if name isa Symbol
+        name, []
+    else
+        param_tnames = map(name.args[2:end]) do x
+            if x isa Symbol
+                return x
+            else
+                return x.args[1]
+            end
+        end # like T,L
+
+        param_tnames_constraints = name.args[2:end]# like T<:Number,L<:Real
+        tname = :($(name.args[1]){$(param_tnames...)})
+
+        tname, param_tnames_constraints
+    end
 end

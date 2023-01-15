@@ -7,14 +7,13 @@ export DiffEqAgent
 export push_ports_in!, push_exposed_ports!
 
 # define DE algebraic wrap
+"Algebraic wrap of a SciML DE problem."
 @aagent struct DiffEqAgent
     integrator::DiffEqBase.DEIntegrator
 
     exposed_ports::Union{Dict{Any, Int}, Nothing}
     ports_in::Union{Vector, Nothing}
 end
-
-@doc "Algebraic wrap of a SciML DE problem." DiffEqAgent
 
 # implement agent constructor
 
