@@ -8,7 +8,7 @@ const GraphicalModelType = Union{AbstractResourceSharer, AbstractMachine}
 
 # define wrap types
 # `AbstractResourceSharer`, `AbstractMachine` wrap
-@aagent GraphicalAgent begin
+@aagent struct GraphicalAgent
     system::GraphicalModelType
 end
 

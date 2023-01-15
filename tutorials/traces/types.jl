@@ -19,7 +19,8 @@ const uncertainty_threshold = .2
 const init_belief_generator = (r = rand(N); r ./ sum(r))
 
 # candidate molecule; carries a scientist's belief about its activity
-@aagent Molecule AbstractMolecule begin
+"Candidate molecule, parametrized by a chemical fingerprint."
+@aagent FreeAgent AbstractMolecule struct Molecule
     birth_time::Float64
     decision_time::Union{Float64, Missing}
 
@@ -32,13 +33,12 @@ const init_belief_generator = (r = rand(N); r ./ sum(r))
     trace::Vector{<:Any}
 end
 
-@doc "Candidate molecule, parametrized by a chemical fingerprint." Molecule
-
 # preclinical experiments
 abstract type AbstractAssay <: AbstractAlgebraicAgent end
 
 # parametric experiment; updates belief about candidate's activity
-@aagent Assay AbstractAssay begin
+"Parametric experiment, updates belief about candidate's activity."
+@aagent FreeAgent AbstractAssay struct Assay 
     duration::Float64
     cost::Float64
     capacity::Float64
@@ -51,10 +51,8 @@ abstract type AbstractAssay <: AbstractAlgebraicAgent end
     t::Float64; t0::Float64
 end
 
-@doc "Parametric experiment, updates belief about candidate's activity."
-
 ## toy discovery unit - emits molecules with chemical fingerprints
-@aagent Discovery begin
+@aagent struct Discovery
     rate::Float64 # expected number of mols per unit step
 
     t::Float64
@@ -64,7 +62,8 @@ end
 end
 
 ## toy preclinical development model - orchestrates experiments, runs queries
-@aagent Preclinical begin
+"Toy discovery unit; emits molecules."
+@aagent struct Preclinical
     queries_accept::Vector{AlgebraicAgents.AbstractQuery}
     queries_reject::Vector{AlgebraicAgents.AbstractQuery}
 
@@ -75,8 +74,6 @@ end
     t::Float64; t0::Float64
     dt::Float64
 end
-
-@doc "Toy discovery unit; emits molecules." Discovery
 
 # constructors
 "Emit a candidate molecule."
