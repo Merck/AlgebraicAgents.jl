@@ -22,7 +22,8 @@ abstract type Molecule <: AbstractAlgebraicAgent end
 const N = 3 # molecule params granularity
 
 ## drug entity, lives in a therapeutic area 
-@aagent SmallMolecule Molecule begin
+"Parametrized drug entity, lives in a therapeutic area."
+@aagent FreeAgent Molecule struct SmallMolecule
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -33,11 +34,10 @@ const N = 3 # molecule params granularity
     sales::Float64
     df_sales::DataFrame
 end
-
-@doc "Parametrized drug entity, lives in a therapeutic area." SmallMolecule
 
 ## drug entity, lives in a therapeutic area
-@aagent LargeMolecule Molecule begin
+@doc (@doc SmallMolecule)
+@aagent FreeAgent Molecule struct LargeMolecule
     age::Float64
     birth_time::Float64
     kill_time::Float64
@@ -48,12 +48,10 @@ end
     sales::Float64
     df_sales::DataFrame
 end
-
-@doc (@doc SmallMolecule) LargeMolecule
 
 ## toy discovery unit - outputs small/large molecules
 ## to a given therapeutic area
-@aagent Discovery begin
+@aagent struct Discovery
     rate_small::Float64
     rate_large::Float64
     productivity::Float64

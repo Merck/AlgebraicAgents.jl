@@ -6,7 +6,7 @@ export @get_model, @a
 
 # algebraic wrap for AgentBasedModel type
 ## algebraic agent types
-@aagent ABMAgent begin
+@aagent struct ABMAgent
     abm::Agents.AgentBasedModel
 
     agent_step!; model_step! # evolutionary functions
@@ -145,7 +145,7 @@ function _reinit!(a::ABMAgent)
 end
 
 # algebraic wrappers for AbstractAgent type
-@aagent AAgent begin end
+@aagent struct AAgent end
 
 @doc "Algebraic wrap for `AbstractAgent` type." AAgent
 

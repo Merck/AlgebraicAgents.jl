@@ -1,65 +1,31 @@
-# adapted content from https://github.com/JuliaDynamics/Agents.jl/blob/83129042f01673f832e4a32de53b93ecd6af80ab/src/core/agents.jl
-
-"A function to create agent type constructor in convenient macro form. See the definition of [`@aagent`](@ref)."
-function define_agent(new_name, base_type, extra_fields, __module, constructor)
-    # This macro was generated with the guidance of @rdeits on Discourse:
-    # https://discourse.julialang.org/t/
-    # metaprogramming-obtain-actual-type-from-symbol-for-field-inheritance/84912
-
-    # We start with a quote. All macros return a quote to be evaluated
-    extra_fields = MacroTools.striplines(extra_fields)
-    quote
-        let
-            # Here we collect the field names and types from the base type
-            # Because the base type already exists, we escape the symbols to obtain it
-            base_fieldnames = fieldnames($(esc(base_type)))
-            base_fieldtypes = [t for t in getproperty($(esc(base_type)), :types)]
-            base_fields = [:($f::$T) for (f, T) in zip(base_fieldnames, base_fieldtypes)]
-            # Then, we prime the additional name and fields into QuoteNodes
-            # We have to do this to be able to interpolate them into an inner quote.
-            name = $(QuoteNode(new_name))
-            additional_fields = $(QuoteNode(extra_fields.args))
-            additional_fieldnames = [Meta.isexpr(f, :(::)) ? f.args[1] : f for f in $(QuoteNode(extra_fields.args))]
-
-            # Now we start an inner quote. This is because our macro needs to call `eval`
-            # However, this should never happen inside the main body of a macro
-            # There are several reasons for that, see the cited discussion at the top
-
-            expr = quote
-                mutable struct $name <: AbstractAlgebraicAgent
-                    $(base_fields...)
-                    $(additional_fields...)
-
-                    $$(QuoteNode(constructor))
-                end
-            end
-            # @show expr # uncomment this to see that the final expression looks as desired
-            # It is important to evaluate the macro in the module that it was called at
-            Core.eval($(__module), expr)
-        end
-    end
-
-end
+# adapted content from Agents.jl/src/core/agents.jl
 
 """
-A function to create agent type constructor in convenient macro form, with support for supertypes.
+    define_agent(base_type, super_type, type, __module, constructor)
+A function to create agent type constructor in convenient macro form.
 See the definition of [`@aagent`](@ref).
 """
-function define_agent_with_supertype(new_name, base_type, super_type, extra_fields, __module, constructor)
+function define_agent(base_type, super_type, type, __module, constructor)
     # This macro was generated with the guidance of @rdeits on Discourse:
     # https://discourse.julialang.org/t/
     # metaprogramming-obtain-actual-type-from-symbol-for-field-inheritance/84912
 
     # We start with a quote. All macros return a quote to be evaluated
-    base_type = base_type
-    extra_fields = MacroTools.striplines(extra_fields)
+    extra_fields = MacroTools.striplines(type.args[3])
+    new_name = type.args[2]
     quote
         let
             # Here we collect the field names and types from the base type
             # Because the base type already exists, we escape the symbols to obtain it
             base_fieldnames = fieldnames($(esc(base_type)))
             base_fieldtypes = [t for t in getproperty($(esc(base_type)), :types)]
-            base_fields = [:($f::$T) for (f, T) in zip(base_fieldnames, base_fieldtypes)]
+            base_fields = map(zip(base_fieldnames, base_fieldtypes)) do (f, T)
+                if (VERSION < v"1.8") || !(isconst($(esc(base_type)), f))
+                    :($f::$T)
+                else
+                    Expr(:const, :($f::$T))
+                end
+            end
             # Then, we prime the additional name and fields into QuoteNodes
             # We have to do this to be able to interpolate them into an inner quote.
             name = $(QuoteNode(new_name))
@@ -79,19 +45,23 @@ function define_agent_with_supertype(new_name, base_type, super_type, extra_fiel
                     $$(QuoteNode(constructor))
                 end
             end
-            # @show expr # uncomment this to see that the final expression looks as desired
-            # It is important to evaluate the macro in the module that it was called at
+            # it is important to evaluate the macro in the module of the toplevel eval
             Core.eval($(__module), expr)
         end
+
+        Core.@__doc__($(esc(Docs.namify(new_name))))
+        nothing
     end
 end
 
 """
-    @aagent agent_name begin
+    @aagent [OptionalBasetype=FreeAgent] [OptionalSupertype=AbstractAlgebraicAgent] struct my_agent
         extra_fields...
     end
 
 Create a custom algebraic agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
+
+Fields are mutable by default, but can be made immutable using `const` keyword.
 
 Provides a constructor which takes agent's name at the input, and populates the common fields.
 
@@ -110,9 +80,9 @@ Provides a constructor which takes agent's name at the input, and populates the 
 end
 ```
 """
-macro aagent(new_name, extra_fields)
-    define_agent(new_name, FreeAgent, extra_fields, __module__, quote
-            function $(new_name)(name::Vararg{<:AbstractString})
+macro aagent(type)
+    define_agent(FreeAgent, AbstractAlgebraicAgent, type, __module__, quote
+            function $(type.args[2])(name::Vararg{<:AbstractString})
                 m = new()
                 !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
                 m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
@@ -125,33 +95,24 @@ macro aagent(new_name, extra_fields)
     )
 end
 
-"""
-    @aagent agent_name supertype begin
-        extra_fields...
-    end
+macro aagent(base_type, type)
+    define_agent(base_type, AbstractAlgebraicAgent, type, __module__, quote
+            function $(type.args[2])(name::Vararg{<:AbstractString})
+                m = new()
+                !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
+                m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
+                m.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
+                m.opera = AlgebraicAgents.Opera(m.uuid => m)
 
-Create a custom algebraic agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
-
-Provides a constructor which takes agent's name at the input, and populates the common fields.
-
-# Example 
-```julia
-@aagent SmallMolecule Molecule begin
-    age::Float64
-    birth_time::Float64
-    kill_time::Float64
-
-    mol::AbstractString
-    profile::NTuple{N, Float64}
-
-    sales::Float64
-    df_sales::DataFrame
+                m
+            end
+        end
+    )
 end
-```
-"""
-macro aagent(new_name, super_type, extra_fields)
-    define_agent_with_supertype(new_name, FreeAgent, super_type, extra_fields, __module__, quote
-            function $(new_name)(name::Vararg{<:AbstractString})
+
+macro aagent(base_type, super_type, type)
+    define_agent(base_type, super_type, type, __module__, quote
+            function $(type.args[2])(name::Vararg{<:AbstractString})
                 m = new()
                 !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
                 m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
