@@ -67,16 +67,28 @@ Provides a constructor which takes agent's name at the input, and populates the 
 
 # Example 
 ```julia
-@aagent Molecule begin
+@aagent struct Molecule
     age::Float64
     birth_time::Float64
-    kill_time::Float64
-
-    mol::AbstractString
-    profile::NTuple{N, Float64}
-
     sales::Float64
-    df_sales::DataFrame
+end
+```
+
+Optional base type:
+```julia
+@aagent FreeAgent struct Molecule
+    age::Float64
+    birth_time::Float64
+    sales::Float64
+end
+```
+
+Optional base type and a super type:
+```julia
+@aagent FreeAgent AbstractMolecule struct Molecule
+    age::Float64
+    birth_time::Float64
+    sales::Float64
 end
 ```
 """
