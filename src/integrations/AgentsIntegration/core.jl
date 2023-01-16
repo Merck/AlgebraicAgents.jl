@@ -6,7 +6,16 @@ export @get_model, @a
 
 # algebraic wrap for AgentBasedModel type
 ## algebraic agent types
-@aagent struct ABMAgent
+mutable struct ABMAgent <: AbstractAlgebraicAgent
+    # common interface fields
+    uuid::UUID;; name::AbstractString
+    
+    parent::Union{AbstractAlgebraicAgent, Nothing}
+    inners::Dict{String, AbstractAlgebraicAgent}
+
+    relpathrefs::Dict{AbstractString, UUID}
+    opera::Opera
+
     abm::Agents.AgentBasedModel
 
     agent_step!; model_step! # evolutionary functions
@@ -24,40 +33,37 @@ export @get_model, @a
 
     df_agents::DataFrames.DataFrame
     df_model::DataFrames.DataFrame
-end
 
-@doc "Wrap of an Agent Based Model." ABMAgent
-
-## implement constructor
-"""
+    ## implement constructor
+    """
     ABMAgent(name, abm; kwargs...)
-Initialize `ABMAgent`, incl. hierarchy of ABM's agents.
+    Initialize `ABMAgent`, incl. hierarchy of ABM's agents.
 
-Configure the evolutionary step, logging, and step size by keyword arguments below.
+    Configure the evolutionary step, logging, and step size by keyword arguments below.
 
-# Arguments
-- `agent_step!`, `model_step!`: same meaning as in `Agents.step!`
-- in general, any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
-- `when`, `when_model`: when to collect agents data, model data
+    # Arguments
+    - `agent_step!`, `model_step!`: same meaning as in `Agents.step!`
+    - in general, any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
+    - `when`, `when_model`: when to collect agents data, model data
     true by default, and performs data collection at every step
     if an `AbstractVector`, checks if `t ∈ when`; otherwise a function (model, t) -> ::Bool
-- `step_size`: how far the step advances, either a float or a function (model, t) -> size::Float64
-- `tspan`: solution horizon, defaults to `(0., Inf)`
-"""
-function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel; 
+    - `step_size`: how far the step advances, either a float or a function (model, t) -> size::Float64
+    - `tspan`: solution horizon, defaults to `(0., Inf)`
+    """
+    function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel; 
         agent_step! =Agents.dummystep, model_step! =Agents.dummystep,
         when=true, when_model=when, step_size=1.,
         tspan::NTuple{2, Float64}=(0., Inf), kwargs...
     )
 
     # initialize wrap
-    i = ABMAgent(name)
+    i = new(); setup_agent!(i, name)
 
     i.abm = abm
     i.agent_step! = agent_step!; i.model_step! = model_step!; i.kwargs = kwargs
     i.when = when; i.when_model = when_model
     i.step_size = step_size; i.tspan = tspan; i.t = tspan[1]
-    
+
     i.df_agents = DataFrames.DataFrame(); i.df_model = DataFrames.DataFrame()
 
     i.abm.properties[:__aagent__] = i
@@ -70,6 +76,7 @@ function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel;
     end
 
     i
+    end
 end
 
 function _construct_agent(name::AbstractString, abm::Agents.AgentBasedModel, args...; kwargs...)
@@ -145,9 +152,8 @@ function _reinit!(a::ABMAgent)
 end
 
 # algebraic wrappers for AbstractAgent type
+"Algebraic wrap for `AbstractAgent` type."
 @aagent struct AAgent end
-
-@doc "Algebraic wrap for `AbstractAgent` type." AAgent
 
 # reference `Agents.AbstractAgent` via parent's ABM
 Base.propertynames(::AAgent) = fieldname(AAgent) ∪ [:agent]

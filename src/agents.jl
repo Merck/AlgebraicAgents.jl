@@ -2,8 +2,7 @@
 
 """
     define_agent(base_type, super_type, type, __module, constructor)
-A function to create agent type constructor in convenient macro form.
-See the definition of [`@aagent`](@ref).
+A function to define an agent type. See the definition of [`@aagent`](@ref).
 """
 function define_agent(base_type, super_type, type, __module, constructor)
     # This macro was generated with the guidance of @rdeits on Discourse:
@@ -98,55 +97,36 @@ Parametric types:
     field2::P
 end
 
-MyAgent{Float64, Int}("myagent")
+MyAgent{Float64, Int}("myagent", 1, 2)
 ```
 """
 macro aagent(type)
-    tname, param_tnames_constraints = get_param_tnames(type)
-
-    define_agent(FreeAgent, AbstractAlgebraicAgent, type, __module__, quote
-            function $(tname)(name::Vararg{AbstractString}) where $(param_tnames_constraints...)
-                m = new()
-                !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
-                m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
-                m.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
-                m.opera = AlgebraicAgents.Opera(m.uuid => m)
-
-                m
-            end
-        end
-    )
+    aagent(FreeAgent, AbstractAlgebraicAgent, type, __module__)
 end
 
 macro aagent(base_type, type)
-    tname, param_tnames_constraints = get_param_tnames(type)
-
-    define_agent(base_type, AbstractAlgebraicAgent, type, __module__, quote
-        function $(tname)(name::Vararg{AbstractString}) where $(param_tnames_constraints...)
-                m = new()
-                !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
-                m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
-                m.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
-                m.opera = AlgebraicAgents.Opera(m.uuid => m)
-
-                m
-            end
-        end
-    )
+    aagent(base_type, AbstractAlgebraicAgent, type, __module__)
 end
 
 macro aagent(base_type, super_type, type)
+    aagent(base_type, super_type, type, __module__)
+end
+
+function aagent(base_type, super_type, type, __module)
     tname, param_tnames_constraints = get_param_tnames(type)
 
-    define_agent(base_type, super_type, type, __module__, quote
-        function $(tname)(name::Vararg{AbstractString}) where $(param_tnames_constraints...)
-                m = new()
-                !isempty(name) && (m.name = first(name)); m.uuid = AlgebraicAgents.uuid4()
-                m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
-                m.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
-                m.opera = AlgebraicAgents.Opera(m.uuid => m)
+    define_agent(base_type, super_type, type, __module, quote
+        function $(tname)(name::AbstractString, args...) where $(param_tnames_constraints...)
+                uuid = AlgebraicAgents.uuid4(); inners = Dict{String, AbstractAlgebraicAgent}()
+                relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
+                opera = AlgebraicAgents.Opera()
 
-                m
+                # initialize agent
+                agent = new(uuid, name, nothing, inners, relpathrefs, opera, args...)
+                # push ref to opera
+                push!(agent.opera.directory, agent.uuid => agent)
+
+                agent
             end
         end
     )
@@ -171,4 +151,15 @@ function get_param_tnames(type)
 
         tname, param_tnames_constraints
     end
+end
+
+"Populate common interface fields of an algebraic agent, incl. `uuid`, `parent`, `relpathrefs`, and `opera`."
+function setup_agent!(agent::AbstractAlgebraicAgent, name::AbstractString)
+    agent.name = name; agent.uuid = AlgebraicAgents.uuid4()
+    
+    agent.parent = nothing; agent.inners = Dict{String, AbstractAlgebraicAgent}()
+    agent.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
+    agent.opera = AlgebraicAgents.Opera(agent.uuid => agent)
+
+    agent
 end
