@@ -7,15 +7,45 @@ export DiffEqAgent
 export push_ports_in!, push_exposed_ports!
 
 # define DE algebraic wrap
-"Algebraic wrap of a SciML DE problem."
-@aagent struct DiffEqAgent
+"""
+    DiffEqAgent(name, problem[, alg]; exposed_ports=nothing, ports_in=nothing, kwargs...)
+Initialize DE problem algebraic wrap. 
+
+# Keywords
+- `exposed_ports`: either `nothing` or a dictionary which maps keys to observable's positional index in `u`,
+- `ports_in`: either `nothing` or a vector of (subjective) observables,
+- other kwargs will be propagated to the integrator at initialization step.
+"""
+mutable struct DiffEqAgent <: AbstractAlgebraicAgent
+    uuid::UUID;; name::AbstractString
+    
+    parent::Union{AbstractAlgebraicAgent, Nothing}
+    inners::Dict{String, AbstractAlgebraicAgent}
+
+    relpathrefs::Dict{AbstractString, UUID}
+    opera::Opera
+
     integrator::DiffEqBase.DEIntegrator
 
     exposed_ports::Union{Dict{Any, Int}, Nothing}
     ports_in::Union{Vector, Nothing}
-end
 
-# implement agent constructor
+    function DiffEqAgent(name, problem::DiffEqBase.DEProblem, alg=DifferentialEquations.default_algorithm(problem)[1], args...;
+        exposed_ports=nothing, ports_in=nothing, kwargs...)
+    
+        problem = DifferentialEquations.remake(problem; p=Params(Val(DummyType), problem.p))
+        
+        # initialize wrap
+        i = new(); setup_agent!(i, name)
+    
+        i.integrator = DiffEqBase.init(problem, alg, args...; kwargs...)
+        i.exposed_ports = exposed_ports; i.ports_in = ports_in
+    
+        i.integrator.p.agent = i
+    
+        i
+    end
+end
 
 ## params wrap
 mutable struct Params
@@ -35,31 +65,6 @@ Base.length(p::Params) = length(getfield(p, :params))
 Base.getindex(p::Params, i::Int) = getfield(p, :params)[i]
 Base.getindex(::Params, ::Any) = @error "please pass, and index, params as a vector, see https://github.com/SciML/SciMLBase.jl/pull/262"
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
-
-"""
-    DiffEqAgent(name, problem[, alg]; exposed_ports=nothing, ports_in=nothing, kwargs...)
-Initialize DE problem algebraic wrap. 
-
-# Keywords
-- `exposed_ports`: either `nothing` or a dictionary which maps keys to observable's positional index in `u`,
-- `ports_in`: either `nothing` or a vector of (subjective) observables,
-- other kwargs will be propagated to the integrator at initialization step.
-"""
-function DiffEqAgent(name, problem::DiffEqBase.DEProblem, alg=DifferentialEquations.default_algorithm(problem)[1], args...;
-    exposed_ports=nothing, ports_in=nothing, kwargs...)
-
-    problem = DifferentialEquations.remake(problem; p=Params(Val(DummyType), problem.p))
-    
-    # initialize wrap
-    i = DiffEqAgent(name)
-
-    i.integrator = DiffEqBase.init(problem, alg, args...; kwargs...)
-    i.exposed_ports = exposed_ports; i.ports_in = ports_in
-
-    i.integrator.p.agent = i
-
-    i
-end
 
 function _construct_agent(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
         alg=DifferentialEquations.default_algorithm(problem)[1], kwargs...)

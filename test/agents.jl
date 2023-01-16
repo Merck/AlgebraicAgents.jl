@@ -75,7 +75,7 @@ using Test, AlgebraicAgents
             myname2::P
         end
 
-        a = MyAgent{Float64, Int}("myagent")
+        a = MyAgent{Float64, Int}("myagent", 1, 2)
         @test a isa MyAgent{Float64, Int}
     end
 end

@@ -71,14 +71,9 @@ end
 # constructors
 "Initialize a discovery unit, parametrized by small/large molecules production rate."
 function Discovery(name, rate_small, rate_large, t=.0; dt=2.)
-    i = Discovery(name)
+    df_output = DataFrame(time=Float64[], small=Int[], large=Int[], removed=Int[])
 
-    i.rate_small = rate_small; i.rate_large = rate_large; i.productivity = .0
-    i.removed_mols = Tuple{String, Float64}[]
-    i.df_output = DataFrame(time=Float64[], small=Int[], large=Int[], removed=Int[])
-    i.t = i.t0 = t; i.dt = dt
-
-    i
+    Discovery(name, rate_small, rate_large, 0., t, dt, t, Tuple{String, Float64}[], df_output)
 end
 
 "Return initial sales volume of a molecule."
@@ -175,13 +170,7 @@ end
 
 "Initialize a new molecule."
 function release_molecule(mol, profile, t, ::Type{T}) where T<:Molecule
-    i = T(mol)
-    i.age = .0; i.birth_time = t; i.kill_time = Inf
-    i.mol = mol; i.profile = profile
-    i.sales = sales0_from_params(i)
-    i.df_sales = DataFrame(time=Float64[], sales=Float64[])
-
-    i
+    T(mol, .0, t, Inf, mol, profile, sales0_from_params(i), DataFrame(time=Float64[], sales=Float64[]))
 end
 
 AlgebraicAgents._projected_to(dx::Discovery) = dx.t

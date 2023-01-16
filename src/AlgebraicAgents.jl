@@ -60,8 +60,9 @@ export step!, simulate
 export draw
 
 # convenient algebraic agent subtyping
-include("agent_macros.jl")
+include("agents.jl")
 export @aagent
+export setup_agent!
 
 # algebraic agents' structure walking
 include("walks.jl")

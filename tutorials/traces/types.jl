@@ -78,58 +78,33 @@ end
 # constructors
 "Emit a candidate molecule."
 function Molecule(mol, fingerprint, t, path=AbstractString[])
-    i = Molecule(mol)
-
-    i.birth_time = t; i.decision_time = missing
-    i.is_allocated = false
-    i.fingerprint = fingerprint; i.belief = init_belief_from_fingerprint(i)
-    i.trace = []; i.path = path
-    
-    i
+    Molecule(mol, t, missing, fingerprint, path, false, init_belief_from_fingerprint(i), [])
 end
 
 "Initialize a discovery unit, parametrized by molecule production rate."
 function Discovery(name, rate, t=.0; dt=2.)
-    i = Discovery(name)
-
-    i.rate = rate
-    i.t = i.t0 = t; i.dt = dt
-
-    i
+    Discovery(name, rate, t, dt, t0)
 end
 
 "Initialize an assay, parametrized by duration, cost, capacity, and a belief model."
 function Assay(name, duration::Float64, cost::Float64, capacity::Float64, belief_model=tuple(rand(-1:1, 5)...), t=.0)
-    i = Assay(name)
-
-    i.duration = duration; i.cost = cost; i.capacity = capacity
-    i.belief_model = belief_model
-
-    i.t = i.t0 = t
-
-    i.allocated = Vector{AlgebraicAgents.UUID}(undef, 0)
-    i.planned = Vector{AlgebraicAgents.UUID}(undef, 0)
-
-    i
+    Assay(name, duration, cost, capacity, belief_model, 
+        Vector{AlgebraicAgents.UUID}(undef, 0), Vector{AlgebraicAgents.UUID}(undef, 0),
+        t, t
+    )
 end
 
 "Initialize a preclinical unit comprising candidate molecules and parametrized by removal queries."
 function Preclinical(name, perturb_rate::Float64, t=.0; dt=1.,
         queries_accept=AlgebraicAgents.AbstractQuery[], queries_reject=AlgebraicAgents.AbstractQuery[])
-    i = Preclinical(name)
-
-    i.queries_accept = queries_accept
-    i.queries_reject = queries_reject
-    i.total_costs = .0; i.perturb_rate = perturb_rate
-
-    i.t = i.t0 = t; i.dt = dt
+    p = Preclinical(name, queries_accept, queries_reject, .0, perturb_rate, t, t, dt)
 
     # candidates and accepted, rejected candidates
-    entangle!(i, FreeAgent("candidates"))
-    entangle!(i, FreeAgent("accepted"))
-    entangle!(i, FreeAgent("rejected"))
+    entangle!(p, FreeAgent("candidates"))
+    entangle!(p, FreeAgent("accepted"))
+    entangle!(p, FreeAgent("rejected"))
 
-    i
+    p
 end
 
 # implement common interface

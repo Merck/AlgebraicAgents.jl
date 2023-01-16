@@ -8,13 +8,6 @@ const GraphicalModelType = Union{AbstractResourceSharer, AbstractMachine}
 
 # define wrap types
 # `AbstractResourceSharer`, `AbstractMachine` wrap
-@aagent struct GraphicalAgent
-    system::GraphicalModelType
-end
-
-@doc "A wrap of either an `AbstractResourceSharer` or a `AbstractMachine`." GraphicalAgent
-
-# implement agent constructor
 """
     GraphicalAgent(name, model)
 Initialize algebraic wrap of either an `AbstractResourceSharer` or a `AbstractMachine`.
@@ -26,12 +19,8 @@ The wrapped `AbstractResourceSharer` or `AbstractMachine` is stored as the prope
 GraphicalAgent("rabbit", ContinuousMachine{Float64}(1,1,1, dotr, (u, p, t) -> u))
 ```
 """
-function GraphicalAgent(name::AbstractString, sharer::GraphicalModelType)
-    # initialize wrap
-    i = GraphicalAgent(name)
-    i.system = sharer
-
-    i
+@aagent struct GraphicalAgent
+    system::GraphicalModelType
 end
 
 function _construct_agent(name::AbstractString, sharer::GraphicalModelType, args...; kwargs...)
