@@ -112,14 +112,28 @@ macro aagent(base_type, super_type, type)
     aagent(base_type, super_type, type, __module__)
 end
 
+const common_interface_fields = (:uuid, :name, :inners, :relpathrefs, :opera)
+
+# implements `@aagent` macro; the base type should contain the common interface fields
 function aagent(base_type, super_type, type, __module)
     tname, param_tnames_constraints = get_param_tnames(type)
+    # check if the base type implements the common interface fields
+    @assert all(f -> f ∈ fieldnames(base_type), common_interface_fields) """
+        $base_type does not implement all common interface fields: $common_interface_fields
+        """
+    tname_plain = tname isa Symbol ? tname : tname.args[1]
 
     define_agent(base_type, super_type, type, __module, quote
         function $(tname)(name::AbstractString, args...) where $(param_tnames_constraints...)
                 uuid = AlgebraicAgents.uuid4(); inners = Dict{String, AbstractAlgebraicAgent}()
                 relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
                 opera = AlgebraicAgents.Opera()
+
+                # if a field is missing, provide better error message
+                extra_fields = setdiff(fieldnames(type), common_interface_fields)
+                @assert length(args) == length(extra_fields) """
+                    agent type $tname_plain expects fields $extra_fields, but only $(length(args)) were given
+                    """
 
                 # initialize agent
                 agent = new(uuid, name, nothing, inners, relpathrefs, opera, args...)
@@ -132,6 +146,7 @@ function aagent(base_type, super_type, type, __module)
     )
 end
 
+# by @slwu89, issue #3
 "Extract type names and type constraints from struct definition."
 function get_param_tnames(type)
     name = type.args[2]
