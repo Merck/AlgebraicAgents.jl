@@ -112,28 +112,24 @@ macro aagent(base_type, super_type, type)
     aagent(base_type, super_type, type, __module__)
 end
 
-const common_interface_fields = (:uuid, :name, :inners, :relpathrefs, :opera)
+const common_interface_fields = (:uuid, :name, :parent, :inners, :relpathrefs, :opera)
 
 # implements `@aagent` macro; the base type should contain the common interface fields
 function aagent(base_type, super_type, type, __module)
     tname, param_tnames_constraints = get_param_tnames(type)
-    # check if the base type implements the common interface fields
-    @assert all(f -> f ∈ fieldnames(base_type), common_interface_fields) """
-        $base_type does not implement all common interface fields: $common_interface_fields
-        """
     tname_plain = tname isa Symbol ? tname : tname.args[1]
 
-    define_agent(base_type, super_type, type, __module, quote
+    constructor = define_agent(base_type, super_type, type, __module, quote
         function $(tname)(name::AbstractString, args...) where $(param_tnames_constraints...)
                 uuid = AlgebraicAgents.uuid4(); inners = Dict{String, AbstractAlgebraicAgent}()
                 relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
                 opera = AlgebraicAgents.Opera()
 
-                # if a field is missing, provide better error message
-                extra_fields = setdiff(fieldnames(type), common_interface_fields)
-                @assert length(args) == length(extra_fields) """
-                    agent type $tname_plain expects fields $extra_fields, but only $(length(args)) were given
-                    """
+                # if an extra field is missing, provide better error message
+                extra_fields = setdiff(fieldnames($tname_plain), $common_interface_fields)
+                if length(args) != length(extra_fields)
+                    @error "agent type $($tname_plain) expects fields $extra_fields, but only $(length(args)) were given"
+                end
 
                 # initialize agent
                 agent = new(uuid, name, nothing, inners, relpathrefs, opera, args...)
@@ -144,6 +140,19 @@ function aagent(base_type, super_type, type, __module)
             end
         end
     )
+
+    quote
+        # check if the base type implements the common interface fields
+        check = quote
+            if !all(f -> f ∈ fieldnames($$(esc(base_type))), $$(common_interface_fields))
+                @error "type $($$(esc(base_type))) does not implement common interface fields $($$(common_interface_fields))"
+            end
+        end 
+        Base.eval($__module, check)
+
+        # type constructor
+        $constructor
+    end
 end
 
 # by @slwu89, issue #3

@@ -25,6 +25,10 @@ using Test, AlgebraicAgents
     @test fieldtype(DerivedAgent, :mutable2) == Int
     @test fieldtype(DerivedAgent, :mutable4) == Int
 
+    abstract type SuperAgent end
+    @aagent BaseAgent SuperAgent struct DerivedAgent2 end
+    @test DerivedAgent2 <: SuperAgent
+
     if VERSION >= v"1.8"
         @testset "@aagent macro with immutable fields" begin
             "docstring"
