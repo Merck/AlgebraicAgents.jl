@@ -100,6 +100,7 @@ Implements path-like structure of agents.
 @glob_str
 @uuid_str
 getagent
+by_name
 ```
 
 ### Opera, a dynamic structure to facilitate complex interactions

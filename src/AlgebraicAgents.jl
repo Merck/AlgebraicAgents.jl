@@ -15,7 +15,7 @@ export AbstractAlgebraicAgent
 # path-like structure of algebraic agents
 include("paths.jl")
 export @glob_str, @uuid_str # path wildcard, UUID obj constructor
-export getagent, entangle!, disentangle!
+export getagent, by_name, entangle!, disentangle!
 
 # dynamic structure to store priority queue of algebraic interactions
 # and and which contains a directory of algebraic integrators

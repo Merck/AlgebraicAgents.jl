@@ -173,3 +173,23 @@ function construct(hierarchy::Dict{String, AbstractAlgebraicAgent})
 
     top
 end
+
+"""
+    by_name(agent, name::AbstractString)
+Return descendants of `agent` with the given `name`.
+"""
+function by_name(agent::AbstractAlgebraicAgent, name::AbstractString)
+    agents = []; prewalk(a -> (getname(a) == name) && push!(agents, a), agent)
+
+    agents
+end
+
+"""
+    by_name(agent, name::Union{Glob.FilenameMatch, Regex})
+Return descendants of `agent` whose names match the given wildcard.
+"""
+function by_name(agent::AbstractAlgebraicAgent, name::Union{Glob.FilenameMatch, Regex})
+    agents = []; prewalk(a -> (occursin(name, getname(a))) && push!(agents, a), agent)
+
+    agents
+end
