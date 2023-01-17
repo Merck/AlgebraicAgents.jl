@@ -79,7 +79,7 @@ draw(sol, "diagram1/model1")
 # output ports can couple dynamics
 @testset "observable (output) ports" begin
 
-    tspan = (0.0, 5.0)
+    tspan = (0.0, 10.0)
 
     function ẋ(u,p,t)
         agent = @get_agent p
