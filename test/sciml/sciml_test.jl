@@ -97,8 +97,8 @@ draw(sol, "diagram1/model1")
     py = (β = 1.2,)
     y0 = [1.0]
 
-    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ,x0,tspan,px), dt=0.00001)
-    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ,y0,tspan,py), dt=0.00001)
+    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ,x0,tspan,px))
+    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ,y0,tspan,py))
 
     push_exposed_ports!(agent_x, "x" => 1)
     push_exposed_ports!(agent_y, "y" => 1)
