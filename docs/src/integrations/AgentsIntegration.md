@@ -6,7 +6,6 @@ The integration can be loaded as:
 
 ```@docs
 ABMAgent
-ABMAgent(::AbstractString, ::Agents.AgentBasedModel)
 AAgent
 ```
 

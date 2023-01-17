@@ -6,6 +6,21 @@ export @get_model, @a
 
 # algebraic wrap for AgentBasedModel type
 ## algebraic agent types
+"""
+    ABMAgent(name, abm; kwargs...)
+Initialize `ABMAgent`, incl. hierarchy of ABM's agents.
+
+Configure the evolutionary step, logging, and step size by keyword arguments below.
+
+# Arguments
+    - `agent_step!`, `model_step!`: same meaning as in `Agents.step!`
+    - in general, any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
+    - `when`, `when_model`: when to collect agents data, model data
+    true by default, and performs data collection at every step
+    if an `AbstractVector`, checks if `t ∈ when`; otherwise a function (model, t) -> ::Bool
+    - `step_size`: how far the step advances, either a float or a function (model, t) -> size::Float64
+    - `tspan`: solution horizon, defaults to `(0., Inf)`
+"""
 mutable struct ABMAgent <: AbstractAlgebraicAgent
     # common interface fields
     uuid::UUID;; name::AbstractString
@@ -35,47 +50,32 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
     df_model::DataFrames.DataFrame
 
     ## implement constructor
-    """
-    ABMAgent(name, abm; kwargs...)
-    Initialize `ABMAgent`, incl. hierarchy of ABM's agents.
-
-    Configure the evolutionary step, logging, and step size by keyword arguments below.
-
-    # Arguments
-    - `agent_step!`, `model_step!`: same meaning as in `Agents.step!`
-    - in general, any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
-    - `when`, `when_model`: when to collect agents data, model data
-    true by default, and performs data collection at every step
-    if an `AbstractVector`, checks if `t ∈ when`; otherwise a function (model, t) -> ::Bool
-    - `step_size`: how far the step advances, either a float or a function (model, t) -> size::Float64
-    - `tspan`: solution horizon, defaults to `(0., Inf)`
-    """
     function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel; 
         agent_step! =Agents.dummystep, model_step! =Agents.dummystep,
         when=true, when_model=when, step_size=1.,
         tspan::NTuple{2, Float64}=(0., Inf), kwargs...
     )
 
-    # initialize wrap
-    i = new(); setup_agent!(i, name)
+        # initialize wrap
+        i = new(); setup_agent!(i, name)
 
-    i.abm = abm
-    i.agent_step! = agent_step!; i.model_step! = model_step!; i.kwargs = kwargs
-    i.when = when; i.when_model = when_model
-    i.step_size = step_size; i.tspan = tspan; i.t = tspan[1]
+        i.abm = abm
+        i.agent_step! = agent_step!; i.model_step! = model_step!; i.kwargs = kwargs
+        i.when = when; i.when_model = when_model
+        i.step_size = step_size; i.tspan = tspan; i.t = tspan[1]
 
-    i.df_agents = DataFrames.DataFrame(); i.df_model = DataFrames.DataFrame()
+        i.df_agents = DataFrames.DataFrame(); i.df_model = DataFrames.DataFrame()
 
-    i.abm.properties[:__aagent__] = i
-    i.abm0 = deepcopy(i.abm)
-    i.t0 = i.t
+        i.abm.properties[:__aagent__] = i
+        i.abm0 = deepcopy(i.abm)
+        i.t0 = i.t
 
-    # initialize contained agents
-    for (id, _) in abm.agents
-        entangle!(i, AAgent(string(id))) 
-    end
+        # initialize contained agents
+        for (id, _) in abm.agents
+            entangle!(i, AAgent(string(id))) 
+        end
 
-    i
+        i
     end
 end
 

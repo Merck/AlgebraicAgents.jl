@@ -83,8 +83,8 @@ const sales0_factor_small = rand(N)
 const sales0_factor_large = rand(N)
 
 # dispatch on molecule type
-sales0_from_params(mol::SmallMolecule) = 10^3 * (1 + collect(mol.profile)' * sales0_factor_small)
-sales0_from_params(mol::LargeMolecule) = 10^5 * (1 + collect(mol.profile)' * sales0_factor_large)
+sales0_from_params(profile) = 10^3 * (1 + collect(profile)' * sales0_factor_small)
+sales0_from_params(profile) = 10^5 * (1 + collect(profile)' * sales0_factor_large)
 
 const sales_decay_small = .9
 const sales_decay_large = .7
@@ -167,10 +167,9 @@ function AlgebraicAgents._reinit!(dx::Discovery)
     dx
 end
 
-
 "Initialize a new molecule."
 function release_molecule(mol, profile, t, ::Type{T}) where T<:Molecule
-    T(mol, .0, t, Inf, mol, profile, sales0_from_params(i), DataFrame(time=Float64[], sales=Float64[]))
+    T(mol, .0, t, Inf, mol, profile, sales0_from_params(profile), DataFrame(time=Float64[], sales=Float64[]))
 end
 
 AlgebraicAgents._projected_to(dx::Discovery) = dx.t

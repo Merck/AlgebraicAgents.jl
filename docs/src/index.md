@@ -136,11 +136,10 @@ Supports convenient agent subtyping.
 @aagent
 ```
 
-To provide custom specialization of [`@aagent`](@ref) convenience macros, see [`AlgebraicAgents.define_agent`](@ref) and [`AlgebraicAgents.define_agent_with_supertype`](@ref).
+To provide custom specialization of [`@aagent`](@ref) convenience macros, see [`AlgebraicAgents.define_agent`](@ref).
 
 ```@docs
 AlgebraicAgents.define_agent
-AlgebraicAgents.define_agent_with_supertype
 ```
 
 ### Walks

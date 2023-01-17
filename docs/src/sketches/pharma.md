@@ -20,7 +20,7 @@ include("tutorials/molecules/types.jl")
 
 ```@example 1
 # drug entity, lives in a therapeutic area 
-@aagent SmallMolecule Molecule begin
+@aagent FreeAgent Molecule struct SmallMolecule
     age::Float64
     birth_time::Float64
     kill_time::Float64

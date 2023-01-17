@@ -4,7 +4,6 @@
 
 ```@docs
 GraphicalAgent
-GraphicalAgent(::AbstractString, ::AlgebraicAgents.GraphicalModelType)
 ```
 
 ## Conversion to a SciML Problem

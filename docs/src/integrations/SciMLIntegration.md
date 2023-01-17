@@ -4,7 +4,6 @@
 
 ```@docs
 DiffEqAgent
-DiffEqAgent(::AbstractString, ::DifferentialEquations.DEProblem)
 ```
 
 ## Observables
