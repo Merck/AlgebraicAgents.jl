@@ -114,15 +114,17 @@ optionally be an iterable collection of observables' names.
 
 # Examples
 ```julia
-push_exposed_ports!(deagent, path => observable, path => [observables...])
+push_ports_in!(deagent, path => observable, path => [observables...])
 ```
 """
 function push_ports_in!(a::DiffEqAgent, pairs...)
-    isdefined(a, :exposed_ports) || (a.exposed_ports = [])
+    if isdefined(a, :ports_in) || isnothing(a.ports_in)
+        a.ports_in = []
+    end
     for id in pairs
-        if id[2] isa Union{AbstractVec, Tuple}
-            for o in id[2] push!(a.exposed_ports, id[1] => o) end
-        else push!(a.exposed_ports, id) end
+        if id[2] isa Union{AbstractVector, Tuple}
+            for o in id[2] push!(a.ports_in, id[1] => o) end
+        else push!(a.ports_in, id) end
     end
 
     a
