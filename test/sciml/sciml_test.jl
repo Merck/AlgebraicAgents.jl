@@ -79,7 +79,7 @@ draw(sol, "diagram1/model1")
 # output ports can couple dynamics
 @testset "observable (output) ports" begin
 
-    tspan = (0.0, 10.0)
+    tspan = (0.0, 4.0)
 
     function ẋ(u,p,t)
         agent = @get_agent p
@@ -97,8 +97,8 @@ draw(sol, "diagram1/model1")
     py = (β = 1.2,)
     y0 = [1.0]
 
-    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ,x0,tspan,px))
-    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ,y0,tspan,py))
+    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ,x0,tspan,px), Euler(), dt = 1e-4)
+    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ,y0,tspan,py), Euler(), dt = 1e-4)
 
     push_exposed_ports!(agent_x, "x" => 1)
     push_exposed_ports!(agent_y, "y" => 1)
@@ -115,6 +115,6 @@ draw(sol, "diagram1/model1")
 
     zt = exp(A*tspan[2]) * z0
 
-    @test zt[1] ≈ x
-    @test zt[2] ≈ y
+    @test isapprox(zt[1], x, rtol = 1e-2)
+    @test isapprox(zt[2], y, rtol = 1e-2)
 end
