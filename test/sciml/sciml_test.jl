@@ -75,3 +75,46 @@ sol = AlgebraicAgents.simulate(m)
 
 # plot solution
 draw(sol, "diagram1/model1")
+
+# output ports can couple dynamics
+@testset "observable (output) ports" begin
+
+    tspan = (0.0, 4.0)
+
+    function ẋ(u,p,t)
+        agent = @get_agent p
+        y = getobservable(getagent(agent, "../agent_y"), "y")
+        return [p.α * y]
+    end
+    px = (α = 0.5,)
+    x0 = [0.1]
+
+    function ẏ(u,p,t)
+        agent = @get_agent p
+        x = getobservable(getagent(agent, "../agent_x"), "x")
+        return [p.β * x]
+    end
+    py = (β = 1.2,)
+    y0 = [1.0]
+
+    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ,x0,tspan,px), Euler(), dt = 1e-4)
+    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ,y0,tspan,py), Euler(), dt = 1e-4)
+
+    push_exposed_ports!(agent_x, "x" => 1)
+    push_exposed_ports!(agent_y, "y" => 1)
+    
+    joint_system = ⊕(agent_x, agent_y; name="joint_system")
+
+    sol = AlgebraicAgents.simulate(joint_system)
+
+    y = getobservable(getagent(joint_system, "agent_y"), "y")
+    x = getobservable(getagent(joint_system, "agent_x"), "x")
+
+    A = [0 px.α; py.β 0]
+    z0 = [x0[1], y0[1]]
+
+    zt = exp(A*tspan[2]) * z0
+
+    @test isapprox(zt[1], x, rtol = 1e-2)
+    @test isapprox(zt[2], y, rtol = 1e-2)
+end
