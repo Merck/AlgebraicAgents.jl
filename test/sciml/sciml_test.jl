@@ -118,3 +118,25 @@ draw(sol, "diagram1/model1")
     @test isapprox(zt[1], x, rtol = 1e-2)
     @test isapprox(zt[2], y, rtol = 1e-2)
 end
+
+# @aagent FreeAgent struct MyAgent{T<:AbstractString}
+#     myname::T
+# end
+
+# @aagent FreeAgent struct MyAgent1{T<:AbstractString}
+#     myname::T
+# end
+
+# AlgebraicAgents._projected_to(a::MyAgent{T}) where {T} = true
+# AlgebraicAgents._projected_to(a::MyAgent1{T}) where {T} = nothing
+
+# a = MyAgent{String}("alice", "alice")
+# b = MyAgent1{String}("bob", "bob")
+
+# agents = ⊕(a,b; name="joint")
+
+# AlgebraicAgents.projected_to(agents)
+
+# x = nothing
+
+# AlgebraicAgents.@ret x AlgebraicAgents._projected_to(b)

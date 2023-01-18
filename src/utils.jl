@@ -1,14 +1,48 @@
 "Return code propagation."
-macro ret(old, ret)
-    quote
-        ret = $(esc(ret)); old = $(esc(old))
-        val = if isnothing(ret) old
-        elseif isnothing(old) ret
-        elseif !isa(ret, Bool) && !isa(old, Bool)
-            min(old, ret)
-        else old end
+# macro ret(old, ret)
+#     quote
+#         ret = $(esc(ret)); old = $(esc(old))
+#         val = if isnothing(ret) old
+#         elseif isnothing(old) ret
+#         elseif !isa(ret, Bool) && !isa(old, Bool)
+#             min(old, ret)
+#         else old end
         
-        $(esc(old)) = val
+#         $(esc(old)) = val
+#     end
+# end
+
+
+
+@generated function ret(old, ret)
+    if old <: Bool && (ret <: Bool || ret <: Nothing)
+        quote
+            true
+        end
+    elseif old <: Bool && ret <: Number
+        quote
+            ret
+        end
+    elseif old <: Nothing && ret <: Bool
+        quote
+            true
+        end
+    elseif old <: Nothing && ret <: Nothing
+        quote
+            nothing
+        end
+    elseif old <: Nothing && ret <: Number
+        quote
+            ret
+        end
+    elseif old <: Number && (ret <: Bool || ret <: Nothing)
+        quote
+            old
+        end
+    elseif old <: Number && ret <: Number
+        quote
+            min(old, ret)
+        end
     end
 end
 
