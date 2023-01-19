@@ -150,4 +150,5 @@ end
     sol = AlgebraicAgents.simulate(joint_system)
 
     @test getagent(joint_system, "agent_y").integrator.t == getagent(joint_system, "agent_x").integrator.t
+    @test getagent(joint_system, "agent_y").integrator.t == tspan[2]
 end
