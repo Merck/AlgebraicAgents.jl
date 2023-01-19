@@ -180,7 +180,9 @@ function step!(a::AbstractAlgebraicAgent, t=projected_to(a); isroot=true)
     end
 
     # local step implementation
-    (_projected_to(a) == t) && _step!(a, t)
+    if (p = _projected_to(a); !isa(p, Bool) && (p == t))
+        _step!(a, t)
+    end
     @ret ret _projected_to(a)
 
     # @ret ret _step!(a, t) # local step implementation
