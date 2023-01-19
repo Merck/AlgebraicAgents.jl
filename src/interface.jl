@@ -176,16 +176,14 @@ function step!(a::AbstractAlgebraicAgent, t=projected_to(a); isroot=true)
 
     # first into the depth
     ret = nothing; foreach(values(inners(a))) do a
-        # @ret ret step!(a, t; isroot=false)
-        ret = AlgebraicAgents.ret(ret, step!(a, t; isroot=false))
+        @ret ret step!(a, t; isroot=false)
     end
 
     # local step implementation
     (_projected_to(a) == t) && _step!(a, t)
-    # @ret ret _projected_to(a)
-    ret = AlgebraicAgents.ret(ret, _projected_to(a))
+    @ret ret _projected_to(a)
 
-    # algebraic interactions
+    # @ret ret _step!(a, t) # local step implementation
     isroot && opera_run!(getopera(a))
 
     ret
@@ -198,8 +196,7 @@ Else return the minimum time up to which the evolution of an algebraic agent, an
 """
 function projected_to(a::AbstractAlgebraicAgent)
     ret = _projected_to(a); foreach(values(inners(a))) do a
-        # @ret ret projected_to(a)
-        ret = AlgebraicAgents.ret(ret, projected_to(a))
+        @ret ret projected_to(a)
     end
 
     ret

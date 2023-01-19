@@ -119,24 +119,35 @@ draw(sol, "diagram1/model1")
     @test isapprox(zt[2], y, rtol = 1e-2)
 end
 
-# @aagent FreeAgent struct MyAgent{T<:AbstractString}
-#     myname::T
-# end
+@testset "integrators stay in sync during longer runs" begin
 
-# @aagent FreeAgent struct MyAgent1{T<:AbstractString}
-#     myname::T
-# end
+    tspan = (0.0, 100.0)
 
-# AlgebraicAgents._projected_to(a::MyAgent{T}) where {T} = true
-# AlgebraicAgents._projected_to(a::MyAgent1{T}) where {T} = nothing
+    function ẋ(u,p,t)
+        agent = @get_agent p
+        y = getobservable(getagent(agent, "../agent_y"), "y")
+        return [p.α * y]
+    end
+    px = (α = 0.5,)
+    x0 = [0.1]
 
-# a = MyAgent{String}("alice", "alice")
-# b = MyAgent1{String}("bob", "bob")
+    function ẏ(u,p,t)
+        agent = @get_agent p
+        x = getobservable(getagent(agent, "../agent_x"), "x")
+        return [p.β * x]
+    end
+    py = (β = 1.2,)
+    y0 = [1.0]
 
-# agents = ⊕(a,b; name="joint")
+    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ,x0,tspan,px))
+    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ,y0,tspan,py))
 
-# AlgebraicAgents.projected_to(agents)
+    push_exposed_ports!(agent_x, "x" => 1)
+    push_exposed_ports!(agent_y, "y" => 1)
+    
+    joint_system = ⊕(agent_x, agent_y; name="joint_system")
 
-# x = nothing
+    sol = AlgebraicAgents.simulate(joint_system)
 
-# AlgebraicAgents.@ret x AlgebraicAgents._projected_to(b)
+    @test getagent(joint_system, "agent_y").integrator.t == getagent(joint_system, "agent_x").integrator.t
+end
