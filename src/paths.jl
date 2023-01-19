@@ -175,10 +175,12 @@ function construct(hierarchy::Dict{String, AbstractAlgebraicAgent})
 end
 
 """
-    by_name(agent, name::AbstractString)
-Return descendants of `agent` with the given `name`.
+    by_name(agent, name::AbstractString; inners_only=false)
+Return agents in the hierachy with the given `name`.
+If `inners_only==true`, consider descendants of `agent` only.
 """
-function by_name(agent::AbstractAlgebraicAgent, name::AbstractString)
+function by_name(agent::AbstractAlgebraicAgent, name::AbstractString; inners_only=false)
+    agent = inners_only ? agent : topmost(agent)
     agents = []; prewalk(a -> (getname(a) == name) && push!(agents, a), agent)
 
     agents
@@ -186,9 +188,11 @@ end
 
 """
     by_name(agent, name::Union{Glob.FilenameMatch, Regex})
-Return descendants of `agent` whose names match the given wildcard.
+Return agents in the hierarchy whose names match the given wildcard.
+If `inners_only==true`, consider descendants of `agent` only.
 """
-function by_name(agent::AbstractAlgebraicAgent, name::Union{Glob.FilenameMatch, Regex})
+function by_name(agent::AbstractAlgebraicAgent, name::Union{Glob.FilenameMatch, Regex}; inners_only=false)
+    agent = inners_only ? agent : topmost(agent)
     agents = []; prewalk(a -> (occursin(name, getname(a))) && push!(agents, a), agent)
 
     agents
