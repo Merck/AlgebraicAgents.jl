@@ -118,3 +118,37 @@ draw(sol, "diagram1/model1")
     @test isapprox(zt[1], x, rtol = 1e-2)
     @test isapprox(zt[2], y, rtol = 1e-2)
 end
+
+@testset "integrators stay in sync during longer runs" begin
+
+    tspan = (0.0, 100.0)
+
+    function ẋ(u,p,t)
+        agent = @get_agent p
+        y = getobservable(getagent(agent, "../agent_y"), "y")
+        return [p.α * y]
+    end
+    px = (α = 0.5,)
+    x0 = [0.1]
+
+    function ẏ(u,p,t)
+        agent = @get_agent p
+        x = getobservable(getagent(agent, "../agent_x"), "x")
+        return [p.β * x]
+    end
+    py = (β = 1.2,)
+    y0 = [1.0]
+
+    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ,x0,tspan,px))
+    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ,y0,tspan,py))
+
+    push_exposed_ports!(agent_x, "x" => 1)
+    push_exposed_ports!(agent_y, "y" => 1)
+    
+    joint_system = ⊕(agent_x, agent_y; name="joint_system")
+
+    sol = AlgebraicAgents.simulate(joint_system)
+
+    @test getagent(joint_system, "agent_y").integrator.t == getagent(joint_system, "agent_x").integrator.t
+    @test getagent(joint_system, "agent_y").integrator.t == tspan[2]
+end

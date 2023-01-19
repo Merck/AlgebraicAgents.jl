@@ -2,12 +2,18 @@
 macro ret(old, ret)
     quote
         ret = $(esc(ret)); old = $(esc(old))
-        val = if isnothing(ret) old
-        elseif isnothing(old) ret
+        val = if isnothing(old)
+            ret
+        elseif isnothing(ret)
+            old
         elseif !isa(ret, Bool) && !isa(old, Bool)
             min(old, ret)
-        else old end
-        
+        elseif !isa(ret, Bool)
+            ret
+        else
+            old
+        end
+     
         $(esc(old)) = val
     end
 end
