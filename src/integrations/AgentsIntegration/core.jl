@@ -85,7 +85,7 @@ end
 
 ## implement common interface
 function _step!(a::ABMAgent, t)
-    if projected_to(a) === t
+    if _projected_to(a) === t
         step_size = a.step_size isa Number ? a.step_size : a.step_size(a.abm, t)
         collect_agents = a.when isa AbstractVector ? (t ∈ a.when) : a.when isa Bool ? a.when : a.when(a.abm, t)
         collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) : a.when isa Bool ? a.when : a.when_model(a.abm, t)
@@ -117,10 +117,10 @@ function _step!(a::ABMAgent, t)
             a.df_model[end-DataFrames.nrow(df_model)+1:end, :step] .+= a.t + step_size - 1
         end
 
-        a.t += step_size; (a.t >= a.tspan[2]) && return true
+        a.t += step_size
     end
 
-    a.t
+    _projected_to(a)
 end
 
 # if step is a float, need to retype the dataframe
@@ -130,7 +130,7 @@ function fix_float!(df, val)
     end
 end
 
-_projected_to(a::ABMAgent)::Float64 = a.tspan[2] <= a.t ? true : a.t
+_projected_to(a::ABMAgent) = a.tspan[2] <= a.t ? true : a.t
 
 function getobservable(a::ABMAgent, obs)
     getproperty(a.abm.properties, Symbol(obs))
