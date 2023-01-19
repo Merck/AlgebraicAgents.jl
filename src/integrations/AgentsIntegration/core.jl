@@ -156,7 +156,7 @@ end
 @aagent struct AAgent end
 
 # reference `Agents.AbstractAgent` via parent's ABM
-Base.propertynames(::AAgent) = fieldname(AAgent) ∪ [:agent]
+Base.propertynames(::AAgent) = fieldnames(AAgent) ∪ [:agent]
 
 function Base.getproperty(a::AAgent, prop::Symbol)
     if prop == :agent
