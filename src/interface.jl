@@ -185,7 +185,6 @@ function step!(a::AbstractAlgebraicAgent, t=projected_to(a); isroot=true)
     end
     @ret ret _projected_to(a)
 
-    # @ret ret _step!(a, t) # local step implementation
     isroot && opera_run!(getopera(a))
 
     ret

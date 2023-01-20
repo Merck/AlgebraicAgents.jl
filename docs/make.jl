@@ -6,6 +6,7 @@ using DataFrames, Plots
 
 pages = [
     "index.md",
+    "design.md",
     "Integrations" => ["integrations/AgentsIntegration.md", "integrations/SciMLIntegration.md", "integrations/AlgebraicDynamicsIntegration.md"],
     "Three Sketches" => ["sketches/agents.md", "sketches/pharma.md", "sketches/sciml.md", "sketches/algebraicdynamics.md"]
 ]
