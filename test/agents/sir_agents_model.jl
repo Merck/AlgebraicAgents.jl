@@ -11,25 +11,23 @@ using DrWatson: @dict
 end
 
 function model_initiation(;
-    Ns,
-    migration_rates,
-    β_und,
-    β_det,
-    infection_period = 30,
-    reinfection_probability = 0.05,
-    detection_time = 14,
-    death_rate = 0.02,
-    Is = [zeros(Int, length(Ns) - 1)..., 1],
-    seed = 0,
-)
-
+                          Ns,
+                          migration_rates,
+                          β_und,
+                          β_det,
+                          infection_period = 30,
+                          reinfection_probability = 0.05,
+                          detection_time = 14,
+                          death_rate = 0.02,
+                          Is = [zeros(Int, length(Ns) - 1)..., 1],
+                          seed = 0)
     rng = MersenneTwister(seed)
-    @assert length(Ns) ==
-    length(Is) ==
-    length(β_und) ==
-    length(β_det) ==
-    size(migration_rates, 1) "length of Ns, Is, and B, and number of rows/columns in migration_rates should be the same "
-    @assert size(migration_rates, 1) == size(migration_rates, 2) "migration_rates rates should be a square matrix"
+    @assert length(Ns)==
+            length(Is)==
+            length(β_und)==
+            length(β_det)==
+            size(migration_rates, 1) "length of Ns, Is, and B, and number of rows/columns in migration_rates should be the same "
+    @assert size(migration_rates, 1)==size(migration_rates, 2) "migration_rates rates should be a square matrix"
 
     C = length(Ns)
     # normalize migration_rates
@@ -38,20 +36,18 @@ function model_initiation(;
         migration_rates[c, :] ./= migration_rates_sum[c]
     end
 
-    properties = @dict(
-        Ns,
-        Is,
-        β_und,
-        β_det,
-        β_det,
-        migration_rates,
-        infection_period,
-        infection_period,
-        reinfection_probability,
-        detection_time,
-        C,
-        death_rate
-    )
+    properties = @dict(Ns,
+                       Is,
+                       β_und,
+                       β_det,
+                       β_det,
+                       migration_rates,
+                       infection_period,
+                       infection_period,
+                       reinfection_probability,
+                       detection_time,
+                       C,
+                       death_rate)
     space = GraphSpace(complete_digraph(C))
     model = ABM(PoorSoul, space; properties, rng)
 
@@ -74,16 +70,14 @@ end
 using LinearAlgebra: diagind
 
 function create_params(;
-    C,
-    max_travel_rate,
-    infection_period = 30,
-    reinfection_probability = 0.05,
-    detection_time = 14,
-    death_rate = 0.02,
-    Is = [zeros(Int, C - 1)..., 1],
-    seed = 19,
-)
-
+                       C,
+                       max_travel_rate,
+                       infection_period = 30,
+                       reinfection_probability = 0.05,
+                       detection_time = 14,
+                       death_rate = 0.02,
+                       Is = [zeros(Int, C - 1)..., 1],
+                       seed = 19)
     Random.seed!(seed)
     Ns = rand(50:5000, C)
     β_und = rand(0.3:0.02:0.6, C)
@@ -100,17 +94,15 @@ function create_params(;
     migration_rates = (migration_rates .* max_travel_rate) ./ maxM
     migration_rates[diagind(migration_rates)] .= 1.0
 
-    params = @dict(
-        Ns,
-        β_und,
-        β_det,
-        migration_rates,
-        infection_period,
-        reinfection_probability,
-        detection_time,
-        death_rate,
-        Is
-    )
+    params = @dict(Ns,
+                   β_und,
+                   β_det,
+                   migration_rates,
+                   infection_period,
+                   reinfection_probability,
+                   detection_time,
+                   death_rate,
+                   Is)
 
     return params
 end

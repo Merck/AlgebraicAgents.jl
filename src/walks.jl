@@ -19,7 +19,7 @@ end
 relpath_walk(f, agent) = _relpath_walk_up(f, agent, ".")
 
 "Recursively move up, and for each parent agent, recursively visit all inner agents (except for `source`)."
-function _relpath_walk_up(f, agent, path, source=nothing)
+function _relpath_walk_up(f, agent, path, source = nothing)
     f(agent, path)
 
     # move up
@@ -32,7 +32,7 @@ function _relpath_walk_up(f, agent, path, source=nothing)
 end
 
 "Recursively applies `f` to of the each algebraic agent's descendants."
-function _relpath_walk_down(f, agent, path, source=nothing)
+function _relpath_walk_down(f, agent, path, source = nothing)
     for agent_ in values(inners(agent))
         path_ = normpath(joinpath(path, getname(agent_), "."))
         agent_ == source && continue # ignore source branch

@@ -119,27 +119,34 @@ function aagent(base_type, super_type, type, __module)
     tname, param_tnames_constraints = get_param_tnames(type)
     tname_plain = tname isa Symbol ? tname : tname.args[1]
 
-    constructor = define_agent(base_type, super_type, type, __module, quote
-        function $(tname)(name::AbstractString, args...) where $(param_tnames_constraints...)
-                uuid = AlgebraicAgents.uuid4(); inners = Dict{String, AbstractAlgebraicAgent}()
-                relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
-                opera = AlgebraicAgents.Opera()
+    constructor = define_agent(base_type, super_type, type, __module,
+                               quote
+                                   function $(tname)(name::AbstractString,
+                                                     args...) where {
+                                                                     $(param_tnames_constraints...)
+                                                                     }
+                                       uuid = AlgebraicAgents.uuid4()
+                                       inners = Dict{String, AbstractAlgebraicAgent}()
+                                       relpathrefs = Dict{AbstractString,
+                                                          AlgebraicAgents.UUID}()
+                                       opera = AlgebraicAgents.Opera()
 
-                # if an extra field is missing, provide better error message
-                extra_fields = setdiff(fieldnames($tname_plain), $common_interface_fields)
-                if length(args) != length(extra_fields)
-                    @error "agent type $($tname_plain) expects fields $extra_fields, but only $(length(args)) were given"
-                end
+                                       # if an extra field is missing, provide better error message
+                                       extra_fields = setdiff(fieldnames($tname_plain),
+                                                              $common_interface_fields)
+                                       if length(args) != length(extra_fields)
+                                           @error "agent type $($tname_plain) expects fields $extra_fields, but only $(length(args)) were given"
+                                       end
 
-                # initialize agent
-                agent = new(uuid, name, nothing, inners, relpathrefs, opera, args...)
-                # push ref to opera
-                push!(agent.opera.directory, agent.uuid => agent)
+                                       # initialize agent
+                                       agent = new(uuid, name, nothing, inners, relpathrefs,
+                                                   opera, args...)
+                                       # push ref to opera
+                                       push!(agent.opera.directory, agent.uuid => agent)
 
-                agent
-            end
-        end
-    )
+                                       agent
+                                   end
+                               end)
 
     quote
         # check if the base type implements the common interface fields
@@ -147,7 +154,7 @@ function aagent(base_type, super_type, type, __module)
             if !all(f -> f ∈ fieldnames($$(esc(base_type))), $$(common_interface_fields))
                 @error "type $($$(esc(base_type))) does not implement common interface fields $($$(common_interface_fields))"
             end
-        end 
+        end
         Base.eval($__module, check)
 
         # type constructor
@@ -179,9 +186,11 @@ end
 
 "Populate common interface fields of an algebraic agent, incl. `uuid`, `parent`, `relpathrefs`, and `opera`."
 function setup_agent!(agent::AbstractAlgebraicAgent, name::AbstractString)
-    agent.name = name; agent.uuid = AlgebraicAgents.uuid4()
-    
-    agent.parent = nothing; agent.inners = Dict{String, AbstractAlgebraicAgent}()
+    agent.name = name
+    agent.uuid = AlgebraicAgents.uuid4()
+
+    agent.parent = nothing
+    agent.inners = Dict{String, AbstractAlgebraicAgent}()
     agent.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
     agent.opera = AlgebraicAgents.Opera(agent.uuid => agent)
 

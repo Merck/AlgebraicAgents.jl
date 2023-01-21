@@ -1,7 +1,8 @@
 "Return code propagation."
 macro ret(old, ret)
     quote
-        ret = $(esc(ret)); old = $(esc(old))
+        ret = $(esc(ret))
+        old = $(esc(old))
         val = if isnothing(old)
             ret
         elseif isnothing(ret)
@@ -13,7 +14,7 @@ macro ret(old, ret)
         else
             old
         end
-     
+
         $(esc(old)) = val
     end
 end
@@ -25,8 +26,9 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
     naargs = Dict{UUID, Tuple}()
     for (path, aarg) in aargs
         uuid_ = uuid(getagent(a, path))
-        
-        push!(naargs, uuid_ => (args=get(aarg, :args, ()), kwargs=get(aarg, :kwargs, ())))
+
+        push!(naargs,
+              uuid_ => (args = get(aarg, :args, ()), kwargs = get(aarg, :kwargs, ())))
     end
 
     naargs
@@ -44,10 +46,11 @@ See also [`Opera`](@ref).
 @schedule agent 1.
 ```
 "
-macro schedule(agent, priority=0)
+macro schedule(agent, priority = 0)
     quote
-        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent))), Float64($(esc(priority))))
-    end  
+        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent))),
+                       Float64($(esc(priority))))
+    end
 end
 
 "
@@ -62,14 +65,18 @@ See also [`Opera`](@ref).
 @schedule agent f(t)
 ```
 "
-macro schedule_call(agent, call, priority=0)
+macro schedule_call(agent, call, priority = 0)
     call = if call isa Expr && Meta.isexpr(call, :call)
-            sym = gensym(); insert!(call.args, 2, sym)
-            :($sym -> $(call))
-        else call end
+        sym = gensym()
+        insert!(call.args, 2, sym)
+        :($sym -> $(call))
+    else
+        call
+    end
 
     quote
-        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent)), $(esc(call))), Float64($(esc(priority))))
+        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent)), $(esc(call))),
+                       Float64($(esc(priority))))
     end
 end
 
@@ -84,16 +91,24 @@ Retrieve (a vector of) observables relative to `agent`.
 ```
 """
 macro observables(agent, args...)
-    obs = Expr(:vcat); for arg in args
+    obs = Expr(:vcat)
+    for arg in args
         if arg isa Expr && Meta.isexpr(arg, :call) && (arg.args[1] == :(:))
-            agent_ = arg.args[2]; obs_name = arg.args[3]
+            agent_ = arg.args[2]
+            obs_name = arg.args[3]
 
             if obs_name isa Expr && (obs_name.head ∈ [:vect, :tuple])
                 for name in obs_name.args
-                    push!(obs.args, :(getobservable(getagent($(esc(agent)), $(esc(agent_))), $(esc(name)))))
+                    push!(obs.args,
+                          :(getobservable(getagent($(esc(agent)), $(esc(agent_))),
+                                          $(esc(name)))))
                 end
-            else push!(obs.args, :(getobservable(getagent($(esc(agent)), $(esc(agent_))), $(esc(obs_name))))) end
-        else 
+            else
+                push!(obs.args,
+                      :(getobservable(getagent($(esc(agent)), $(esc(agent_))),
+                                      $(esc(obs_name)))))
+            end
+        else
             push!(obs.args, :(getobservable(getagent($(esc(agent)), $(esc(arg))))))
         end
     end
@@ -107,7 +122,8 @@ end
 Return flat representation of algebraic agents hierarchy.
 """
 function flatten(a::AbstractAlgebraicAgent)
-    dir = getdirectory(a); flat_repr = Dict{String, AbstractAlgebraicAgent}()
+    dir = getdirectory(a)
+    flat_repr = Dict{String, AbstractAlgebraicAgent}()
     for (p, v) in get_relpathrefs!(a)
         push!(flat_repr, p => dir[v])
     end
@@ -127,7 +143,7 @@ o = objective(agent)
 o(Dict("agent" => [1., 2.]))
 ```
 """
-function objective(agent::AbstractAlgebraicAgent, max_t=Inf)
+function objective(agent::AbstractAlgebraicAgent, max_t = Inf)
     function (params)
         setparameters!(reinit!(agent), params)
 
@@ -139,15 +155,20 @@ end
 Specialize the function to support convenience wrap initialization, dispatched on the arguments' types.
 See [`@wrap`](@ref). 
 """
-_construct_agent(::AbstractString, args...) = @error "`_construct_agent` for type $(typeof(args[1])) not defined"
+function _construct_agent(::AbstractString, args...)
+    @error "`_construct_agent` for type $(typeof(args[1])) not defined"
+end
 
 "Return a vector of arg and kwargs expression in `args`, respectively."
 function args_kwargs(args)
-    filtered_args = Any[]; filtered_kwargs = Any[]
+    filtered_args = Any[]
+    filtered_kwargs = Any[]
     map(args) do x
         if Meta.isexpr(x, :(=))
             push!(filtered_kwargs, Expr(:kw, x.args[1], x.args[2]))
-        else push!(filtered_args, x) end
+        else
+            push!(filtered_args, x)
+        end
     end
 
     filtered_args, filtered_kwargs

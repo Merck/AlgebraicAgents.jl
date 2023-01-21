@@ -2,9 +2,10 @@
 macroname(e) = Meta.isexpr(e, :macrocall) ? Symbol(strip(string(e.args[1]), '@')) : nothing
 
 "Turn underscores into references of `x`, and wrap filter query as a function of `x`."
-function interpolate_underscores(s, __module__=AlgebraicAgents)::Expr
+function interpolate_underscores(s, __module__ = AlgebraicAgents)::Expr
     ex = s isa AbstractString ? Meta.parse(s) : s
-    sym = gensym(); ex = MacroTools.prewalk(x -> x == :_ ? sym : x, ex)
+    sym = gensym()
+    ex = MacroTools.prewalk(x -> x == :_ ? sym : x, ex)
     ex = Expr(:(->), sym, ex)
 
     Expr(:escape, Expr(:call, GlobalRef(Core, :eval), __module__, Expr(:quote, ex)))
@@ -31,8 +32,8 @@ filter(agents, f"_.age > 21 && _.name ∈ ['a', 'b']")
 agents |> @filter _.age > 21 && _.name ∈ ['a', 'b']
 ```
 """
-struct GeneralFilterQuery <: AbstractFilterQuery 
-    query
+struct GeneralFilterQuery <: AbstractFilterQuery
+    query::Any
     GeneralFilterQuery(q) = new(q)
 end
 
@@ -63,7 +64,9 @@ macro filter(query)
     # if query is a raw expression (not a query string), transform explicitly
     query = if !Meta.isexpr(query, :macrocall) || Meta.isexpr(query, :string)
         :(GeneralFilterQuery($(interpolate_underscores(query))))
-    else Expr(:escape, query) end
+    else
+        Expr(:escape, query)
+    end
 
     quote
         query = $(query)
@@ -85,8 +88,10 @@ function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{<:AbstractFilter
     filter(collect(values(flatten(a))), queries...)
 end
 
-function Base.filter(a::Vector{<:AbstractAlgebraicAgent}, queries::Vararg{<:AbstractFilterQuery})
-    filtered = AbstractAlgebraicAgent[]; for a in a
+function Base.filter(a::Vector{<:AbstractAlgebraicAgent},
+                     queries::Vararg{<:AbstractFilterQuery})
+    filtered = AbstractAlgebraicAgent[]
+    for a in a
         all(q -> _filter(a, q), queries) && push!(filtered, a)
     end
 
@@ -101,7 +106,12 @@ Check if an agent satisfies filter condition.
 """
 function _filter(::AbstractAlgebraicAgent, ::AbstractFilterQuery) end
 
-_filter(a::AbstractAlgebraicAgent, query::GeneralFilterQuery) = try query.query(a); catch; false end
+_filter(a::AbstractAlgebraicAgent, query::GeneralFilterQuery) =
+    try
+        query.query(a)
+    catch
+        false
+    end
 
 ## transform queries
 "Supertype of transform queries."
@@ -120,7 +130,8 @@ agent |> @transform(name=_.name, _.age)
 ```
 """
 struct GeneralTransformQuery <: AbstractTransformQuery
-    name; query
+    name::Any
+    query::Any
     GeneralTransformQuery(name, query) = new(name, query)
 end
 
@@ -131,11 +142,13 @@ Turn transform queries into an anonymous function of agents' hierarchy. See also
 Accepts both anonymous queries (`_.name`) and named queries (`name=_.name`). By default, includes agent's uuid.
 """
 macro transform(exs...)
-    queries = map(ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) : (gensym(:query), ex), exs)
+    queries = map(ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) :
+                        (gensym(:query), ex), exs)
     names, queries = map(x -> x[1], queries), map(x -> x[2], queries)
     quote
-        queries = GeneralTransformQuery.($(names), [$(interpolate_underscores.(queries)...)])
-        
+        queries = GeneralTransformQuery.($(names),
+                                         [$(interpolate_underscores.(queries)...)])
+
         a -> transform(a, queries...)
     end
 end
@@ -159,12 +172,15 @@ function transform(a::AbstractAlgebraicAgent, queries::Vararg{<:AbstractTransfor
     transform(collect(values(flatten(a))), queries...)
 end
 
-function transform(a::Vector{<:AbstractAlgebraicAgent}, queries::Vararg{<:AbstractTransformQuery})
-    results = []; for a in a
+function transform(a::Vector{<:AbstractAlgebraicAgent},
+                   queries::Vararg{<:AbstractTransformQuery})
+    results = []
+    for a in a
         try
-            r = (; uuid=getuuid(a), (q.name => q.query(a) for q in queries)...)
+            r = (; uuid = getuuid(a), (q.name => q.query(a) for q in queries)...)
             push!(results, r)
-        catch; end
+        catch
+        end
     end
 
     results

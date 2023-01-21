@@ -5,8 +5,9 @@ A container of algebraic agents.
 Doesn't implement a standalone evolutionary rule; delegates evolution to internal agents.
 """
 mutable struct FreeAgent <: AbstractAlgebraicAgent
-    uuid::UUID;; name::AbstractString
-    
+    uuid::UUID
+    name::AbstractString
+
     parent::Union{AbstractAlgebraicAgent, Nothing}
     inners::Dict{String, AbstractAlgebraicAgent}
 
@@ -23,14 +24,19 @@ mutable struct FreeAgent <: AbstractAlgebraicAgent
     FreeAgent("agent", [agent1, agent2])
     ```
     """
-    function FreeAgent(name::AbstractString, agents::Vector{<:AbstractAlgebraicAgent}=AbstractAlgebraicAgent[])
+    function FreeAgent(name::AbstractString,
+                       agents::Vector{<:AbstractAlgebraicAgent} = AbstractAlgebraicAgent[])
         m = new()
-        m.uuid = uuid4(); m.name = name
-        m.parent = nothing; m.inners = Dict{String, AbstractAlgebraicAgent}()
+        m.uuid = uuid4()
+        m.name = name
+        m.parent = nothing
+        m.inners = Dict{String, AbstractAlgebraicAgent}()
         m.relpathrefs = Dict{AbstractString, UUID}()
         m.opera = Opera(m.uuid => m)
 
-        for a in agents entangle!(m, a) end
+        for a in agents
+            entangle!(m, a)
+        end
 
         m
     end
@@ -75,7 +81,7 @@ inners(a::AbstractAlgebraicAgent) = a.inners #@error "algebraic agent type $(typ
     getparameters(agent)
 Retrieve algebraic agents' (incl. inner agents, if applicable) parameter space.
 """
-function getparameters(a::AbstractAlgebraicAgent, path=".", dict=Dict{String, Any}())
+function getparameters(a::AbstractAlgebraicAgent, path = ".", dict = Dict{String, Any}())
     params = _getparameters(a)
     !isnothing(params) && push!(dict, path => params)
 
@@ -108,7 +114,9 @@ function _setparameters!(a::AbstractAlgebraicAgent, parameters)
         merge!(params, parameters)
     elseif params isa AbstractArray
         params .= parameters
-    else @error("type $(typeof(a)) doesn't implement `_setparameters!`") end
+    else
+        @error("type $(typeof(a)) doesn't implement `_setparameters!`")
+    end
 
     params
 end
@@ -124,13 +132,13 @@ Parameters are accepted in the form of a dictionary containing `path => params` 
 setparameters!(agent, Dict("agent1/agent2" => Dict(:α=>1)))
 ```
 """
-function setparameters!(a::AbstractAlgebraicAgent, parameters, path=".")
+function setparameters!(a::AbstractAlgebraicAgent, parameters, path = ".")
     if haskey(parameters, path)
         _setparameters!(a, parameters[path])
     end
 
     for a in values(inners(a))
-        setparameters!(a, parameters,normpath(joinpath(path, getname(a), ".")))
+        setparameters!(a, parameters, normpath(joinpath(path, getname(a), ".")))
     end
 
     a
@@ -148,8 +156,9 @@ Avoids front-running.
 sol = simulate(model)
 ```
 """
-function simulate(a::AbstractAlgebraicAgent, max_t=Inf)
-    ret = projected_to(a); while iscontinuable(ret) && (ret < max_t)
+function simulate(a::AbstractAlgebraicAgent, max_t = Inf)
+    ret = projected_to(a)
+    while iscontinuable(ret) && (ret < max_t)
         ret = step!(a)
     end
 
@@ -171,12 +180,13 @@ For custom algebraic agents' types, it suffices to implement [`_step!`](@ref).
 Return `true` if all internal algebraic agent's time horizon was reached.
 Else return the minimum time up to which the algebraic agent's solution was projected.
 """
-function step!(a::AbstractAlgebraicAgent, t=projected_to(a); isroot=true)
+function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
     isroot && prewalk(a -> _prestep!(a, t), a) # first phase
 
     # first into the depth
-    ret = nothing; foreach(values(inners(a))) do a
-        @ret ret step!(a, t; isroot=false)
+    ret = nothing
+    foreach(values(inners(a))) do a
+        @ret ret step!(a, t; isroot = false)
     end
 
     # local step implementation
@@ -196,7 +206,8 @@ Return `true` if all algebraic agent's time horizon was reached (or `nothing` in
 Else return the minimum time up to which the evolution of an algebraic agent, and all its descendants, has been projected.
 """
 function projected_to(a::AbstractAlgebraicAgent)
-    ret = _projected_to(a); foreach(values(inners(a))) do a
+    ret = _projected_to(a)
+    foreach(values(inners(a))) do a
         @ret ret projected_to(a)
     end
 
@@ -204,11 +215,15 @@ function projected_to(a::AbstractAlgebraicAgent)
 end
 
 "Return time to which algebraic agent's evolution was projected."
-_projected_to(t::AbstractAlgebraicAgent) = @error("type $(typeof(t)) doesn't implement `_projected_to`")
+function _projected_to(t::AbstractAlgebraicAgent)
+    @error("type $(typeof(t)) doesn't implement `_projected_to`")
+end
 _projected_to(::FreeAgent) = nothing
 
 "Project algebraic agent's solution up to time `t`."
-_step!(a::AbstractAlgebraicAgent, _) = @error "algebraic agent $(typeof(a)) doesn't implement `_step!`"
+function _step!(a::AbstractAlgebraicAgent, _)
+    @error "algebraic agent $(typeof(a)) doesn't implement `_step!`"
+end
 _step!(::FreeAgent, _) = nothing
 
 "Pre-step to a step call (e.g., projecting algebraic agent's solution up to time `t`)."
@@ -227,7 +242,8 @@ reinit!(agent)
 ```
 """
 function reinit!(a::AbstractAlgebraicAgent)
-    _reinit!(a); for a in values(inners(a))
+    _reinit!(a)
+    for a in values(inners(a))
         reinit!(a)
     end
 
@@ -247,16 +263,23 @@ getobservable(getagent(agent, "../model"), "observable_name")
 getobservable(getagent(agent, "../model"), 1)
 ```
 """
-getobservable(a::AbstractAlgebraicAgent, args...) = @error "algebraic agent $(typeof(a)) doesn't implement `getobservable`"
+function getobservable(a::AbstractAlgebraicAgent, args...)
+    @error "algebraic agent $(typeof(a)) doesn't implement `getobservable`"
+end
 
 # implement `a[observable]` syntax
 function Base.getindex(a::AbstractAlgebraicAgent, keys...)
-    if isempty(keys) a
-    else getobservable(a, keys...) end
+    if isempty(keys)
+        a
+    else
+        getobservable(a, keys...)
+    end
 end
 
 "Get algebraic agent's observable at a given time."
-gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any) = @error "algebraic agent $(typeof(a)) doesn't implement `gettimeobservable`"
+function gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any)
+    @error "algebraic agent $(typeof(a)) doesn't implement `gettimeobservable`"
+end
 
 "Return a list of algebraic agent's inner ports (subjective observables)."
 ports_in(::AbstractAlgebraicAgent) = nothing
@@ -295,22 +318,32 @@ end
 
 function print_header(io::IO, a::AbstractAlgebraicAgent)
     indent = get(io, :indent, 0)
-    print(io, " "^indent * "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
+    print(io,
+          " "^indent *
+          "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
 end
 
 "Pretty-print algebraic agent's parent and inners. Optionally specify indent."
-function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent, expand_inners=true)
+function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
+                         expand_inners = true)
     indent = get(io, :indent, 0)
 
-    expand_inners && !isnothing(getparent(a)) && print(io, "\n", " "^(indent+3), crayon"bold", "parent: ", crayon"reset", 
-        crayon"green", getname(getparent(a)), crayon"reset")
-    !isempty(values(inners(a))) && print(io, "\n", " "^(indent+3), crayon"bold", "inner agents: ", crayon"reset")
-    
+    expand_inners && !isnothing(getparent(a)) &&
+        print(io, "\n", " "^(indent + 3), crayon"bold", "parent: ", crayon"reset",
+              crayon"green", getname(getparent(a)), crayon"reset")
+    !isempty(values(inners(a))) &&
+        print(io, "\n", " "^(indent + 3), crayon"bold", "inner agents: ", crayon"reset")
+
     max_inners = get(io, :max_list_length, 5)
     if expand_inners
-        iio = IOContext(io, :indent=>get(io, :indent, 0)+4)
-        for a in first(values(inners(a)), max_inners) print(io, "\n"); show(iio, m, a, false) end
-        (length(inners(a)) > max_inners) && print(io, "\n" * " "^(indent+4) * "$(length(inners(a))-max_inners) more agent(s) not shown ...")
+        iio = IOContext(io, :indent => get(io, :indent, 0) + 4)
+        for a in first(values(inners(a)), max_inners)
+            print(io, "\n")
+            show(iio, m, a, false)
+        end
+        (length(inners(a)) > max_inners) && print(io,
+              "\n" * " "^(indent + 4) *
+              "$(length(inners(a))-max_inners) more agent(s) not shown ...")
     else
         print(io, join([getname(a) for a in values(inners(a))], ", "))
     end
@@ -323,17 +356,19 @@ function print_custom(io::IO, mime::MIME"text/plain", a::AbstractAlgebraicAgent)
 
     isempty(extra_fields) && return
 
-    print(io, "\n", " "^(indent+3), "custom properties:")
+    print(io, "\n", " "^(indent + 3), "custom properties:")
     for field in extra_fields
-        print(io, "\n", " "^(indent+3), AlgebraicAgents.crayon"italics", field, ": ", AlgebraicAgents.crayon"reset", getproperty(a, field))
+        print(io, "\n", " "^(indent + 3), AlgebraicAgents.crayon"italics", field, ": ",
+              AlgebraicAgents.crayon"reset", getproperty(a, field))
     end
 end
 
 # specialize show method
-function Base.show(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent, expand_inners=true)
+function Base.show(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
+                   expand_inners = true)
     print_header(io, m, a)
     print_custom(io, m, a)
-    print_neighbors(io, m, a, expand_inners)    
+    print_neighbors(io, m, a, expand_inners)
 end
 
 Base.show(io::IO, a::AbstractAlgebraicAgent) = print_header(io, a)
@@ -351,9 +386,11 @@ function draw end
 Retrieve an agent from its relative path, and plot its state.
 Reduces to [`_draw`](@ref).
 """
-function draw(a::AbstractAlgebraicAgent, path=".", args...; kwargs...)
+function draw(a::AbstractAlgebraicAgent, path = ".", args...; kwargs...)
     _draw(getagent(a, path), args...; kwargs...)
 end
 
 "Return plot of an algebraic agent's state. Defaults to `nothing`."
-_draw(a::AbstractAlgebraicAgent) = @warn "`_draw` for algebraic agent type $(typeof(a)) not implemented"
+function _draw(a::AbstractAlgebraicAgent)
+    @warn "`_draw` for algebraic agent type $(typeof(a)) not implemented"
+end

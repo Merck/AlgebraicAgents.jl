@@ -23,8 +23,9 @@ Configure the evolutionary step, logging, and step size by keyword arguments bel
 """
 mutable struct ABMAgent <: AbstractAlgebraicAgent
     # common interface fields
-    uuid::UUID;; name::AbstractString
-    
+    uuid::UUID
+    name::AbstractString
+
     parent::Union{AbstractAlgebraicAgent, Nothing}
     inners::Dict{String, AbstractAlgebraicAgent}
 
@@ -33,13 +34,15 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
     abm::Agents.AgentBasedModel
 
-    agent_step!; model_step! # evolutionary functions
-    kwargs # kwargs propagated to `run!` (incl. `adata`, `mdata`)
-    when; when_model # when to collect agents data, model data
+    agent_step!::Any
+    model_step!::Any # evolutionary functions
+    kwargs::Any # kwargs propagated to `run!` (incl. `adata`, `mdata`)
+    when::Any
+    when_model::Any # when to collect agents data, model data
     # true by default, and performs data collection at every step
     # if an `AbstractVector`, checks if `t ∈ when`; otherwise a function (model, t) -> ::Bool
-    step_size # how far the step advances, either a float or a function (model, t) -> size::Float64
-    
+    step_size::Any # how far the step advances, either a float or a function (model, t) -> size::Float64
+
     tspan::NTuple{2, Float64} # solution horizon, defaults to `(0., Inf)`
     t::Float64
 
@@ -50,21 +53,27 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
     df_model::DataFrames.DataFrame
 
     ## implement constructor
-    function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel; 
-        agent_step! =Agents.dummystep, model_step! =Agents.dummystep,
-        when=true, when_model=when, step_size=1.,
-        tspan::NTuple{2, Float64}=(0., Inf), kwargs...
-    )
+    function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel;
+                      agent_step! = Agents.dummystep, model_step! = Agents.dummystep,
+                      when = true, when_model = when, step_size = 1.0,
+                      tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
 
         # initialize wrap
-        i = new(); setup_agent!(i, name)
+        i = new()
+        setup_agent!(i, name)
 
         i.abm = abm
-        i.agent_step! = agent_step!; i.model_step! = model_step!; i.kwargs = kwargs
-        i.when = when; i.when_model = when_model
-        i.step_size = step_size; i.tspan = tspan; i.t = tspan[1]
+        i.agent_step! = agent_step!
+        i.model_step! = model_step!
+        i.kwargs = kwargs
+        i.when = when
+        i.when_model = when_model
+        i.step_size = step_size
+        i.tspan = tspan
+        i.t = tspan[1]
 
-        i.df_agents = DataFrames.DataFrame(); i.df_model = DataFrames.DataFrame()
+        i.df_agents = DataFrames.DataFrame()
+        i.df_model = DataFrames.DataFrame()
 
         i.abm.properties[:__aagent__] = i
         i.abm0 = deepcopy(i.abm)
@@ -72,14 +81,15 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
         # initialize contained agents
         for (id, _) in abm.agents
-            entangle!(i, AAgent(string(id))) 
+            entangle!(i, AAgent(string(id)))
         end
 
         i
     end
 end
 
-function _construct_agent(name::AbstractString, abm::Agents.AgentBasedModel, args...; kwargs...)
+function _construct_agent(name::AbstractString, abm::Agents.AgentBasedModel, args...;
+                          kwargs...)
     ABMAgent(name, abm, args...; kwargs...)
 end
 
@@ -87,34 +97,39 @@ end
 function _step!(a::ABMAgent, t)
     if _projected_to(a) === t
         step_size = a.step_size isa Number ? a.step_size : a.step_size(a.abm, t)
-        collect_agents = a.when isa AbstractVector ? (t ∈ a.when) : a.when isa Bool ? a.when : a.when(a.abm, t)
-        collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) : a.when isa Bool ? a.when : a.when_model(a.abm, t)
+        collect_agents = a.when isa AbstractVector ? (t ∈ a.when) :
+                         a.when isa Bool ? a.when : a.when(a.abm, t)
+        collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) :
+                        a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
-        df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1; a.kwargs...)
+        df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1;
+                                          a.kwargs...)
         # append collected data
         ## df_agents
         if collect_agents && ("step" ∈ names(df_agents))
             if a.t == a.tspan[1]
-                df_agents_0 = df_agents[df_agents.step .== .0, :]
+                df_agents_0 = df_agents[df_agents.step .== 0.0, :]
                 df_agents_0[!, :step] = convert.(Float64, df_agents_0[!, :step])
                 df_agents_0[!, :step] .+= a.t
                 append!(a.df_agents, df_agents_0)
             end
-            df_agents = df_agents[df_agents.step .== 1., :]
+            df_agents = df_agents[df_agents.step .== 1.0, :]
             append!(a.df_agents, df_agents)
-            a.df_agents[end-DataFrames.nrow(df_agents)+1:end, :step] .+= a.t + step_size - 1
+            a.df_agents[(end - DataFrames.nrow(df_agents) + 1):end, :step] .+= a.t +
+                                                                               step_size - 1
         end
         ## df_model
         if collect_model && ("step" ∈ names(df_model))
             if a.t == a.tspan[1]
-                df_model_0 = df_model[df_model.step .== .0, :]
+                df_model_0 = df_model[df_model.step .== 0.0, :]
                 df_model_0[!, :step] = convert.(Float64, df_model_0[!, :step])
                 df_model_0[!, :step] .+= a.t
                 append!(a.df_model, df_model_0)
             end
-            df_model = df_model[df_model.step .== 1., :]
+            df_model = df_model[df_model.step .== 1.0, :]
             append!(a.df_model, df_model)
-            a.df_model[end-DataFrames.nrow(df_model)+1:end, :step] .+= a.t + step_size - 1
+            a.df_model[(end - DataFrames.nrow(df_model) + 1):end, :step] .+= a.t +
+                                                                             step_size - 1
         end
 
         a.t += step_size
@@ -139,14 +154,16 @@ end
 function gettimeobservable(a::ABMAgent, t::Float64, obs)
     df = a.df_model
     @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
-    
+
     # query dataframe
     df[df.step .== Int(t), obs] |> first
 end
 
 function _reinit!(a::ABMAgent)
-    a.t = a.t0; a.abm = a.deepcopy(a.abm0)
-    empty!(a.df_agents); empty!(a.df_model)
+    a.t = a.t0
+    a.abm = a.deepcopy(a.abm0)
+    empty!(a.df_agents)
+    empty!(a.df_model)
 
     a
 end
@@ -161,7 +178,9 @@ Base.propertynames(::AAgent) = fieldnames(AAgent) ∪ [:agent]
 function Base.getproperty(a::AAgent, prop::Symbol)
     if prop == :agent
         getparent(a).abm.agents[parse(Int, getname(a))]
-    else getfield(a, prop) end
+    else
+        getfield(a, prop)
+    end
 end
 
 ## implement common interface
@@ -175,29 +194,31 @@ end
 function gettimeobservable(a::AAgent, t::Float64, obs)
     df = getparent(a).df_agents
     @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
-    
+
     # query df
     df[(df.step .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
 end
 
 function print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)
     indent = get(io, :indent, 0)
-    print(io, "\n", " "^(indent+3), "custom properties:\n")
-    print(io, " "^(indent+3), crayon"italics", "abm", ": ", crayon"reset", "\n")
-    show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.abm)
+    print(io, "\n", " "^(indent + 3), "custom properties:\n")
+    print(io, " "^(indent + 3), crayon"italics", "abm", ": ", crayon"reset", "\n")
+    show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.abm)
 
-    print(io, "\n" * " "^(indent+3), crayon"italics", "df_agents", ": ", crayon"reset", "\n")
-    show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.df_model)
+    print(io, "\n" * " "^(indent + 3), crayon"italics", "df_agents", ": ", crayon"reset",
+          "\n")
+    show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.df_model)
 
-    print(io, "\n" * " "^(indent+3), crayon"italics", "df_model", ": ", crayon"reset", "\n")
-    show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.df_agents)
+    print(io, "\n" * " "^(indent + 3), crayon"italics", "df_model", ": ", crayon"reset",
+          "\n")
+    show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.df_agents)
 end
 
 function print_custom(io::IO, mime::MIME"text/plain", a::AAgent)
     indent = get(io, :indent, 0)
-    print(io, "\n", " "^(indent+3), "custom properties:\n")
-    print(io, " "^(indent+3), crayon"italics", "agent", ": ", crayon"reset", "\n")
-    show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.agent)
+    print(io, "\n", " "^(indent + 3), "custom properties:\n")
+    print(io, " "^(indent + 3), crayon"italics", "agent", ": ", crayon"reset", "\n")
+    show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.agent)
 end
 
 # macros to retrieve algebraic model's, agent's wrappers
@@ -239,25 +260,26 @@ Algebraic extension of `add_agent!`, `kill_agent!`.
 """
 macro a(call)
     @assert Meta.isexpr(call, :call) && (call.args[1] ∈ [:kill_agent!, :add_agent!])
-    model_call = deepcopy(call); model_call.args[1] = :(AlgebraicAgents.get_model)
-    
+    model_call = deepcopy(call)
+    model_call.args[1] = :(AlgebraicAgents.get_model)
+
     if call.args[1] == :add_agent!
         quote
             model = $(esc(model_call))
             omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
             agent = $(esc(call))
-            
-            entangle!(omodel, ABAModel(string(agent.id), a)) 
+
+            entangle!(omodel, ABAModel(string(agent.id), a))
         end
     else
         agent = model_call.args[2]
         quote
             model = $(esc(model_call))
             omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
-            
+
             agent = $(esc(agent))
             agent = agent isa Number ? string(agent) : string(agent.id)
-            disentangle!(omodel.inners[agent])    
+            disentangle!(omodel.inners[agent])
 
             $(esc(call))
         end

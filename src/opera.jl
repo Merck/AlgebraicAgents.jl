@@ -6,9 +6,9 @@ abstract type AbstractOperaCall end
 "A scheduled call to an agent. See [`Opera`](@ref)."
 struct AgentCall <: AbstractOperaCall
     agent::AbstractAlgebraicAgent
-    call
+    call::Any
 
-    AgentCall(agent::AbstractAlgebraicAgent, call=nothing) = new(agent, call)
+    AgentCall(agent::AbstractAlgebraicAgent, call = nothing) = new(agent, call)
 end
 
 """
@@ -40,13 +40,16 @@ mutable struct Opera
     calls::PriorityQueue{AbstractOperaCall, Float64}
     directory::Dict{UUID, AbstractAlgebraicAgent}
 
-    Opera(uuid2agent_pairs...) = new(PriorityQueue{AbstractOperaCall, Float64}(Base.Order.Reverse), Dict{UUID, AbstractAlgebraicAgent}(uuid2agent_pairs...))
+    function Opera(uuid2agent_pairs...)
+        new(PriorityQueue{AbstractOperaCall, Float64}(Base.Order.Reverse),
+            Dict{UUID, AbstractAlgebraicAgent}(uuid2agent_pairs...))
+    end
 end
 
 "Schedule an algebraic interaction."
 function opera_enqueue!(::Opera, ::AbstractOperaCall, ::Float64) end
 
-function opera_enqueue!(opera::Opera, call::AgentCall, priority::Float64=.0)
+function opera_enqueue!(opera::Opera, call::AgentCall, priority::Float64 = 0.0)
     !haskey(opera.calls, call) && enqueue!(opera.calls, call => priority)
 end
 
@@ -56,7 +59,9 @@ function execute_action!(::Opera, ::AbstractOperaCall) end
 function execute_action!(::Opera, call::AgentCall)
     if isnothing(call.call)
         _interact!(call.agent)
-    else call.call(call.agent) end
+    else
+        call.call(call.agent)
+    end
 end
 
 "Execute scheduled algebraic interactions."

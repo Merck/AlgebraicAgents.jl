@@ -11,11 +11,13 @@ By default, outputs an instance of `FreeAgent`.
 ⊕(m1, m2; name="diagram1") ⊕ ⊕(m3, m4; name="diagram2");
 ```
 """
-function ⊕(models::Vararg{AbstractAlgebraicAgent, N}; name="diagram") where N
+function ⊕(models::Vararg{AbstractAlgebraicAgent, N}; name = "diagram") where {N}
     diagram = FreeAgent(name) # empty diagram
 
     # insert inner agents
-    for model in models entangle!(diagram, model) end
+    for model in models
+        entangle!(diagram, model)
+    end
 
     diagram
 end
@@ -30,4 +32,6 @@ Perform an algebraic sum of algebraic models (flatten arguments to ⊕).
 @sum m1 m2 m3 m4 # == ⊕(m1, m2, m3, m4)
 ```
 "
-macro sum(models...) :(⊕($(esc.(models)...))) end
+macro sum(models...)
+    :(⊕($(esc.(models)...)))
+end

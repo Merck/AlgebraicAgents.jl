@@ -13,7 +13,7 @@ infected(x) = count(i == :I for i in x)
 recovered(x) = count(i == :R for i in x)
 to_collect = [(:status, f) for f in (infected, recovered, length)]
 
-m = ABMAgent("sir_model", abm; agent_step!, tspan=(0., 50.), adata=to_collect)
+m = ABMAgent("sir_model", abm; agent_step!, tspan = (0.0, 50.0), adata = to_collect)
 
 # simulate the model
 simulate(m)

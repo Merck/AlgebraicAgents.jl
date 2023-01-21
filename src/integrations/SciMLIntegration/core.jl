@@ -17,8 +17,9 @@ Initialize DE problem algebraic wrap.
 - other kwargs will be propagated to the integrator at initialization step.
 """
 mutable struct DiffEqAgent <: AbstractAlgebraicAgent
-    uuid::UUID;; name::AbstractString
-    
+    uuid::UUID
+    name::AbstractString
+
     parent::Union{AbstractAlgebraicAgent, Nothing}
     inners::Dict{String, AbstractAlgebraicAgent}
 
@@ -30,27 +31,30 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
     exposed_ports::Union{Dict{Any, Int}, Nothing}
     ports_in::Union{Vector, Nothing}
 
-    function DiffEqAgent(name, problem::DiffEqBase.DEProblem, alg=DifferentialEquations.default_algorithm(problem)[1], args...;
-        exposed_ports=nothing, ports_in=nothing, kwargs...)
-    
-        problem = DifferentialEquations.remake(problem; p=Params(Val(DummyType), problem.p))
-        
+    function DiffEqAgent(name, problem::DiffEqBase.DEProblem,
+                         alg = DifferentialEquations.default_algorithm(problem)[1], args...;
+                         exposed_ports = nothing, ports_in = nothing, kwargs...)
+        problem = DifferentialEquations.remake(problem;
+                                               p = Params(Val(DummyType), problem.p))
+
         # initialize wrap
-        i = new(); setup_agent!(i, name)
-    
+        i = new()
+        setup_agent!(i, name)
+
         i.integrator = DiffEqBase.init(problem, alg, args...; kwargs...)
-        i.exposed_ports = exposed_ports; i.ports_in = ports_in
-    
+        i.exposed_ports = exposed_ports
+        i.ports_in = ports_in
+
         i.integrator.p.agent = i
-    
+
         i
     end
 end
 
 ## params wrap
 mutable struct Params
-    agent
-    params
+    agent::Any
+    params::Any
 end
 
 # property indexing
@@ -63,11 +67,14 @@ Base.propertynames(p::Params) = propertynames(getfield(p, :params))
 # vector interface
 Base.length(p::Params) = length(getfield(p, :params))
 Base.getindex(p::Params, i::Int) = getfield(p, :params)[i]
-Base.getindex(::Params, ::Any) = @error "please pass, and index, params as a vector, see https://github.com/SciML/SciMLBase.jl/pull/262"
+function Base.getindex(::Params, ::Any)
+    @error "please pass, and index, params as a vector, see https://github.com/SciML/SciMLBase.jl/pull/262"
+end
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
 function _construct_agent(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
-        alg=DifferentialEquations.default_algorithm(problem)[1], kwargs...)
+                          alg = DifferentialEquations.default_algorithm(problem)[1],
+                          kwargs...)
     DiffEqAgent(name, problem, alg, args...; kwargs...)
 end
 
@@ -123,8 +130,12 @@ function push_ports_in!(a::DiffEqAgent, pairs...)
     end
     for id in pairs
         if id[2] isa Union{AbstractVector, Tuple}
-            for o in id[2] push!(a.ports_in, id[1] => o) end
-        else push!(a.ports_in, id) end
+            for o in id[2]
+                push!(a.ports_in, id[1] => o)
+            end
+        else
+            push!(a.ports_in, id)
+        end
     end
 
     a
@@ -155,7 +166,9 @@ function _setparameters!(a::DiffEqAgent, getparameters)
     end
 end
 
-_projected_to(a::DiffEqAgent) = a.integrator.sol.prob.tspan[2] <= a.integrator.t ? true : a.integrator.t
+function _projected_to(a::DiffEqAgent)
+    a.integrator.sol.prob.tspan[2] <= a.integrator.t ? true : a.integrator.t
+end
 
 _reinit!(a::DiffEqAgent) = SciMLBase.reinit!(a.integrator)
 
@@ -180,10 +193,10 @@ opera_enqueue!(::Val{DummyType}, args...) = nothing
 # custom pretty-printing
 function print_custom(io::IO, mime::MIME"text/plain", a::DiffEqAgent)
     indent = get(io, :indent, 0)
-    print(io, "\n", " "^(indent+3), "custom properties:\n")
-    print(io, " "^(indent+3), crayon"italics", "integrator", ": ", crayon"reset", "\n")
-    show(IOContext(io, :indent=>get(io, :indent, 0)+4), mime, a.integrator)
-    print_observables(IOContext(io, :indent=>get(io, :indent, 0)+3), mime, a)
+    print(io, "\n", " "^(indent + 3), "custom properties:\n")
+    print(io, " "^(indent + 3), crayon"italics", "integrator", ": ", crayon"reset", "\n")
+    show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.integrator)
+    print_observables(IOContext(io, :indent => get(io, :indent, 0) + 3), mime, a)
 end
 
 "Print in/out observables of a DiffEq algebraic agent."
