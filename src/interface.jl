@@ -191,7 +191,7 @@ function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
 
     # local step implementation
     if (p = _projected_to(a); !isa(p, Bool) && (p == t))
-        _step!(a, t)
+        _step!(a)
     end
     @ret ret _projected_to(a)
 
@@ -221,10 +221,10 @@ end
 _projected_to(::FreeAgent) = nothing
 
 "Project algebraic agent's solution up to time `t`."
-function _step!(a::AbstractAlgebraicAgent, _)
+function _step!(a::AbstractAlgebraicAgent)
     @error "algebraic agent $(typeof(a)) doesn't implement `_step!`"
 end
-_step!(::FreeAgent, _) = nothing
+_step!(::FreeAgent) = nothing
 
 "Pre-step to a step call (e.g., projecting algebraic agent's solution up to time `t`)."
 _prestep!(::AbstractAlgebraicAgent, _) = nothing

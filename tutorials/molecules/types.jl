@@ -91,39 +91,33 @@ const sales_decay_small = 0.9
 const sales_decay_large = 0.7
 
 # implement evolution
-function AlgebraicAgents._step!(mol::SmallMolecule, t)
-    if t === (mol.age + mol.birth_time)
-        push!(mol.df_sales, (t, mol.sales))
-        mol.age += 1
-        mol.sales *= sales_decay_small
+function AlgebraicAgents._step!(mol::SmallMolecule)
+    t = projected_to(mol)
+    push!(mol.df_sales, (t, mol.sales))
+    mol.age += 1
+    mol.sales *= sales_decay_small
 
-        if (mol.sales <= 10) || (rand() >= exp(-0.2 * mol.age))
-            mol.kill_time = t
-            push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
-            disentangle!(mol)
-        end
+    if (mol.sales <= 10) || (rand() >= exp(-0.2 * mol.age))
+        mol.kill_time = t
+        push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
+        disentangle!(mol)
     end
-
-    mol.age + mol.birth_time
 end
 
 # implement common interface
 ## molecules
-function AlgebraicAgents._step!(mol::LargeMolecule, t)
-    if t === (mol.age + mol.birth_time)
-        push!(mol.df_sales, (t, mol.sales))
+function AlgebraicAgents._step!(mol::LargeMolecule)
+    t = projected_to(mol)
+    push!(mol.df_sales, (t, mol.sales))
 
-        mol.age += 1
-        mol.sales *= sales_decay_large
+    mol.age += 1
+    mol.sales *= sales_decay_large
 
-        if (mol.sales <= 10) || (rand() >= exp(-0.3 * mol.age))
-            mol.kill_time = t
-            push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
-            disentangle!(mol)
-        end
+    if (mol.sales <= 10) || (rand() >= exp(-0.3 * mol.age))
+        mol.kill_time = t
+        push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
+        disentangle!(mol)
     end
-
-    mol.age + mol.birth_time
 end
 
 AlgebraicAgents._reinit!(mol::Molecule) = disentangle!(mol)
@@ -131,38 +125,35 @@ AlgebraicAgents._reinit!(mol::Molecule) = disentangle!(mol)
 AlgebraicAgents._projected_to(mol::Molecule) = mol.age + mol.birth_time
 
 ## discovery
-function AlgebraicAgents._step!(dx::Discovery, t)
-    if t === dx.t
-        # sync with market demand
-        dx.productivity, = @observables dx "../demand":"demand"
-        ν = dx.productivity * dx.dt
-        small, large = rand(Poisson(ν * dx.rate_small)), rand(Poisson(ν * dx.rate_large))
-        killed = 0
-        ix = 1
-        while ix <= length(dx.removed_mols)
-            if (dx.removed_mols[ix][2] < t)
-                killed += 1
-                deleteat!(dx.removed_mols, ix)
-            else
-                ix += 1
-            end
+function AlgebraicAgents._step!(dx::Discovery)
+    t = projected_to(dx)
+    # sync with market demand
+    dx.productivity, = @observables dx "../demand":"demand"
+    ν = dx.productivity * dx.dt
+    small, large = rand(Poisson(ν * dx.rate_small)), rand(Poisson(ν * dx.rate_large))
+    killed = 0
+    ix = 1
+    while ix <= length(dx.removed_mols)
+        if (dx.removed_mols[ix][2] < t)
+            killed += 1
+            deleteat!(dx.removed_mols, ix)
+        else
+            ix += 1
         end
-        push!(dx.df_output, (t, small, large, killed))
+    end
+    push!(dx.df_output, (t, small, large, killed))
 
-        for _ in 1:small
-            mol = release_molecule(randstring(5), Tuple(rand(N)), t, SmallMolecule)
-            entangle!(getparent(dx), mol)
-        end
-
-        for _ in 1:large
-            mol = release_molecule(randstring(5), Tuple(rand(N)), t, LargeMolecule)
-            entangle!(getparent(dx), mol)
-        end
-
-        dx.t += dx.dt
+    for _ in 1:small
+        mol = release_molecule(randstring(5), Tuple(rand(N)), t, SmallMolecule)
+        entangle!(getparent(dx), mol)
     end
 
-    dx.t
+    for _ in 1:large
+        mol = release_molecule(randstring(5), Tuple(rand(N)), t, LargeMolecule)
+        entangle!(getparent(dx), mol)
+    end
+
+    dx.t += dx.dt
 end
 
 function AlgebraicAgents._reinit!(dx::Discovery)

@@ -113,18 +113,15 @@ end
 # implement common interface
 
 ## discovery
-function AlgebraicAgents._step!(dx::Discovery, t)
-    if t === dx.t
-        # emit candidates
-        for _ in 1:rand(Poisson(dx.rate * dx.dt))
-            mol = Molecule(randstring(5), Tuple(rand(N)), t)
-            entangle!(getagent(getparent(dx), "preclinical/candidates"), mol)
-        end
-
-        dx.t += dx.dt
+function AlgebraicAgents._step!(dx::Discovery)
+    t = projected_to(dx)
+    # emit candidates
+    for _ in 1:rand(Poisson(dx.rate * dx.dt))
+        mol = Molecule(randstring(5), Tuple(rand(N)), t)
+        entangle!(getagent(getparent(dx), "preclinical/candidates"), mol)
     end
 
-    dx.t
+    dx.t += dx.dt
 end
 
 function AlgebraicAgents._reinit!(dx::Discovery)
@@ -135,27 +132,23 @@ end
 AlgebraicAgents._projected_to(dx::Discovery) = dx.t
 
 ## candidate molecules
-AlgebraicAgents._step!(::Molecule, _) = nothing
-AlgebraicAgents._projected_to(mol::Molecule) = nothing
+AlgebraicAgents._step!(::Molecule) = nothing
+AlgebraicAgents._projected_to(::Molecule) = nothing
 AlgebraicAgents._reinit!(mol::Molecule) = disentangle!(mol)
 
 ## assays
-function AlgebraicAgents._step!(a::Assay, t)
-    if t === a.t
-        # update beliefs
-        foreach(a.allocated) do uuid
-            update_belief!(getagent(a, uuid), a)
-            getagent(a, uuid).is_allocated = false
-        end
-        # empty schedule
-        empty!(a.allocated)
-        append!(a.allocated, a.planned)
-        empty!(a.planned)
-
-        a.t += a.duration
+function AlgebraicAgents._step!(a::Assay)
+    # update beliefs
+    foreach(a.allocated) do uuid
+        update_belief!(getagent(a, uuid), a)
+        getagent(a, uuid).is_allocated = false
     end
+    # empty schedule
+    empty!(a.allocated)
+    append!(a.allocated, a.planned)
+    empty!(a.planned)
 
-    a.t
+    a.t += a.duration
 end
 
 AlgebraicAgents._projected_to(a::Assay) = a.t
@@ -186,74 +179,71 @@ function uncertainty_reduction(mol::Molecule, assay::Assay)
 end
 
 ## preclinical units
-function AlgebraicAgents._step!(a::Preclinical, t)
-    if t === a.t
-        # candidate molecules - filter out based on beliefs
-        # based on beliefs, accept or reject candidates
-        for c in values(inners(getagent(a, "candidates")))
-            if c.belief <= uncertainty_threshold
-                entangle!(getagent(a, "rejected"), disentangle!(c))
-                c.decision_time = t
-            elseif c.belief >= 1 - uncertainty_threshold
-                entangle!(getagent(a, "accepted"), disentangle!(c))
-                c.decision_time = t
-            elseif length(c.trace) == length(inners(inners(a)["assays"]))
-                entangle!(getagent(a, "rejected"), disentangle!(c))
-                c.decision_time = t
-            end
-        end
-        # now for queries - accept
-        accept = []
-        for q in a.queries_accept
-            append!(accept, filter(collect(values(inners(getagent(a, "candidates")))), q))
-        end
-        for c in accept
+function AlgebraicAgents._step!(a::Preclinical)
+    t = projected_to(a)
+    # candidate molecules - filter out based on beliefs
+    # based on beliefs, accept or reject candidates
+    for c in values(inners(getagent(a, "candidates")))
+        if c.belief <= uncertainty_threshold
+            entangle!(getagent(a, "rejected"), disentangle!(c))
+            c.decision_time = t
+        elseif c.belief >= 1 - uncertainty_threshold
             entangle!(getagent(a, "accepted"), disentangle!(c))
             c.decision_time = t
-        end
-        # queries - reject
-        reject = []
-        for q in a.queries_reject
-            append!(accept, filter(collect(values(inners(getagent(a, "candidates")))), q))
-        end
-        for c in reject
+        elseif length(c.trace) == length(inners(inners(a)["assays"]))
             entangle!(getagent(a, "rejected"), disentangle!(c))
             c.decision_time = t
         end
-
-        # schedule experiments
-        all_assays = collect(values(inners(getagent(a, "assays"))))
-        for c in values(inners(getagent(a, "candidates")))
-            c.is_allocated && continue
-            previous_assays = map(x -> x.name, c.trace)
-            assays_available = filter(all_assays) do x
-                (length(x.planned) < x.capacity) && (getname(x) ∉ previous_assays)
-            end
-
-            if !isempty(assays_available)
-                option = argmin(assays_available) do assay
-                    assay.cost / uncertainty_reduction(c, assay)
-                end
-
-                push!(option.planned, getuuid(c))
-                c.is_allocated = true
-                a.total_costs += option.cost
-            end
-        end
-
-        # add perturbed candidates (from accepted)
-        if !isempty(inners(getagent(a, "accepted")))
-            for c in rand(collect(values(inners(getagent(a, "accepted")))),
-                          rand(Poisson(a.dt * a.perturb_rate)))
-                mol = Molecule(randstring(5), c.fingerprint .+ 0.1 .* Tuple(rand(N)), t,
-                               [c.path; "parent_$(rand(1:2))"; c.name])
-                entangle!(getagent(a, "candidates"), mol)
-            end
-        end
-        a.t += a.dt
+    end
+    # now for queries - accept
+    accept = []
+    for q in a.queries_accept
+        append!(accept, filter(collect(values(inners(getagent(a, "candidates")))), q))
+    end
+    for c in accept
+        entangle!(getagent(a, "accepted"), disentangle!(c))
+        c.decision_time = t
+    end
+    # queries - reject
+    reject = []
+    for q in a.queries_reject
+        append!(accept, filter(collect(values(inners(getagent(a, "candidates")))), q))
+    end
+    for c in reject
+        entangle!(getagent(a, "rejected"), disentangle!(c))
+        c.decision_time = t
     end
 
-    a.t
+    # schedule experiments
+    all_assays = collect(values(inners(getagent(a, "assays"))))
+    for c in values(inners(getagent(a, "candidates")))
+        c.is_allocated && continue
+        previous_assays = map(x -> x.name, c.trace)
+        assays_available = filter(all_assays) do x
+            (length(x.planned) < x.capacity) && (getname(x) ∉ previous_assays)
+        end
+
+        if !isempty(assays_available)
+            option = argmin(assays_available) do assay
+                assay.cost / uncertainty_reduction(c, assay)
+            end
+
+            push!(option.planned, getuuid(c))
+            c.is_allocated = true
+            a.total_costs += option.cost
+        end
+    end
+
+    # add perturbed candidates (from accepted)
+    if !isempty(inners(getagent(a, "accepted")))
+        for c in rand(collect(values(inners(getagent(a, "accepted")))),
+                      rand(Poisson(a.dt * a.perturb_rate)))
+            mol = Molecule(randstring(5), c.fingerprint .+ 0.1 .* Tuple(rand(N)), t,
+                           [c.path; "parent_$(rand(1:2))"; c.name])
+            entangle!(getagent(a, "candidates"), mol)
+        end
+    end
+    a.t += a.dt
 end
 
 AlgebraicAgents._projected_to(a::Preclinical) = a.t

@@ -30,7 +30,7 @@ end
 
 # implement common interface
 getobservable(::GraphicalAgent, _) = nothing
-_step!(::GraphicalAgent, _) = nothing
+_step!(::GraphicalAgent) = nothing
 _projected_to(::GraphicalAgent) = nothing
 
 function ports_in(a::GraphicalAgent)

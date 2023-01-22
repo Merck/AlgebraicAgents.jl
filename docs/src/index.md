@@ -19,7 +19,7 @@ To implement a custom algebraic agent type, you may want to use the convenience 
 Next step is to implement the required interface functions:
 
 ```@docs
-AlgebraicAgents._step!(::AbstractAlgebraicAgent, ::Float64)
+AlgebraicAgents._step!(::AbstractAlgebraicAgent)
 AlgebraicAgents._projected_to(::AbstractAlgebraicAgent)
 AlgebraicAgents.getobservable(::AbstractAlgebraicAgent, ::Any)
 ```

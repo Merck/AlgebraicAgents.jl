@@ -35,33 +35,27 @@ end
 
 Note the use of a conveniency macro `@aagent` which appends additional fields expected (not required, though) by default interface methods.
 
-Next we provide an evolutionary law for `SmallMolecule` type. This is done by extending the interface function `AlgebraicAgents._step!(agent, t::Float64)`.
-
-Here, `t` is the maximal time to which all the systems in a hierarchy have been projected. Once `t` reaches the time point to which `mol` has been projected, then it's time for another step:
+Next we provide an evolutionary law for `SmallMolecule` type. This is done by extending the interface function [`AlgebraicAgents._step!`](@ref).
 
 ```@example 1
 # implement evolution
-function AlgebraicAgents._step!(mol::SmallMolecule, t)
-    if t === (mol.age + mol.birth_time)
-        # log sales volume at time t
-        push!(mol.df_sales, (t, mol.sales))
-        # increment mol's age - by default, mols will evolve by unit step
-        mol.age += 1
-        # apply sales decay in time 
-        mol.sales *= sales_decay_small
+function AlgebraicAgents._step!(mol::SmallMolecule)
+    t = projected_to(mol) # get current time; this equals the time point up to which the mol agent has been projected (enforced via `AlgebraicAgents.step!`)
+    # log sales volume at time t
+    push!(mol.df_sales, (t, mol.sales))
+    # increment mol's age - by default, mols will evolve by unit step
+    mol.age += 1
+    # apply sales decay in time 
+    mol.sales *= sales_decay_small
 
-        # remove mol 1) once sales volume drops below a given level
-        # 2) also account for some random effect - prob of removal increases in time
-        if (mol.sales <= 10) || (rand() >= exp(-0.2*mol.age))
-            mol.kill_time = t
-            push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
-            # remove mol from the system
-            disentangle!(mol)
-        end
+    # remove mol 1) once sales volume drops below a given level
+    # 2) also account for some random effect - prob of removal increases in time
+    if (mol.sales <= 10) || (rand() >= exp(-0.2*mol.age))
+        mol.kill_time = t
+        push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
+        # remove mol from the system
+        disentangle!(mol)
     end
-
-    # return time to which the system has been projected
-    mol.age + mol.birth_time
 end
 ```
 

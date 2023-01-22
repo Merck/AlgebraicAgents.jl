@@ -94,48 +94,45 @@ function _construct_agent(name::AbstractString, abm::Agents.AgentBasedModel, arg
 end
 
 ## implement common interface
-function _step!(a::ABMAgent, t)
-    if _projected_to(a) === t
-        step_size = a.step_size isa Number ? a.step_size : a.step_size(a.abm, t)
-        collect_agents = a.when isa AbstractVector ? (t ∈ a.when) :
-                         a.when isa Bool ? a.when : a.when(a.abm, t)
-        collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) :
-                        a.when isa Bool ? a.when : a.when_model(a.abm, t)
+function _step!(a::ABMAgent)
+    t = projected_to(a)
+    step_size = a.step_size isa Number ? a.step_size : a.step_size(a.abm, t)
+    collect_agents = a.when isa AbstractVector ? (t ∈ a.when) :
+                     a.when isa Bool ? a.when : a.when(a.abm, t)
+    collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) :
+                    a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
-        df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1;
-                                          a.kwargs...)
-        # append collected data
-        ## df_agents
-        if collect_agents && ("step" ∈ names(df_agents))
-            if a.t == a.tspan[1]
-                df_agents_0 = df_agents[df_agents.step .== 0.0, :]
-                df_agents_0[!, :step] = convert.(Float64, df_agents_0[!, :step])
-                df_agents_0[!, :step] .+= a.t
-                append!(a.df_agents, df_agents_0)
-            end
-            df_agents = df_agents[df_agents.step .== 1.0, :]
-            append!(a.df_agents, df_agents)
-            a.df_agents[(end - DataFrames.nrow(df_agents) + 1):end, :step] .+= a.t +
-                                                                               step_size - 1
+    df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1;
+                                      a.kwargs...)
+    # append collected data
+    ## df_agents
+    if collect_agents && ("step" ∈ names(df_agents))
+        if a.t == a.tspan[1]
+            df_agents_0 = df_agents[df_agents.step .== 0.0, :]
+            df_agents_0[!, :step] = convert.(Float64, df_agents_0[!, :step])
+            df_agents_0[!, :step] .+= a.t
+            append!(a.df_agents, df_agents_0)
         end
-        ## df_model
-        if collect_model && ("step" ∈ names(df_model))
-            if a.t == a.tspan[1]
-                df_model_0 = df_model[df_model.step .== 0.0, :]
-                df_model_0[!, :step] = convert.(Float64, df_model_0[!, :step])
-                df_model_0[!, :step] .+= a.t
-                append!(a.df_model, df_model_0)
-            end
-            df_model = df_model[df_model.step .== 1.0, :]
-            append!(a.df_model, df_model)
-            a.df_model[(end - DataFrames.nrow(df_model) + 1):end, :step] .+= a.t +
-                                                                             step_size - 1
+        df_agents = df_agents[df_agents.step .== 1.0, :]
+        append!(a.df_agents, df_agents)
+        a.df_agents[(end - DataFrames.nrow(df_agents) + 1):end, :step] .+= a.t +
+                                                                           step_size - 1
+    end
+    ## df_model
+    if collect_model && ("step" ∈ names(df_model))
+        if a.t == a.tspan[1]
+            df_model_0 = df_model[df_model.step .== 0.0, :]
+            df_model_0[!, :step] = convert.(Float64, df_model_0[!, :step])
+            df_model_0[!, :step] .+= a.t
+            append!(a.df_model, df_model_0)
         end
-
-        a.t += step_size
+        df_model = df_model[df_model.step .== 1.0, :]
+        append!(a.df_model, df_model)
+        a.df_model[(end - DataFrames.nrow(df_model) + 1):end, :step] .+= a.t +
+                                                                         step_size - 1
     end
 
-    _projected_to(a)
+    a.t += step_size
 end
 
 # if step is a float, need to retype the dataframe
@@ -184,7 +181,7 @@ function Base.getproperty(a::AAgent, prop::Symbol)
 end
 
 ## implement common interface
-_step!(::AAgent, ::Float64) = nothing
+_step!(::AAgent) = nothing
 _projected_to(::AAgent) = nothing
 
 function getobservable(a::AAgent, obs)
