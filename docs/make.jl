@@ -21,13 +21,7 @@ pages = [
 ]
 
 makedocs(sitename = "AlgebraicAgents.jl",
-         format = Documenter.HTML(prettyurls = false, edit_link = nothing),
-         workdir = joinpath(@__DIR__, ".."); pages)
+         format = Documenter.HTML(prettyurls = false, edit_link = "main"),
+         ; pages)
 
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
-
-#=
-makedocs(sitename="AlgebraicAgents.jl", build="build_md",
-    format = Markdown(), workdir=joinpath(@__DIR__, ".."); pages
-)
-=#

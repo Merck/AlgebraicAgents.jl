@@ -7,7 +7,7 @@ using AlgebraicAgents
 ```
 
 ```@setup 1
-include("tutorials/agents_tutorial/sir_agents_model.jl")
+include("../../../tutorials/agents_tutorial/sir_agents_model.jl")
 ```
 ```@example 1
 # create a sample agent based model

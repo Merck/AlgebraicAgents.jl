@@ -16,7 +16,7 @@ There are several functions in the interface for an [`AbstractAlgebraicAgent`](@
 
 These are collected into `ret`, which is an object that will be `true` if and only if all agents have returned `true`, and is otherwise the minimum of the numeric values (projection times) returned from each inner agent's step.
 
-![](../assets/simloop.png)
+![](assets/simloop.png)
 
 Above we show a caricature of the main simulation loop. "Enter program" corresponds to the call to `simulate`, the value of `ret` is (typically) initialized to `0.0`. The simulation continues to step while `ret` is not `true` (meaning the maximum time horizon has been reached by the slowest agent), or has not exceeded some maximum. 
 

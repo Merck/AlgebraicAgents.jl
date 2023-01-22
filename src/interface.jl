@@ -220,7 +220,7 @@ function _projected_to(t::AbstractAlgebraicAgent)
 end
 _projected_to(::FreeAgent) = nothing
 
-"Project algebraic agent's solution up to time `t`."
+"Step an agent forward (call only if its projected time is equal to the least projected time, among all agents in the hierarchy)."
 function _step!(a::AbstractAlgebraicAgent)
     @error "algebraic agent $(typeof(a)) doesn't implement `_step!`"
 end

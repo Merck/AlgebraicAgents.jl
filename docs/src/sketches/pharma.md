@@ -13,7 +13,7 @@ The next step is to define the molecules and discovery units types. This is done
 
 ```@setup 1
 using AlgebraicAgents
-include("tutorials/molecules/types.jl")
+include("../../../tutorials/molecules/types.jl")
 ```
 
 ## Integrating a Custom Dynamical System
@@ -155,4 +155,4 @@ To see this in action, call
 draw(getagent(pharma_model, "therapeutic_area1/dx"))
 ```
 
-![plot](../../assets/plot.png)
+![plot](../assets/plot.png)

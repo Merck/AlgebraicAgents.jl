@@ -11,7 +11,7 @@
 
 A lightweight framework to enable **hierarchical, heterogeneous** dynamical systems **co-integration**. *Batteries included!*
 
-<a><img src="docs/assets/code.png" align="right" alt="code" width="500"></a>
+<a><img src="docs/src/assets/code.png" align="right" alt="code" width="500"></a>
 
 <p><b>Entangle dynamical systems</b>
 <ul>
@@ -280,4 +280,4 @@ To see this in action, call
 draw(getagent(pharma_model, "therapeutic_area1/dx"))
 ```
 
-<img src="docs/assets/plot.png" alt="plot" width="500">
+<img src="docs/src/assets/plot.png" alt="plot" width="500">
