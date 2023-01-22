@@ -62,29 +62,29 @@ entangle!(therapeutic_area1, demand_model_1)
 entangle!(therapeutic_area2, demand_model_2)
 
 # show the model
-pharma_model</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent pharma_model with uuid e6cfc8fd of type FreeAgent 
-   inner agents: 
-    agent therapeutic_area1 with uuid 7f73e772 of type FreeAgent 
-       inner agents: demand, dx
-    agent therapeutic_area2 with uuid d9e0e9e1 of type FreeAgent 
-       inner agents: demand, dx</code></pre><pre><code class="language-julia hljs">getagent(pharma_model, glob&quot;therapeutic_area?/&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{FreeAgent}:
- FreeAgent{name=therapeutic_area2, uuid=d9e0e9e1, parent=FreeAgent{name=pharma_model, uuid=e6cfc8fd, parent=nothing}}
- FreeAgent{name=therapeutic_area1, uuid=7f73e772, parent=FreeAgent{name=pharma_model, uuid=e6cfc8fd, parent=nothing}}</code></pre><h2 id="Simulating-the-System"><a class="docs-heading-anchor" href="#Simulating-the-System">Simulating the System</a><a id="Simulating-the-System-1"></a><a class="docs-heading-anchor-permalink" href="#Simulating-the-System" title="Permalink"></a></h2><p>Let&#39;s next evolve the compound model over a hundred time units. The last argument is optional here; see <code>?simulate</code> for the details.</p><pre><code class="language-julia hljs"># let the problem evolve
-simulate(pharma_model, 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent pharma_model with uuid e6cfc8fd of type FreeAgent 
-   inner agents: 
-    agent therapeutic_area1 with uuid 7f73e772 of type FreeAgent 
-       inner agents: fQ9yL, KOILc, U7zOz, dx, b6aSI, yeWMf, 55XDe, l1SUW, hLCmY, 6L95s, 9e5J1, uGWum, Gb3mR, bmXdc, 4DFVZ, jFOLU, Dt7En, JzxeF, owKTT, hd7A3, cC4qP, EWMTz, byI0N, ki1Ri, fNZGl, Y9fjK, QWr9M, xgB5m, ermSr, jjbgu, wLlYl, 4e9jI, saSfC, 7Staf, wCZay, joPrQ, WzQVv, jGQf7, 1SlcV, iFDFJ, yeDeg, 5ddSV, bJ89X, wURl7, 6ciGR, 9yfrB, mBiuI, CZp7T, i3uR2, GZcuh, Uslf4, 67IDd, D2Mii, a5FRs, AM1Pf, QmOZI, MCCaM, Ycn9Z, YGLFL, vNJv6, bsld5, BjAde, JCQ44, Qp34w, demand, yLzBt, 3nCLk, pTpeW, tihZJ, 0E4HN, 8hL59, ZNXci, i9LBF, 3bsTc, wutrP, hgQmh, WdHn9, XO8H7, WU0xO, 0GbxG, XG5V1, FkigB, 0GVt3, ssynq, uDFHS, cyPCm, 0ExKv, MjUo5, POLBY, NdJgJ, Z8pBV, R9cKe, Rzkue
-    agent therapeutic_area2 with uuid d9e0e9e1 of type FreeAgent 
-       inner agents: lfOmH, Oyjls, HJeGN, dx, XC8SP, eOE5b, 9D4pY, 1Rovy, demand, hHyBt, LujfK</code></pre><pre><code class="language-julia hljs">getagent(pharma_model, &quot;therapeutic_area1/dx&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent dx with uuid 250c1b3a of type Main.Discovery 
+pharma_model</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">pharma_model </span></span>with uuid <span class="sgr32">2dad7527 </span>of type <span class="sgr32">FreeAgent </span>
+   <span class="sgr1">inner agents: </span>
+    agent <span class="sgr32"><span class="sgr1">therapeutic_area1 </span></span>with uuid <span class="sgr32">9aba9c9e </span>of type <span class="sgr32">FreeAgent </span>
+       <span class="sgr1">inner agents: </span>demand, dx
+    agent <span class="sgr32"><span class="sgr1">therapeutic_area2 </span></span>with uuid <span class="sgr32">2fb56c8f </span>of type <span class="sgr32">FreeAgent </span>
+       <span class="sgr1">inner agents: </span>demand, dx</code></pre><pre><code class="language-julia hljs">getagent(pharma_model, glob&quot;therapeutic_area?/&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{FreeAgent}:
+ FreeAgent{name=therapeutic_area2, uuid=2fb56c8f, parent=FreeAgent{name=pharma_model, uuid=2dad7527, parent=nothing}}
+ FreeAgent{name=therapeutic_area1, uuid=9aba9c9e, parent=FreeAgent{name=pharma_model, uuid=2dad7527, parent=nothing}}</code></pre><h2 id="Simulating-the-System"><a class="docs-heading-anchor" href="#Simulating-the-System">Simulating the System</a><a id="Simulating-the-System-1"></a><a class="docs-heading-anchor-permalink" href="#Simulating-the-System" title="Permalink"></a></h2><p>Let&#39;s next evolve the compound model over a hundred time units. The last argument is optional here; see <code>?simulate</code> for the details.</p><pre><code class="language-julia hljs"># let the problem evolve
+simulate(pharma_model, 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">pharma_model </span></span>with uuid <span class="sgr32">2dad7527 </span>of type <span class="sgr32">FreeAgent </span>
+   <span class="sgr1">inner agents: </span>
+    agent <span class="sgr32"><span class="sgr1">therapeutic_area1 </span></span>with uuid <span class="sgr32">9aba9c9e </span>of type <span class="sgr32">FreeAgent </span>
+       <span class="sgr1">inner agents: </span>fQ9yL, KOILc, U7zOz, dx, b6aSI, yeWMf, 55XDe, l1SUW, hLCmY, 6L95s, 9e5J1, uGWum, Gb3mR, bmXdc, 4DFVZ, jFOLU, Dt7En, JzxeF, owKTT, hd7A3, cC4qP, EWMTz, byI0N, ki1Ri, fNZGl, Y9fjK, QWr9M, xgB5m, ermSr, jjbgu, wLlYl, 4e9jI, saSfC, 7Staf, wCZay, joPrQ, WzQVv, jGQf7, 1SlcV, iFDFJ, yeDeg, 5ddSV, bJ89X, wURl7, 6ciGR, 9yfrB, mBiuI, CZp7T, i3uR2, GZcuh, Uslf4, 67IDd, D2Mii, a5FRs, AM1Pf, QmOZI, MCCaM, Ycn9Z, YGLFL, vNJv6, bsld5, BjAde, JCQ44, Qp34w, demand, yLzBt, 3nCLk, pTpeW, tihZJ, 0E4HN, 8hL59, ZNXci, i9LBF, 3bsTc, wutrP, hgQmh, WdHn9, XO8H7, WU0xO, 0GbxG, XG5V1, FkigB, 0GVt3, ssynq, uDFHS, cyPCm, 0ExKv, MjUo5, POLBY, NdJgJ, Z8pBV, R9cKe, Rzkue
+    agent <span class="sgr32"><span class="sgr1">therapeutic_area2 </span></span>with uuid <span class="sgr32">2fb56c8f </span>of type <span class="sgr32">FreeAgent </span>
+       <span class="sgr1">inner agents: </span>lfOmH, Oyjls, HJeGN, dx, XC8SP, eOE5b, 9D4pY, 1Rovy, demand, hHyBt, LujfK</code></pre><pre><code class="language-julia hljs">getagent(pharma_model, &quot;therapeutic_area1/dx&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">dx </span></span>with uuid <span class="sgr32">60caedea </span>of type <span class="sgr32">Main.Discovery </span>
    custom properties:
-   rate_small: 5.2
-   rate_large: 10.0
-   productivity: 2.532800543748696
-   t: 102.0
-   dt: 3.0
-   t0: 0.0
-   removed_mols: [(&quot;FrdeM&quot;, 99.0), (&quot;1COe3&quot;, 99.0), (&quot;P3EPp&quot;, 99.0), (&quot;BtBk9&quot;, 99.0), (&quot;0SYuE&quot;, 99.0), (&quot;9DvyS&quot;, 99.0), (&quot;BzXFi&quot;, 99.0), (&quot;ANdRW&quot;, 99.0), (&quot;sgvFK&quot;, 99.0), (&quot;dI03n&quot;, 99.0)  …  (&quot;RpJrd&quot;, 99.0), (&quot;qJh8T&quot;, 99.0), (&quot;XrGkD&quot;, 99.0), (&quot;z7PgD&quot;, 99.0), (&quot;8aFoH&quot;, 99.0), (&quot;w42BP&quot;, 99.0), (&quot;2rYKB&quot;, 99.0), (&quot;HYfGM&quot;, 99.0), (&quot;wK6xA&quot;, 99.0), (&quot;BWr7v&quot;, 99.0)]
-   df_output: 34×4 DataFrame
+   <span class="sgr3">rate_small: </span>5.2
+   <span class="sgr3">rate_large: </span>10.0
+   <span class="sgr3">productivity: </span>2.532800543748696
+   <span class="sgr3">t: </span>102.0
+   <span class="sgr3">dt: </span>3.0
+   <span class="sgr3">t0: </span>0.0
+   <span class="sgr3">removed_mols: </span>[(&quot;FrdeM&quot;, 99.0), (&quot;1COe3&quot;, 99.0), (&quot;P3EPp&quot;, 99.0), (&quot;BtBk9&quot;, 99.0), (&quot;0SYuE&quot;, 99.0), (&quot;9DvyS&quot;, 99.0), (&quot;BzXFi&quot;, 99.0), (&quot;ANdRW&quot;, 99.0), (&quot;sgvFK&quot;, 99.0), (&quot;dI03n&quot;, 99.0)  …  (&quot;RpJrd&quot;, 99.0), (&quot;qJh8T&quot;, 99.0), (&quot;XrGkD&quot;, 99.0), (&quot;z7PgD&quot;, 99.0), (&quot;8aFoH&quot;, 99.0), (&quot;w42BP&quot;, 99.0), (&quot;2rYKB&quot;, 99.0), (&quot;HYfGM&quot;, 99.0), (&quot;wK6xA&quot;, 99.0), (&quot;BWr7v&quot;, 99.0)]
+   <span class="sgr3">df_output: </span>34×4 DataFrame
  Row │ time     small  large  removed
      │ Float64  Int64  Int64  Int64
 ─────┼────────────────────────────────
@@ -105,12 +105,12 @@ simulate(pharma_model, 100)</code></pre><pre class="documenter-example-output"><
   33 │    96.0     33     76       99
   34 │    99.0     34     78      106
                        19 rows omitted
-   parent: therapeutic_area1</code></pre><pre><code class="language-julia hljs">getagent(pharma_model, &quot;therapeutic_area1/demand&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent demand with uuid 8b873b07 of type DiffEqAgent 
+   <span class="sgr1">parent: </span><span class="sgr32">therapeutic_area1</span></code></pre><pre><code class="language-julia hljs">getagent(pharma_model, &quot;therapeutic_area1/demand&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">demand </span></span>with uuid <span class="sgr32">b56e641c </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
-   integrator: 
+   <span class="sgr3">integrator: </span>
 t: 100.0
 u: 2.5764487191894188
-   ports out: demand
-   parent: therapeutic_area1</code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>It&#39;s possible to provide custom plotting recipes by specializing the interface method <code>AlgebraicAgents._draw(agent)</code>. Whenever a dynamical system&#39;s state is logged into a single DataFrame - as is the case with <code>Discovery</code> type - you may utilize a convenience macro <code>@draw_df</code>. To that end, we need to load <code>DataFrames</code> and <code>Plots</code>.</p><pre><code class="language-julia hljs"># implement plots
+   <span class="sgr3">ports out: </span>demand
+   <span class="sgr1">parent: </span><span class="sgr32">therapeutic_area1</span></code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>It&#39;s possible to provide custom plotting recipes by specializing the interface method <code>AlgebraicAgents._draw(agent)</code>. Whenever a dynamical system&#39;s state is logged into a single DataFrame - as is the case with <code>Discovery</code> type - you may utilize a convenience macro <code>@draw_df</code>. To that end, we need to load <code>DataFrames</code> and <code>Plots</code>.</p><pre><code class="language-julia hljs"># implement plots
 using DataFrames, Plots
-AlgebraicAgents.@draw_df Discovery df_output</code></pre><p>To see this in action, call</p><pre><code class="language-julia hljs">draw(getagent(pharma_model, &quot;therapeutic_area1/dx&quot;))</code></pre><p><img src="../../assets/plot.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="agents.html">« Agents.jl Integration</a><a class="docs-footer-nextpage" href="sciml.html">SciML Integration »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Sunday 22 January 2023 16:39">Sunday 22 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+AlgebraicAgents.@draw_df Discovery df_output</code></pre><p>To see this in action, call</p><pre><code class="language-julia hljs">draw(getagent(pharma_model, &quot;therapeutic_area1/dx&quot;))</code></pre><p><img src="../../assets/plot.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="agents.html">« Agents.jl Integration</a><a class="docs-footer-nextpage" href="sciml.html">SciML Integration »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Sunday 22 January 2023 17:10">Sunday 22 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

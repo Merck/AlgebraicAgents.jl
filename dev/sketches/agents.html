@@ -9,49 +9,49 @@ recovered(x) = count(i == :R for i in x)
 to_collect = [(:status, f) for f in (infected, recovered, length)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Tuple{Symbol, Function}}:
  (:status, Main.infected)
  (:status, Main.recovered)
- (:status, length)</code></pre><pre><code class="language-julia hljs">m = ABMAgent(&quot;sir_model&quot;, abm; agent_step!, tspan=(0., 100.), adata=to_collect)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent sir_model with uuid e692609a of type ABMAgent 
+ (:status, length)</code></pre><pre><code class="language-julia hljs">m = ABMAgent(&quot;sir_model&quot;, abm; agent_step!, tspan=(0., 100.), adata=to_collect)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">a281434e </span>of type <span class="sgr32">ABMAgent </span>
    custom properties:
-   abm: 
+   <span class="sgr3">abm: </span>
 AgentBasedModel with 28540 agents of type PoorSoul
  space: GraphSpace with 8 positions and 56 edges
  scheduler: fastest
  properties: migration_rates, Is, infection_period, __aagent__, detection_time, reinfection_probability, Ns, β_det, death_rate, β_und, C
-   df_agents: 
+   <span class="sgr3">df_agents: </span>
 0×0 DataFrame
-   df_model: 
+   <span class="sgr3">df_model: </span>
 0×0 DataFrame
-   inner agents: 
-    agent 5461 with uuid 6264030f of type AAgent 
+   <span class="sgr1">inner agents: </span>
+    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">a3129423 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(5461, 2, 0, :S)
-    agent 23986 with uuid 5fe23592 of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">83e844ce </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(23986, 7, 0, :S)
-    agent 10467 with uuid 0ef4269e of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">829744c4 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(10467, 3, 0, :S)
-    agent 18565 with uuid 79fd6eb9 of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">a3860a76 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(18565, 5, 0, :S)
-    agent 26767 with uuid d93edb00 of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">34080791 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(26767, 7, 0, :S)
     28535 more agent(s) not shown ...</code></pre><pre><code class="language-julia hljs"># simulate the model
-simulate(m)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent sir_model with uuid e692609a of type ABMAgent 
+simulate(m)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">a281434e </span>of type <span class="sgr32">ABMAgent </span>
    custom properties:
-   abm: 
+   <span class="sgr3">abm: </span>
 AgentBasedModel with 27413 agents of type PoorSoul
  space: GraphSpace with 8 positions and 56 edges
  scheduler: fastest
  properties: migration_rates, Is, infection_period, __aagent__, detection_time, reinfection_probability, Ns, β_det, death_rate, β_und, C
-   df_agents: 
+   <span class="sgr3">df_agents: </span>
 0×0 DataFrame
-   df_model: 
+   <span class="sgr3">df_model: </span>
 101×4 DataFrame
  Row │ step     infected_status  recovered_status  length_status
      │ Float64  Int64            Int64             Int64
@@ -73,25 +73,25 @@ AgentBasedModel with 27413 agents of type PoorSoul
  100 │    99.0            27405                 9          27414
  101 │   100.0            27392                21          27413
                                                   86 rows omitted
-   inner agents: 
-    agent 5461 with uuid 6264030f of type AAgent 
+   <span class="sgr1">inner agents: </span>
+    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">a3129423 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(5461, 3, 24, :I)
-    agent 23986 with uuid 5fe23592 of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">83e844ce </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(23986, 3, 23, :I)
-    agent 10467 with uuid 0ef4269e of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">829744c4 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(10467, 2, 20, :I)
-    agent 18565 with uuid 79fd6eb9 of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">a3860a76 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(18565, 8, 22, :I)
-    agent 26767 with uuid d93edb00 of type AAgent 
+    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">34080791 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
-       agent: 
+       <span class="sgr3">agent: </span>
 Main.PoorSoul(26767, 8, 22, :I)
-    27408 more agent(s) not shown ...</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../integrations/AlgebraicDynamicsIntegration.html">« AlgebraicDynamics.jl Integration</a><a class="docs-footer-nextpage" href="pharma.html">A Toy Pharma Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Sunday 22 January 2023 16:39">Sunday 22 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    27408 more agent(s) not shown ...</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../integrations/AlgebraicDynamicsIntegration.html">« AlgebraicDynamics.jl Integration</a><a class="docs-footer-nextpage" href="pharma.html">A Toy Pharma Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Sunday 22 January 2023 17:10">Sunday 22 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
