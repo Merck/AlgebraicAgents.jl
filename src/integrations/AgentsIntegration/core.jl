@@ -98,12 +98,12 @@ function _step!(a::ABMAgent)
     t = projected_to(a)
     step_size = a.step_size isa Number ? a.step_size : a.step_size(a.abm, t)
     collect_agents = a.when isa AbstractVector ? (t ∈ a.when) :
-                        a.when isa Bool ? a.when : a.when(a.abm, t)
+                     a.when isa Bool ? a.when : a.when(a.abm, t)
     collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) :
                     a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
     df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1;
-                                        a.kwargs...)
+                                      a.kwargs...)
     # append collected data
     ## df_agents
     if collect_agents && ("step" ∈ names(df_agents))
@@ -116,7 +116,7 @@ function _step!(a::ABMAgent)
         df_agents = df_agents[df_agents.step .== 1.0, :]
         append!(a.df_agents, df_agents)
         a.df_agents[(end - DataFrames.nrow(df_agents) + 1):end, :step] .+= a.t +
-                                                                            step_size - 1
+                                                                           step_size - 1
     end
     ## df_model
     if collect_model && ("step" ∈ names(df_model))
@@ -129,7 +129,7 @@ function _step!(a::ABMAgent)
         df_model = df_model[df_model.step .== 1.0, :]
         append!(a.df_model, df_model)
         a.df_model[(end - DataFrames.nrow(df_model) + 1):end, :step] .+= a.t +
-                                                                            step_size - 1
+                                                                         step_size - 1
     end
 
     a.t += step_size

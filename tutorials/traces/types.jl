@@ -237,9 +237,9 @@ function AlgebraicAgents._step!(a::Preclinical)
     # add perturbed candidates (from accepted)
     if !isempty(inners(getagent(a, "accepted")))
         for c in rand(collect(values(inners(getagent(a, "accepted")))),
-                        rand(Poisson(a.dt * a.perturb_rate)))
+                      rand(Poisson(a.dt * a.perturb_rate)))
             mol = Molecule(randstring(5), c.fingerprint .+ 0.1 .* Tuple(rand(N)), t,
-                            [c.path; "parent_$(rand(1:2))"; c.name])
+                           [c.path; "parent_$(rand(1:2))"; c.name])
             entangle!(getagent(a, "candidates"), mol)
         end
     end
