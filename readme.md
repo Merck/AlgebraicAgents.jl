@@ -4,7 +4,7 @@
   <a href="#about">About</a> |
   <a href="#context-dynamics-of-value-evolution-dyve">Context</a> |
   <a href="#a-single-sketch">A Single Sketch</a> |
-  <a href="https://merck.github.io/AlgebraicAgents.jl/">Documentation</a>
+  <a href="https://merck.github.io/AlgebraicAgents.jl/stable">Documentation</a>
 </p>
 
 ## About
