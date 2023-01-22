@@ -54,9 +54,9 @@ export getopera, getdirectory, getparameters, setparameters!
 export getobservable, gettimeobservable
 ## list of observables observed by an agent and exported by an agent, respectively
 export ports_in, exposed_ports
-## step!, simulate
-export step!, simulate
-# plot
+## step!, simulate, least projected time
+export step!, simulate, projected_to
+## plot
 export draw
 
 # convenient algebraic agent subtyping

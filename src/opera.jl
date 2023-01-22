@@ -31,7 +31,7 @@ which will translate into a call `agent->f(agent, args...)` or `(x->ex)(agent)`,
 
 See [`@schedule`](@ref) and [`@schedule_call`](@ref).
 
-they exist within a single step of the model and are executed after the calls
+They exist within a single step of the model and are executed after the calls
 to `_prestep!` and `_step!` finish. 
 
 See [`opera_enqueue!`](@ref).

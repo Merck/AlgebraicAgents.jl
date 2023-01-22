@@ -142,13 +142,9 @@ function push_ports_in!(a::DiffEqAgent, pairs...)
 end
 
 # implement internal step function
-function _step!(a::DiffEqAgent, t)
-    if projected_to(a) === t
-        ret = DiffEqBase.step!(a.integrator)
-        ret == true && return true
-    end
-
-    a.integrator.t
+function _step!(a::DiffEqAgent)
+    ret = DiffEqBase.step!(a.integrator)
+    ret == true && return true
 end
 
 function _getparameters(a::DiffEqAgent)
