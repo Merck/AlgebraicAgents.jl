@@ -104,6 +104,7 @@ end
 
 @testset "test custom AbstractOperaCall" begin
     
+    # subtype of AbstractOperaCall which Opera can work with
     struct TwoAgentCall{A <: AbstractAlgebraicAgent, B <: AbstractAlgebraicAgent, C <: Function} <: AbstractOperaCall
         agentA::A
         agentB::B
@@ -122,7 +123,7 @@ end
         b.myinfo = tmp
     end
 
-    # function AlgebraicAgents.execute_action!(::Opera, call::TwoAgentCall{A,B,C}) where {A,B,C}
+    # Opera interface functions which need specialization
     function AlgebraicAgents.execute_action!(::Opera, call::TwoAgentCall)
         call.call(call.agentA, call.agentB)
     end
@@ -131,6 +132,7 @@ end
         !haskey(opera.calls, call) && enqueue!(opera.calls, call => priority)
     end
     
+    # general interface functions for MyAgent2 types
     function AlgebraicAgents._step!(a::MyAgent2{T,M}) where {T,M}
         if a.name == "alice"
             opera_enqueue!(getopera(a), TwoAgentCall(a, only(getagent(a, r"bob")), interact_together))
@@ -141,6 +143,7 @@ end
     
     AlgebraicAgents._projected_to(a::MyAgent2) = a.time
     
+    # simulate
     alice = MyAgent2{Float64, String}("alice", 0.0, 1.0, "alice's info")
     bob = MyAgent2{Float64, String}("bob", 0.0, 1.0, "bob's info")
     
@@ -153,5 +156,5 @@ end
 
     @test alice.myinfo == "bob's info"
     @test bob.myinfo == "alice's info"
-    
+
 end
