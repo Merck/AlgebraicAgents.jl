@@ -24,4 +24,6 @@ The inner area enclosed by a dashed border represents where program control is g
 
 ## Opera
 
-See help [`Opera`](@ref)
+The Opera system allows interactions between agents to be scheduled, which will be executed at the end of a time step, sorted by priority.
+
+For more details, see the API documentation of [`Opera`](@ref).

@@ -1,4 +1,5 @@
 using Test, AlgebraicAgents
+using DataStructures: enqueue!
 
 @testset "opera interaction with two agents on different time steps" begin
 
@@ -55,9 +56,9 @@ end
         Δt::T
         counter1::Int # counts _step
         counter1_t::Vector{T}
-        counter2::Int # countes _interact!
-        counter2_t::Vector{T}
-        counter2_tt::Vector{T}
+        counter2::Int # for opera calls
+        counter2_t::Vector{T} # local time when the opera call is executed
+        counter2_tt::Vector{T} # time of the scheduling agent when that call was queued
     end
 
     function poke_other(a, t)
@@ -99,4 +100,58 @@ end
     @test bob.counter2_t == [1.5, 1.5, 3, 4.5, 4.5, 6, 7.5, 7.5, 9]
     @test bob.counter2_tt == alice.counter1_t
 
+end
+
+@testset "test custom AbstractOperaCall" begin
+    
+    struct TwoAgentCall{A <: AbstractAlgebraicAgent, B <: AbstractAlgebraicAgent, C <: Function} <: AbstractOperaCall
+        agentA::A
+        agentB::B
+        call::C
+    end
+
+    @aagent struct MyAgent2{T <: Real, M <: AbstractString}
+        time::T
+        Δt::T
+        myinfo::M
+    end
+
+    function interact_together(a, b)
+        tmp = a.myinfo
+        a.myinfo = b.myinfo
+        b.myinfo = tmp
+    end
+
+    # function AlgebraicAgents.execute_action!(::Opera, call::TwoAgentCall{A,B,C}) where {A,B,C}
+    function AlgebraicAgents.execute_action!(::Opera, call::TwoAgentCall)
+        call.call(call.agentA, call.agentB)
+    end
+
+    function AlgebraicAgents.opera_enqueue!(opera::Opera, call::TwoAgentCall, priority::Float64 = 0.0)
+        !haskey(opera.calls, call) && enqueue!(opera.calls, call => priority)
+    end
+    
+    function AlgebraicAgents._step!(a::MyAgent2{T,M}) where {T,M}
+        if a.name == "alice"
+            opera_enqueue!(getopera(a), TwoAgentCall(a, only(getagent(a, r"bob")), interact_together))
+        end
+    
+        a.time += a.Δt
+    end
+    
+    AlgebraicAgents._projected_to(a::MyAgent2) = a.time
+    
+    alice = MyAgent2{Float64, String}("alice", 0.0, 1.0, "alice's info")
+    bob = MyAgent2{Float64, String}("bob", 0.0, 1.0, "bob's info")
+    
+    joint_system = ⊕(alice, bob, name="joint")
+
+    @test alice.myinfo == "alice's info"
+    @test bob.myinfo == "bob's info"
+
+    simulate(joint_system, 1.0)
+
+    @test alice.myinfo == "bob's info"
+    @test bob.myinfo == "alice's info"
+    
 end
