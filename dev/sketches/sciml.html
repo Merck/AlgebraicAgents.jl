@@ -11,7 +11,7 @@ timespan: (0.0, 10.0)
 u0: 0.5</code></pre><pre><code class="language-julia hljs">## atomic models
 m1 = DiffEqAgent(&quot;model1&quot;, prob)
 m2 = DiffEqAgent(&quot;model2&quot;, prob)
-m3 = DiffEqAgent(&quot;model3&quot;, prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">model3 </span></span>with uuid <span class="sgr32">213325c5 </span>of type <span class="sgr32">DiffEqAgent </span>
+m3 = DiffEqAgent(&quot;model3&quot;, prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">model3 </span></span>with uuid <span class="sgr32">8a0a8899 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 0.0
@@ -48,16 +48,16 @@ prob_ = ODEProblem(f_,u0,tspan)
 m4 = DiffEqAgent(&quot;model4&quot;, prob_)
 ### alternative way to set-up reference
 # m4 = DiffEqAgent(&quot;model4&quot;, prob_; oref=:__aagent__)
-# m4 = @wrap prob_ ODEProblem(f_,u0,tspan) oref=:__agent__</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">model4 </span></span>with uuid <span class="sgr32">8f35d9d1 </span>of type <span class="sgr32">DiffEqAgent </span>
+# m4 = @wrap prob_ ODEProblem(f_,u0,tspan) oref=:__agent__</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">model4 </span></span>with uuid <span class="sgr32">f0f4f3b0 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 0.0
 u: 0.5</code></pre><pre><code class="language-julia hljs"># hierarchical sum of atomic models
-m = ⊕(m1, m2; name=&quot;diagram1&quot;) ⊕ ⊕(m3, m4; name=&quot;diagram2&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">diagram </span></span>with uuid <span class="sgr32">9f56631a </span>of type <span class="sgr32">FreeAgent </span>
+m = ⊕(m1, m2; name=&quot;diagram1&quot;) ⊕ ⊕(m3, m4; name=&quot;diagram2&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">diagram </span></span>with uuid <span class="sgr32">72a42351 </span>of type <span class="sgr32">FreeAgent </span>
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">diagram1 </span></span>with uuid <span class="sgr32">9818e917 </span>of type <span class="sgr32">FreeAgent </span>
+    agent <span class="sgr32"><span class="sgr1">diagram1 </span></span>with uuid <span class="sgr32">84b998e7 </span>of type <span class="sgr32">FreeAgent </span>
        <span class="sgr1">inner agents: </span>model1, model2
-    agent <span class="sgr32"><span class="sgr1">diagram2 </span></span>with uuid <span class="sgr32">00a7b8f8 </span>of type <span class="sgr32">FreeAgent </span>
+    agent <span class="sgr32"><span class="sgr1">diagram2 </span></span>with uuid <span class="sgr32">67ea67e2 </span>of type <span class="sgr32">FreeAgent </span>
        <span class="sgr1">inner agents: </span>model3, model4</code></pre><pre><code class="language-julia hljs"># explore path-like structure of agents
 
 ## index by unix-like path
@@ -72,13 +72,13 @@ getagent(m, r&quot;model.*&quot;)
 ## index by glob expression
 getagent(m, glob&quot;**/model?/&quot;)
 getagent(m, glob&quot;**/model?&quot;s)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{DiffEqAgent}:
- DiffEqAgent{name=model4, uuid=8f35d9d1, parent=FreeAgent{name=diagram2, uuid=00a7b8f8, parent=FreeAgent{name=diagram, uuid=9f56631a, parent=nothing}}}
- DiffEqAgent{name=model1, uuid=95829095, parent=FreeAgent{name=diagram1, uuid=9818e917, parent=FreeAgent{name=diagram, uuid=9f56631a, parent=nothing}}}
- DiffEqAgent{name=model2, uuid=611248a0, parent=FreeAgent{name=diagram1, uuid=9818e917, parent=FreeAgent{name=diagram, uuid=9f56631a, parent=nothing}}}
- DiffEqAgent{name=model3, uuid=213325c5, parent=FreeAgent{name=diagram2, uuid=00a7b8f8, parent=FreeAgent{name=diagram, uuid=9f56631a, parent=nothing}}}</code></pre><pre><code class="language-julia hljs"># solving the problems
-sol = simulate(m)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">diagram </span></span>with uuid <span class="sgr32">9f56631a </span>of type <span class="sgr32">FreeAgent </span>
+ DiffEqAgent{name=model4, uuid=f0f4f3b0, parent=FreeAgent{name=diagram2, uuid=67ea67e2, parent=FreeAgent{name=diagram, uuid=72a42351, parent=nothing}}}
+ DiffEqAgent{name=model1, uuid=5354025e, parent=FreeAgent{name=diagram1, uuid=84b998e7, parent=FreeAgent{name=diagram, uuid=72a42351, parent=nothing}}}
+ DiffEqAgent{name=model2, uuid=e9124b3d, parent=FreeAgent{name=diagram1, uuid=84b998e7, parent=FreeAgent{name=diagram, uuid=72a42351, parent=nothing}}}
+ DiffEqAgent{name=model3, uuid=8a0a8899, parent=FreeAgent{name=diagram2, uuid=67ea67e2, parent=FreeAgent{name=diagram, uuid=72a42351, parent=nothing}}}</code></pre><pre><code class="language-julia hljs"># solving the problems
+sol = simulate(m)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">diagram </span></span>with uuid <span class="sgr32">72a42351 </span>of type <span class="sgr32">FreeAgent </span>
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">diagram1 </span></span>with uuid <span class="sgr32">9818e917 </span>of type <span class="sgr32">FreeAgent </span>
+    agent <span class="sgr32"><span class="sgr1">diagram1 </span></span>with uuid <span class="sgr32">84b998e7 </span>of type <span class="sgr32">FreeAgent </span>
        <span class="sgr1">inner agents: </span>model1, model2
-    agent <span class="sgr32"><span class="sgr1">diagram2 </span></span>with uuid <span class="sgr32">00a7b8f8 </span>of type <span class="sgr32">FreeAgent </span>
-       <span class="sgr1">inner agents: </span>model3, model4</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="pharma.html">« A Toy Pharma Model</a><a class="docs-footer-nextpage" href="algebraicdynamics.html">Lotka-Voltera Two Ways »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Sunday 22 January 2023 22:55">Sunday 22 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    agent <span class="sgr32"><span class="sgr1">diagram2 </span></span>with uuid <span class="sgr32">67ea67e2 </span>of type <span class="sgr32">FreeAgent </span>
+       <span class="sgr1">inner agents: </span>model3, model4</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="pharma.html">« A Toy Pharma Model</a><a class="docs-footer-nextpage" href="algebraicdynamics.html">Lotka-Voltera Two Ways »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 25 January 2023 15:48">Wednesday 25 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
