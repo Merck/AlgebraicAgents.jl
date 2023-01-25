@@ -21,3 +21,14 @@ These are collected into `ret`, which is an object that will be `true` if and on
 Above we show a caricature of the main simulation loop. "Enter program" corresponds to the call to `simulate`, the value of `ret` is (typically) initialized to `0.0`. The simulation continues to step while `ret` is not `true` (meaning the maximum time horizon has been reached by the slowest agent), or has not exceeded some maximum. 
 
 The inner area enclosed by a dashed border represents where program control is given to the `step!` method. The root agent applies `_prestep!` recurvisely to all of its inner (enclosed) agents. After this, `step!` is then applied to all inner agents, and `ret` is updated by each of them. Then the agent applies its own local update `_step!` if its own projected time is equal to the minimum of all inner agent projected times (not shown). Then the Opera module for additional interactions is called for the root agent.
+
+## Opera
+
+The Opera system allows interactions between agents to be scheduled, which will be executed at the end of a time step, sorted by priority. By default, AlgebraicAgents.jl provides support for two types of interactions:
+  
+  * [`@schedule`](@ref) is used to schedule a "wake up" call to the agent, custom behavior can be implemented by defining [`AlgebraicAgents._interact!`](@ref) for subtypes of `AbstractAlgebraicAgent`.
+  * [`@schedule_call`](@ref) is used to schedule a callback function to the agent.
+
+However the system can work with arbitrary types of interactions. To do so, simply define a new call type that is a subtype of `AbstractOperaCall`. The methods `execute_action!` and `opera_enqueue!` must be specialized for your new call type. After that, your new interaction type can be used just like any other! To see an example, please check out our tests.
+
+For more details, see the API documentation of [`Opera`](@ref) and our tests.
