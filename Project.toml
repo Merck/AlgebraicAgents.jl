@@ -1,6 +1,6 @@
 name = "AlgebraicAgents"
 uuid = "f6eb0ae3-10fa-40e6-88dd-9006ba45093a"
-version = "0.3.5"
+version = "0.3.6"
 
 [deps]
 Crayons = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
