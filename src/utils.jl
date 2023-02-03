@@ -1,3 +1,5 @@
+using InteractiveUtils: subtypes
+
 "Return code propagation."
 macro ret(old, ret)
     quote
@@ -210,4 +212,51 @@ macro get_agent(obj, args...)
     quote
         AlgebraicAgents._get_agent($obj, $(args...))
     end |> esc
+end
+
+"""
+    typetree_mmd(T, TT)
+Return a `Vector{String}` of the type hierarchy with type `T`, in format suitable
+for making [Mermaid](https://github.com/mermaid-js/mermaid) class diagrams. For
+the root case (where `T` is the top of the hierarchy), `TT` may be set to nothing
+(default argument).
+
+# Examples
+```julia
+# the following may be pasted into the Mermaid live editor:
+# https://mermaid.live/
+print(join(typetree_mmd(Integer), ""))
+```
+"""
+function typetree_mmd(T::Type, TT::Type)
+    ret = Vector{String}()
+    append!(ret, ["class $(T)\n"])
+    if isabstracttype(T)
+        append!(ret, ["<<Abstract>> $(T)\n"])
+    end
+    append!(ret, ["$(TT) <|-- $(T)\n"])
+    sub_types = [i for i in subtypes(T)]
+    for i in 1:length(sub_types)
+        append!(
+            ret, typetree_mmd(sub_types[i], T)
+        )
+    end
+    ret
+end
+
+function typetree_mmd(T::Type, TT::Nothing = nothing)
+    ret = Vector{String}()
+    append!(ret, ["classDiagram\n"])
+    append!(ret, ["class $(T)\n"])
+    if isabstracttype(T)
+        append!(ret, ["<<Abstract>> $(T)\n"])
+    end
+    append!(ret, ["$(TT) <|-- $(T)\n"])
+    sub_types = [i for i in subtypes(T)]
+    for i in 1:length(sub_types)
+        append!(
+            ret, typetree_mmd(sub_types[i], T)
+        )
+    end
+    ret
 end
