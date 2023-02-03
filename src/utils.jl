@@ -249,7 +249,6 @@ function typetree_mmd(T::Type, TT::Nothing = nothing)
     if isabstracttype(T)
         append!(ret, ["<<Abstract>> $(T)\n"])
     end
-    append!(ret, ["$(TT) <|-- $(T)\n"])
     sub_types = [i for i in subtypes(T)]
     for i in 1:length(sub_types)
         append!(ret, typetree_mmd(sub_types[i], T))
