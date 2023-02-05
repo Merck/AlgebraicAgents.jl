@@ -180,6 +180,12 @@ flatten
 @draw_df
 ```
 
+### Return type hierarchy for Mermaid class diagram
+
+```@docs
+typetree_mmd
+```
+
 ## Queries
 
 It is possible to run filter and transform queries on agent hierarchies.

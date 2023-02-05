@@ -42,6 +42,8 @@ export objective
 export @wrap
 ## extract wrap from complex types
 export @get_agent
+## return type hierarchy suitable for Mermaid
+export typetree_mmd
 
 # interface: basic type definitions, interface (init, step, simulate, build_solution), accessors
 include("interface.jl")
