@@ -9,7 +9,7 @@ recovered(x) = count(i == :R for i in x)
 to_collect = [(:status, f) for f in (infected, recovered, length)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Tuple{Symbol, Function}}:
  (:status, Main.infected)
  (:status, Main.recovered)
- (:status, length)</code></pre><pre><code class="language-julia hljs">m = ABMAgent(&quot;sir_model&quot;, abm; agent_step!, tspan=(0., 100.), adata=to_collect)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">889168c4 </span>of type <span class="sgr32">ABMAgent </span>
+ (:status, length)</code></pre><pre><code class="language-julia hljs">m = ABMAgent(&quot;sir_model&quot;, abm; agent_step!, tspan=(0., 100.), adata=to_collect)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">66d7f696 </span>of type <span class="sgr32">ABMAgent </span>
    custom properties:
    <span class="sgr3">abm: </span>
 AgentBasedModel with 28540 agents of type PoorSoul
@@ -21,28 +21,28 @@ AgentBasedModel with 28540 agents of type PoorSoul
    <span class="sgr3">df_model: </span>
 0×0 DataFrame
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">fa5d71f8 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">a0555298 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(5461, 2, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">72030275 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">bd04e4e1 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(23986, 7, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">b4a3d053 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">3acb5506 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(10467, 3, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">5db3df23 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">308bba15 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(18565, 5, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">e5a9c1aa </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">fcabf360 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(26767, 7, 0, :S)
     28535 more agent(s) not shown ...</code></pre><pre><code class="language-julia hljs"># simulate the model
-simulate(m)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">889168c4 </span>of type <span class="sgr32">ABMAgent </span>
+simulate(m)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">66d7f696 </span>of type <span class="sgr32">ABMAgent </span>
    custom properties:
    <span class="sgr3">abm: </span>
 AgentBasedModel with 27413 agents of type PoorSoul
@@ -74,24 +74,24 @@ AgentBasedModel with 27413 agents of type PoorSoul
  101 │   100.0            27392                21          27413
                                                   86 rows omitted
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">fa5d71f8 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">a0555298 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(5461, 3, 24, :I)
-    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">72030275 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">bd04e4e1 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(23986, 3, 23, :I)
-    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">b4a3d053 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">3acb5506 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(10467, 2, 20, :I)
-    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">5db3df23 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">308bba15 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(18565, 8, 22, :I)
-    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">e5a9c1aa </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">fcabf360 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(26767, 8, 22, :I)
-    27408 more agent(s) not shown ...</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../integrations/AlgebraicDynamicsIntegration.html">« AlgebraicDynamics.jl Integration</a><a class="docs-footer-nextpage" href="pharma.html">A Toy Pharma Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 25 January 2023 15:48">Wednesday 25 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    27408 more agent(s) not shown ...</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../integrations/AlgebraicDynamicsIntegration.html">« AlgebraicDynamics.jl Integration</a><a class="docs-footer-nextpage" href="pharma.html">A Toy Pharma Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Sunday 5 February 2023 18:43">Sunday 5 February 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
