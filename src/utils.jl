@@ -234,13 +234,10 @@ print(join(typetree_mmd(Integer), ""))
 """
 function typetree_mmd(T::Type, TT::Type; rem = false)
     ret = Vector{String}()
-    # append!(ret, ["class $(T)\n"])
     append!(ret, ["class $(rem_module(T, rem))\n"])
     if isabstracttype(T)
-        # append!(ret, ["<<Abstract>> $(T)\n"])
         append!(ret, ["<<Abstract>> $(rem_module(T, rem))\n"])
     end
-    # append!(ret, ["$(TT) <|-- $(T)\n"])
     append!(ret, ["$(rem_module(TT, rem)) <|-- $(rem_module(T, rem))\n"])
     sub_types = [i for i in subtypes(T)]
     for i in 1:length(sub_types)
@@ -252,10 +249,8 @@ end
 function typetree_mmd(T::Type, TT::Nothing = nothing; rem = false)
     ret = Vector{String}()
     append!(ret, ["classDiagram\n"])
-    # append!(ret, ["class $(T)\n"])
     append!(ret, ["class $(rem_module(T, rem))\n"])
     if isabstracttype(T)
-        # append!(ret, ["<<Abstract>> $(T)\n"])
         append!(ret, ["<<Abstract>> $(rem_module(T, rem))\n"])
     end
     sub_types = [i for i in subtypes(T)]
