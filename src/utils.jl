@@ -215,11 +215,15 @@ macro get_agent(obj, args...)
 end
 
 """
-    typetree_mmd(T, TT)
+    typetree_mmd(T, TT; rem = false)
 Return a `Vector{String}` of the type hierarchy with type `T`, in format suitable
 for making [Mermaid](https://github.com/mermaid-js/mermaid) class diagrams. For
 the root case (where `T` is the top of the hierarchy), `TT` may be set to nothing
 (default argument).
+
+The keyword argument `rem` can be set to true to strip the module prefix from typenames.
+This is useful for Mermaid diagrams, because the Mermaid classDiagram does not
+currently support "." characters in class names.
 
 # Examples
 ```julia
@@ -228,30 +232,39 @@ the root case (where `T` is the top of the hierarchy), `TT` may be set to nothin
 print(join(typetree_mmd(Integer), ""))
 ```
 """
-function typetree_mmd(T::Type, TT::Type)
+function typetree_mmd(T::Type, TT::Type; rem = false)
     ret = Vector{String}()
-    append!(ret, ["class $(T)\n"])
+    # append!(ret, ["class $(T)\n"])
+    append!(ret, ["class $(rem_module(T, rem))\n"])
     if isabstracttype(T)
-        append!(ret, ["<<Abstract>> $(T)\n"])
+        # append!(ret, ["<<Abstract>> $(T)\n"])
+        append!(ret, ["<<Abstract>> $(rem_module(T, rem))\n"])
     end
-    append!(ret, ["$(TT) <|-- $(T)\n"])
+    # append!(ret, ["$(TT) <|-- $(T)\n"])
+    append!(ret, ["$(rem_module(TT, rem)) <|-- $(rem_module(T, rem))\n"])
     sub_types = [i for i in subtypes(T)]
     for i in 1:length(sub_types)
-        append!(ret, typetree_mmd(sub_types[i], T))
+        append!(ret, typetree_mmd(sub_types[i], T; rem = rem))
     end
     ret
 end
 
-function typetree_mmd(T::Type, TT::Nothing = nothing)
+function typetree_mmd(T::Type, TT::Nothing = nothing; rem = false)
     ret = Vector{String}()
     append!(ret, ["classDiagram\n"])
-    append!(ret, ["class $(T)\n"])
+    # append!(ret, ["class $(T)\n"])
+    append!(ret, ["class $(rem_module(T, rem))\n"])
     if isabstracttype(T)
-        append!(ret, ["<<Abstract>> $(T)\n"])
+        # append!(ret, ["<<Abstract>> $(T)\n"])
+        append!(ret, ["<<Abstract>> $(rem_module(T, rem))\n"])
     end
     sub_types = [i for i in subtypes(T)]
     for i in 1:length(sub_types)
-        append!(ret, typetree_mmd(sub_types[i], T))
+        append!(ret, typetree_mmd(sub_types[i], T; rem = rem))
     end
     ret
+end
+
+rem_module(T::Type, rem) = begin
+    rem ? string((T).name.name) : string(T)
 end
