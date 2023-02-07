@@ -260,6 +260,4 @@ function typetree_mmd(T::Type, TT::Nothing = nothing; rem = false)
     ret
 end
 
-rem_module(T::Type, rem) = begin
-    rem ? string((T).name.name) : string(T)
-end
+rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end
