@@ -1,18 +1,42 @@
 # walking the agent hierarchy
 # implements walk(f, agent)
 
-"Applies `f` to each algebraic agent, returning the result. Applies `f` to an agent before visiting its inners."
+"Applies `f` to each algebraic agent. Applies `f` to an agent before visiting its inners."
 function prewalk(f, agent::AbstractAlgebraicAgent)
+    f(agent)
     foreach(a -> prewalk(f, a), values(inners(agent)))
+end
 
+"""
+Applies `f` to each algebraic agent. Applies `f` to an agent before visiting its inners.
+The results of each application of `f` are appended to a vector and returned.
+"""
+function prewalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
+    ret = []
+    append!(ret, [f(agent)])
+    for a in values(inners(agent))
+        append!(ret, prewalk_ret(f, a))
+    end
+    return ret
+end
+
+"Applies `f` to each algebraic agent. Applies `f` to an agent after visiting its inners."
+function postwalk(f, agent)
+    foreach(a -> postwalk(f, a), values(inners(agent)))
     f(agent)
 end
 
-"Applies `f` to each algebraic agent, returning the result. Applies `f` to an agent before visiting its inners."
-function postwalk(f, agent)
-    foreach(a -> postwalk(f, a), values(inners(agent)))
-
-    f(agent)
+"""
+Applies `f` to each algebraic agent. Applies `f` to an agent after visiting its inners.
+The results of each application of `f` are appended to a vector and returned.
+"""
+function postwalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
+    ret = []
+    for a in values(inners(agent))
+        append!(ret, postwalk_ret(f, a))
+    end
+    append!(ret, [f(agent)])
+    return ret
 end
 
 "Applies `f` each algebraic agent in the agents tree and its relative path to `agent`."
