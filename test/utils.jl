@@ -17,3 +17,29 @@ end
     "MyModule.MySuperType <|-- MyModule.MySubType\n"
     typetree_mmd(MyModule.MySuperType, rem = true)[6] == "MySuperType <|-- MySubType\n"
 end
+
+@aagent FreeAgent struct AgentType1 end
+
+@testset "agent_hierarchy_mmd" begin
+    base = FreeAgent("agent1")
+    entangle!(base, AgentType1("agent2"))
+    entangle!(base, AgentType1("agent3"))
+
+    hierarchy = prewalk_ret(agent_hierarchy_mmd, base)
+    hierarchy = cat(hierarchy..., dims = 1)
+    @test hierarchy[1] == "classDiagram\n"
+    @test hierarchy[2] == "class agent1\n"
+    @test hierarchy[end] == "agent1 <|-- agent3\n"
+end
+
+@testset "postwalk and prewalk with return vals" begin
+    base = FreeAgent("agent1")
+    entangle!(base, AgentType1("agent2"))
+    entangle!(base, AgentType1("agent3"))
+
+    ret = prewalk_ret((a)->a.name, base)
+    ret == ["agent1", "agent2", "agent3"]
+
+    ret = postwalk_ret((a)->a.name, base)
+    ret == ["agent2", "agent3", "agent1"]
+end

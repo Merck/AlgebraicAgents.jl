@@ -43,7 +43,7 @@ export @wrap
 ## extract wrap from complex types
 export @get_agent
 ## return type hierarchy suitable for Mermaid
-export typetree_mmd
+export typetree_mmd, agent_hierarchy_mmd
 
 # interface: basic type definitions, interface (init, step, simulate, build_solution), accessors
 include("interface.jl")
@@ -68,7 +68,7 @@ export setup_agent!
 
 # algebraic agents' structure walking
 include("walks.jl")
-export prewalk, postwalk, topmost
+export prewalk, prewalk_ret, postwalk, postwalk_ret, topmost
 
 # defines general sums and products of algebraic models
 include("ops.jl")
