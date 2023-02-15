@@ -265,7 +265,7 @@ rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end
 """
     agent_hierarchy(a)
 Intended to be used with `prewalk_ret`, this function can help display the agent hierarchy
-for concrete models. It assumes the user wants to past the results into a Mermaid
+for concrete models. It assumes the user wants to pass the results into a Mermaid
 diagram for easier visualization of concrete model instantiations.
 
 # Examples

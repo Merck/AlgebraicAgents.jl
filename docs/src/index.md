@@ -149,6 +149,8 @@ Walk agents' hierarchy.
 ```@docs
 prewalk
 postwalk
+prewalk_ret
+postwalk_ret
 ```
 
 ## Utility functions
@@ -180,10 +182,11 @@ flatten
 @draw_df
 ```
 
-### Return type hierarchy for Mermaid class diagram
+### Helper functions for Mermaid diagrams
 
 ```@docs
 typetree_mmd
+agent_hierarchy_mmd
 ```
 
 ## Queries
