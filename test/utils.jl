@@ -37,9 +37,9 @@ end
     entangle!(base, AgentType1("agent2"))
     entangle!(base, AgentType1("agent3"))
 
-    ret = prewalk_ret((a)->a.name, base)
+    ret = prewalk_ret((a) -> a.name, base)
     ret == ["agent1", "agent2", "agent3"]
 
-    ret = postwalk_ret((a)->a.name, base)
+    ret = postwalk_ret((a) -> a.name, base)
     ret == ["agent2", "agent3", "agent1"]
 end
