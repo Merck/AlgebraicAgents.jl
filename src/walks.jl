@@ -2,7 +2,7 @@
 # implements walk(f, agent)
 
 "Applies `f` to each algebraic agent. Applies `f` to an agent before visiting its inners."
-function prewalk(f, agent::AbstractAlgebraicAgent)
+function prewalk(f, agent::T) where {T <: AbstractAlgebraicAgent}
     f(agent)
     foreach(a -> prewalk(f, a), values(inners(agent)))
 end
@@ -21,7 +21,7 @@ function prewalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
 end
 
 "Applies `f` to each algebraic agent. Applies `f` to an agent after visiting its inners."
-function postwalk(f, agent)
+function postwalk(f, agent::T) where {T <: AbstractAlgebraicAgent}
     foreach(a -> postwalk(f, a), values(inners(agent)))
     f(agent)
 end
@@ -40,7 +40,7 @@ function postwalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
 end
 
 "Applies `f` each algebraic agent in the agents tree and its relative path to `agent`."
-relpath_walk(f, agent) = _relpath_walk_up(f, agent, ".")
+relpath_walk(f, agent::T) where {T <: AbstractAlgebraicAgent} = _relpath_walk_up(f, agent, ".")
 
 "Recursively move up, and for each parent agent, recursively visit all inner agents (except for `source`)."
 function _relpath_walk_up(f, agent, path, source = nothing)
@@ -68,4 +68,4 @@ function _relpath_walk_down(f, agent, path, source = nothing)
 end
 
 "Get top-most algebraic agent in a hierarchy."
-topmost(a::AbstractAlgebraicAgent) = isnothing(getparent(a)) ? a : topmost(getparent(a))
+topmost(a::T) where {T <: AbstractAlgebraicAgent} = isnothing(getparent(a)) ? a : topmost(getparent(a))
