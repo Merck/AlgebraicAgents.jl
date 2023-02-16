@@ -261,3 +261,37 @@ function typetree_mmd(T::Type, TT::Nothing = nothing; rem = false)
 end
 
 rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end
+
+"""
+    agent_hierarchy(a)
+Intended to be used with `prewalk_ret`, this function can help display the agent hierarchy
+for concrete models. It assumes the user wants to pass the results into a Mermaid
+diagram for easier visualization of concrete model instantiations.
+
+# Examples
+```julia
+# the following may be pasted into the Mermaid live editor:
+# https://mermaid.live/
+
+@aagent FreeAgent struct AgentType1 end
+base = FreeAgent("agent1")
+entangle!(base, AgentType1("agent2"))
+entangle!(base, AgentType1("agent3"))
+
+hierarchy = prewalk_ret(agent_hierarchy_mmd, base)
+hierarchy = cat(hierarchy..., dims = 1)
+print(join(hierarchy,""))
+```
+"""
+function agent_hierarchy_mmd(a::T) where {T <: AbstractAlgebraicAgent}
+    ret = Vector{String}()
+    if isnothing(getparent(a))
+        append!(ret, ["classDiagram\n"])
+    end
+    append!(ret, ["class $(getname(a))\n"])
+    append!(ret, ["<<$(rem_module(typeof(a),true))>> $(getname(a))\n"])
+    if !isnothing(getparent(a))
+        append!(ret, ["$(getname(getparent(a))) <|-- $(getname(a))\n"])
+    end
+    return ret
+end
