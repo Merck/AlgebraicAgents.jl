@@ -263,10 +263,13 @@ end
 rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end
 
 """
-    agent_hierarchy(a)
+    agent_hierarchy_mmd(a; use_uuid = 0)
 Intended to be used with `prewalk_ret`, this function can help display the agent hierarchy
 for concrete models. It assumes the user wants to pass the results into a Mermaid
-diagram for easier visualization of concrete model instantiations.
+diagram for easier visualization of concrete model instantiations. The kwarg `use_uuid`
+will append the last `use_uuid` digits of each agent to their name following an
+underscore. This can be useful if it is not possible to distinguish unique agents
+purely by their name alone.
 
 # Examples
 ```julia
@@ -278,20 +281,35 @@ base = FreeAgent("agent1")
 entangle!(base, AgentType1("agent2"))
 entangle!(base, AgentType1("agent3"))
 
+# do not print UUIDs
 hierarchy = prewalk_ret(agent_hierarchy_mmd, base)
+hierarchy = cat(hierarchy..., dims = 1)
+print(join(hierarchy,""))
+
+# print last 4 digits of UUIDs
+hierarchy = prewalk_ret(a -> agent_hierarchy_mmd(a, use_uuid = 4), base)
 hierarchy = cat(hierarchy..., dims = 1)
 print(join(hierarchy,""))
 ```
 """
-function agent_hierarchy_mmd(a::T) where {T <: AbstractAlgebraicAgent}
+function agent_hierarchy_mmd(a::T; use_uuid::Int = 0) where {T <: AbstractAlgebraicAgent}
     ret = Vector{String}()
     if isnothing(getparent(a))
         append!(ret, ["classDiagram\n"])
     end
-    append!(ret, ["class $(getname(a))\n"])
-    append!(ret, ["<<$(rem_module(typeof(a),true))>> $(getname(a))\n"])
+    a_name = getname(a)
+    if use_uuid > 0
+        a_name = a_name * "_" * string(getuuid(a).value)[(end - (use_uuid - 1)):end]
+    end
+    append!(ret, ["class $(a_name)\n"])
+    append!(ret, ["<<$(rem_module(typeof(a),true))>> $(a_name)\n"])
     if !isnothing(getparent(a))
-        append!(ret, ["$(getname(getparent(a))) <|-- $(getname(a))\n"])
+        a_par_name = getname(getparent(a))
+        if use_uuid > 0
+            a_par_name = a_par_name * "_" *
+                         string(getuuid(getparent(a)).value)[(end - (use_uuid - 1)):end]
+        end
+        append!(ret, ["$(a_par_name) <|-- $(a_name)\n"])
     end
     return ret
 end
