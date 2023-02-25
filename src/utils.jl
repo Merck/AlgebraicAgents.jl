@@ -36,8 +36,8 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
     naargs
 end
 
-"
-    @schedule agent priority=0
+"""
+    poke(agent, priority=0)
 Schedule an interaction. Interactions are implemented within an instance `Opera`, sorted by their priorities.
 Internally, reduces to `_interact!(agent)`.
 
@@ -45,18 +45,15 @@ See also [`Opera`](@ref).
 
 # Examples
 ```julia
-@schedule agent 1.
+poke(agent, 1.)
 ```
-"
-macro schedule(agent, priority = 0)
-    quote
-        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent))),
-                       Float64($(esc(priority))))
-    end
+"""
+function poke(agent, priority = 0)
+    opera_enqueue!(getopera(agent), AgentCall(agent), Float64(priority))
 end
 
-"
-    @schedule agent call priority=0
+"""
+    @call agent call priority=0
 Schedule an interaction (call). Interactions are implemented within an instance `Opera`, sorted by their priorities.
 Internally, the `call=f(args...)` expression will be transformed to an anonymous function `agent -> f(agent, args...)`.
 
@@ -64,10 +61,10 @@ See also [`Opera`](@ref).
 
 # Examples
 ```julia
-@schedule agent f(t)
+@call agent f(t)
 ```
-"
-macro schedule_call(agent, call, priority = 0)
+"""
+macro call(agent, call, priority = 0)
     call = if call isa Expr && Meta.isexpr(call, :call)
         sym = gensym()
         insert!(call.args, 2, sym)

@@ -13,23 +13,24 @@ end
 
 """
     Opera(uuid2agent_pairs...)
-A dynamic structure that stores a **priority queue of algebraic interactions**
-and contains a **directory of algebraic agents** (dictionary of `uuid => agent` pairs).
+A dynamic structure that 
+ - contains a **directory of algebraic agents** (dictionary of `uuid => agent` pairs);
+ - stores a **priority queue of interactions**.
 
 # Algebraic Interactions
 It is possible to schedule additional interactions within the complex;
 such actions are instances of `AbstractOperaCall`,
 and they are modeled as tuples `(priority=0., call)`.
 
-At the end of the topmost call to `step!`, the actions will be executed one-by-one in order of the respective priorities.
+At the end of the topmost call to `step!`, the actions will be executed one-by-one in order of their priorities.
 
 In particular, you may schedule interactions of two kinds:
  
- - `@schedule agent priority=0`, which will translate into a call `_interact!(agent)`,
- - `@schedule_call agent f(args...) priority=0` or `@schedule_call agent x->ex priority=0`,
+ - `poke(agent)`, which will translate into a call `_interact!(agent)`,
+ - `@call agent f(args...) priority=0` or `@call agent x->ex priority=0`,
 which will translate into a call `agent->f(agent, args...)` or `(x->ex)(agent)`, respectively.
 
-See [`@schedule`](@ref) and [`@schedule_call`](@ref).
+See [`poke`](@ref) and [`@call`](@ref).
 
 They exist within a single step of the model and are executed after the calls
 to `_prestep!` and `_step!` finish. 

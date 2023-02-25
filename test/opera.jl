@@ -18,9 +18,9 @@ using DataStructures: enqueue!
 
     function AlgebraicAgents._step!(a::MyAgent{T}) where {T}
         if a.name == "alice"
-            @schedule only(getagent(a, r"bob")) 0
+            poke(only(getagent(a, r"bob")))
         else
-            @schedule only(getagent(a, r"alice")) 0
+            poke(only(getagent(a, r"alice")))
         end
 
         a.counter1 += 1
@@ -67,9 +67,9 @@ end
     function AlgebraicAgents._step!(a::MyAgent1{T}) where {T}
         tnow = a.time
         if a.name == "alice"
-            @schedule_call only(getagent(a, r"bob")) (a)->poke_other(a, tnow)
+            @call only(getagent(a, r"bob")) (a)->poke_other(a, tnow)
         else
-            @schedule_call only(getagent(a, r"alice")) (a)->poke_other(a, tnow)
+            @call only(getagent(a, r"alice")) (a)->poke_other(a, tnow)
         end
 
         a.counter1 += 1

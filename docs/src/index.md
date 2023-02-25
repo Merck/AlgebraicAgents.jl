@@ -166,8 +166,8 @@ postwalk_ret
 
 ```@docs
 @observables
-@schedule
-@schedule_call
+poke
+@call
 ```
 
 ### Flat representation

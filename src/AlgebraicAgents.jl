@@ -31,7 +31,7 @@ export @wrap
 ## declare derived sequence
 export @derived
 ## convenient observable accessor, interaction schedulers
-export @observables, @schedule, @schedule_call
+export @observables, poke, @call
 ## flat representation of agent hierarchy
 export flatten
 ## instantiate an integration and add it to Julia's load path

@@ -26,8 +26,8 @@ The inner area enclosed by a dashed border represents where program control is g
 
 The Opera system allows interactions between agents to be scheduled, which will be executed at the end of a time step, sorted by priority. By default, AlgebraicAgents.jl provides support for two types of interactions:
   
-  * [`@schedule`](@ref) is used to schedule a "wake up" call to the agent, custom behavior can be implemented by defining [`AlgebraicAgents._interact!`](@ref) for subtypes of `AbstractAlgebraicAgent`.
-  * [`@schedule_call`](@ref) is used to schedule a callback function to the agent.
+  * [`poke`](@ref) is used to schedule a "wake up" call to the agent, custom behavior can be implemented by defining [`AlgebraicAgents._interact!`](@ref) for subtypes of `AbstractAlgebraicAgent`.
+  * [`@call`](@ref) is used to schedule a callback function to the agent.
 
 However the system can work with arbitrary types of interactions. To do so, simply define a new call type that is a subtype of `AbstractOperaCall`. The methods `execute_action!` and `opera_enqueue!` must be specialized for your new call type. After that, your new interaction type can be used just like any other! To see an example, please check out our tests.
 
