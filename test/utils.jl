@@ -32,7 +32,7 @@ end
     @test hierarchy[end] == "agent1 <|-- agent3\n"
 
     # uuid
-    hierarchy = agent_hierarchy_mmd(base; use_uuid=2)
+    hierarchy = agent_hierarchy_mmd(base; use_uuid = 2)
 
     @test occursin(r"[0-9]{2}", hierarchy[2][(end - 2):(end - 1)])
     @test occursin(r"[0-9]{2}", hierarchy[3][(end - 2):(end - 1)])
