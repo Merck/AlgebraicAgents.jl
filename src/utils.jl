@@ -214,6 +214,9 @@ macro get_agent(obj, args...)
     end |> esc
 end
 
+# typetree
+rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end
+
 """
     typetree_mmd(T, TT; rem = false)
 Return a `Vector{String}` of the type hierarchy with type `T`, in format suitable
@@ -232,39 +235,28 @@ currently support "." characters in class names.
 print(join(typetree_mmd(Integer), ""))
 ```
 """
-function typetree_mmd(T::Type, TT::Type; rem = false)
+function typetree_mmd(T::Type, TT::S=nothing; rem = false) where S<:Union{Type, Nothing}
     ret = Vector{String}()
+    if isnothing(TT)
+        append!(ret, ["classDiagram\n"])
+    end
     append!(ret, ["class $(rem_module(T, rem))\n"])
     if isabstracttype(T)
         append!(ret, ["<<Abstract>> $(rem_module(T, rem))\n"])
     end
-    append!(ret, ["$(rem_module(TT, rem)) <|-- $(rem_module(T, rem))\n"])
+    if !isnothing(TT)
+        append!(ret, ["$(rem_module(TT, rem)) <|-- $(rem_module(T, rem))\n"])
+    end
     sub_types = [i for i in subtypes(T)]
-    for i in 1:length(sub_types)
-        append!(ret, typetree_mmd(sub_types[i], T; rem = rem))
+    for i in eachindex(sub_types)
+        append!(ret, typetree_mmd(sub_types[i], T; rem))
     end
     ret
 end
-
-function typetree_mmd(T::Type, TT::Nothing = nothing; rem = false)
-    ret = Vector{String}()
-    append!(ret, ["classDiagram\n"])
-    append!(ret, ["class $(rem_module(T, rem))\n"])
-    if isabstracttype(T)
-        append!(ret, ["<<Abstract>> $(rem_module(T, rem))\n"])
-    end
-    sub_types = [i for i in subtypes(T)]
-    for i in 1:length(sub_types)
-        append!(ret, typetree_mmd(sub_types[i], T; rem = rem))
-    end
-    ret
-end
-
-rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end
 
 """
     agent_hierarchy_mmd(a; use_uuid = 0)
-Intended to be used with `prewalk_ret`, this function can help display the agent hierarchy
+This function can help display the agent hierarchy
 for concrete models. It assumes the user wants to pass the results into a Mermaid
 diagram for easier visualization of concrete model instantiations. The kwarg `use_uuid`
 will append the last `use_uuid` digits of each agent to their name following an
@@ -282,21 +274,31 @@ entangle!(base, AgentType1("agent2"))
 entangle!(base, AgentType1("agent3"))
 
 # do not print UUIDs
-hierarchy = prewalk_ret(agent_hierarchy_mmd, base)
-hierarchy = cat(hierarchy..., dims = 1)
+hierarchy = agent_hierarchy_mmd(base)
 print(join(hierarchy,""))
 
 # print last 4 digits of UUIDs
-hierarchy = prewalk_ret(a -> agent_hierarchy_mmd(a, use_uuid = 4), base)
-hierarchy = cat(hierarchy..., dims = 1)
+hierarchy = agent_hierarchy_mmd(base, use_uuid = 4)
 print(join(hierarchy,""))
 ```
 """
 function agent_hierarchy_mmd(a::T; use_uuid::Int = 0) where {T <: AbstractAlgebraicAgent}
+    hierarchy_mmd = prewalk_ret(a -> _agent_hierarchy_mmd(a; use_uuid), a)
+    pushfirst!(hierarchy_mmd, "classDiagram\n")
+
+    vcat(hierarchy_mmd...)
+end
+
+"""
+    _agent_hierarchy_mmd(a; use_uuid = 0)
+Intended to be used with `prewalk_ret`, this function can help display the agent hierarchy
+for concrete models.
+
+See [`agent_hierarchy_mmd`](@ref) for a convenience wrapper.
+"""
+function _agent_hierarchy_mmd(a::T; use_uuid::Int = 0) where {T <: AbstractAlgebraicAgent}
     ret = Vector{String}()
-    if isnothing(getparent(a))
-        append!(ret, ["classDiagram\n"])
-    end
+
     a_name = getname(a)
     if use_uuid > 0
         a_name = a_name * "_" * string(getuuid(a).value)[(end - (use_uuid - 1)):end]
