@@ -97,7 +97,7 @@ end
     @test bob.counter2_tt == alice.counter1_t
 end
 
-@testset "scheduled interactions" begin
+@testset "futures" begin
     @aagent struct MyAgent2{T <: Real}
         time::T
         Δt::T
@@ -105,7 +105,7 @@ end
         max_time::T
     end
 
-    # scheduled interaction
+    # future: call
     interact = agent -> agent
 
     function AlgebraicAgents._step!(a::MyAgent2{T}) where {T}
@@ -119,17 +119,17 @@ end
 
     joint_system = ⊕(alice, bob, name = "joint")
 
-    @schedule alice 5.0 interact(alice) "alice_schedule"
-    @schedule bob 20.0 interact(bob)
+    @future alice 5.0 interact(alice) "alice_schedule"
+    @future bob 20.0 interact(bob)
 
     simulate(joint_system, 100.0)
 
     opera = getopera(joint_system)
 
-    @test isempty(opera.scheduled_interactions)
-    @test length(opera.scheduled_interactions_log) == 2
-    @test opera.scheduled_interactions_log[1].retval == alice
-    @test opera.scheduled_interactions_log[2].retval == bob
+    @test isempty(opera.futures)
+    @test length(opera.futures_log) == 2
+    @test opera.futures_log[1].retval == alice
+    @test opera.futures_log[2].retval == bob
 end
 
 @testset "control interactions" begin
@@ -140,7 +140,7 @@ end
         max_time::T
     end
 
-    # scheduled interaction
+    # control
     control = function (model::AbstractAlgebraicAgent)
         projected_to(model)
     end

@@ -197,7 +197,7 @@ function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
 
     if isroot
         execute_instantious_interaction!(getopera(a))
-        @ret ret execute_scheduled_interactions!(getopera(a), t)
+        @ret ret execute_futures!(getopera(a), t)
         execute_controls!(getopera(a), t)
     end
 
@@ -215,7 +215,7 @@ function projected_to(a::AbstractAlgebraicAgent; root = true)
         @ret ret projected_to(a; root = false)
     end
 
-    foreach(getopera(a).scheduled_interactions) do i
+    foreach(getopera(a).futures) do i
         @ret ret i.time
     end
 

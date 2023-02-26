@@ -24,11 +24,48 @@ The inner area enclosed by a dashed border represents where program control is g
 
 ## Opera
 
-The Opera system allows interactions between agents to be scheduled, which will be executed at the end of a time step, sorted by priority. By default, AlgebraicAgents.jl provides support for two types of interactions:
+The Opera system allows interactions between agents to be scheduled. By default, AlgebraicAgents.jl provides support for three types of interactions:
   
-  * [`poke`](@ref) is used to schedule a "wake up" call to the agent, custom behavior can be implemented by defining [`AlgebraicAgents._interact!`](@ref) for subtypes of `AbstractAlgebraicAgent`.
+  * **delayed interactions**
+  * **controls**
+  * **instantious interactions**
+   [`poke`](@ref) is used to schedule a "wake up" call to the agent, custom behavior can be implemented by defining [`AlgebraicAgents._interact!`](@ref) for subtypes of `AbstractAlgebraicAgent`.
   * [`@call`](@ref) is used to schedule a callback function to the agent.
 
 However the system can work with arbitrary types of interactions. To do so, simply define a new call type that is a subtype of `AbstractOperaCall`. The methods `execute_action!` and `add_instantious_interaction!` must be specialized for your new call type. After that, your new interaction type can be used just like any other! To see an example, please check out our tests.
 
 For more details, see the API documentation of [`Opera`](@ref) and our tests.
+
+A dynamic structure that 
+ - contains a **directory of algebraic agents** (dictionary of `uuid => agent` pairs);
+ - keeps track of, and executes, **futures (delayed interactions)**;
+ - keeps track of, and executes, **system controls**;
+ - keeps track of, and executes, **instantious interactions**;
+
+### Future Interactions
+
+You may schedule function calls, to be executed at predetermined points of time.
+The action is specified as a tuple `(id, call, time)`, where `id` is an optional textual identifier of the action, `call` is a (parameterless) anonymous function, which will be called at given `time`.
+Once the action is executed, the return value with corresponding action id and execution time is added to `futures_log` field of `Opera` instance.
+
+See [`add_future!`](@ref) and [`@future`](@ref).
+
+### Control Interactions
+
+You may schedule control function calls, to be executed at every step of the model.
+The action is specified as a tuple `(id, call)`, where `id` is an optional textual identifier of the action, and `call` is a (parameterless) anonymous function.
+Once the action is executed, the return value with corresponding action id and execution time is added to `controls_log` field of `Opera` instance.
+
+See [`add_control!`](@ref) and [`@control`](@ref).
+
+### Instantious Interactions
+You may schedule additional interactions which exist within a single step of the model;
+such actions are modeled as named tuples `(priority=0., call)`. Here, `call` is a (parameterless) anonymous function.
+
+They exist within a single step of the model and are executed after the calls
+to `_prestep!` and `_step!` finish.
+
+In particular, you may schedule interactions of two kinds:
+ 
+ - `poke(agent)`, which will translate into a call `_interact!(agent)`,
+ - `@call opera expresion priority=0`, which will translate into a call `() -> expression`.

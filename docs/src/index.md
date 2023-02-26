@@ -109,7 +109,11 @@ by_name
 Opera
 poke
 @call
-@schedule
+add_instantious_interaction!
+@future
+add_future!
+@control
+add_control!
 ```
 
 ### Operations

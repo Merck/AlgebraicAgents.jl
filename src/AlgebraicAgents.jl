@@ -23,7 +23,7 @@ include("opera.jl")
 export AbstractOperaCall, AgentCall, Opera
 # Opera interface
 export add_instantious_interaction!, poke, @call
-export add_scheduled_interaction!, @schedule
+export add_future!, @future
 export add_control!, @control
 
 # utility functions

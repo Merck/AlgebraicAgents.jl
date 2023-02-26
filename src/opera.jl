@@ -2,10 +2,10 @@
 
 ## action types
 const InstantiousInteraction = NamedTuple{(:call, :priority), <:Tuple{Function, Any}}
-const ScheduledInteraction = NamedTuple{(:id, :call, :time),
-                                        <:Tuple{AbstractString, Function, Any}}
-const ScheduledInteractionLog = NamedTuple{(:id, :time, :retval),
-                                           <:Tuple{AbstractString, Any, Any}}
+const Future = NamedTuple{(:id, :call, :time),
+                          <:Tuple{AbstractString, Function, Any}}
+const FutureLog = NamedTuple{(:id, :time, :retval),
+                             <:Tuple{AbstractString, Any, Any}}
 const Control = NamedTuple{(:id, :call), <:Tuple{AbstractString, Function}}
 const ControlLog = NamedTuple{(:id, :time, :retval), <:Tuple{AbstractString, Any, Any}}
 
@@ -13,23 +13,23 @@ const ControlLog = NamedTuple{(:id, :time, :retval), <:Tuple{AbstractString, Any
     Opera(uuid2agent_pairs...)
 A dynamic structure that 
  - contains a **directory of algebraic agents** (dictionary of `uuid => agent` pairs);
- - keeps track of, and executes, **(delayed) scheduled actions**;
- - keeps track of, and executes, **system control**;
+ - keeps track of, and executes, **futures (delayed interactions)**;
+ - keeps track of, and executes, **system controls**;
  - keeps track of, and executes, **instantious interactions**;
 
-# Scheduled Interactions
+# Futures
 You may schedule function calls, to be executed at predetermined points of time.
 The action is specified as a tuple `(id, call, time)`, where `id` is an optional textual identifier of the action, `call` is a (parameterless) anonymous function, which will be called at given `time`.
-Once the action is executed, the return value with corresponding action id and execution time is added to `scheduled_interactions_log` field of `Opera` instance.
+Once the action is executed, the return value with corresponding action id and execution time is added to `futures_log` field of `Opera` instance.
 
-See [`add_scheduled_interaction!`](@ref) and [`@schedule`](@ref). See also [`execute_scheduled_interactions!`](@ref).
+See [`add_future!`](@ref) and [`@future`](@ref).
 
 # Control Interactions
 You may schedule control function calls, to be executed at every step of the model.
 The action is specified as a tuple `(id, call)`, where `id` is an optional textual identifier of the action, and `call` is a (parameterless) anonymous function.
 Once the action is executed, the return value with corresponding action id and execution time is added to `controls_log` field of `Opera` instance.
 
-See [`add_control!`](@ref) and [`@control`](@ref). See also [`execute_controls!`](@ref).
+See [`add_control!`](@ref) and [`@control`](@ref).
 
 # Instantious Interactions
 You may schedule additional interactions which exist within a single step of the model;
@@ -43,25 +43,25 @@ In particular, you may schedule interactions of two kinds:
  - `poke(agent)`, which will translate into a call `_interact!(agent)`,
  - `@call opera expresion priority=0`, which will translate into a call `() -> expression`.
 
-See [`poke`](@ref) and [`@call`](@ref). See also [`execute_instantious_interaction!`](@ref).
+See [`poke`](@ref) and [`@call`](@ref).
 """
 mutable struct Opera
     # dictionary of `uuid => agent` pairs
     directory::Dict{UUID, AbstractAlgebraicAgent}
     # intantious interactions
     instantious_interactions::Vector{InstantiousInteraction}
-    # scheduled actions
-    scheduled_interactions::Vector{ScheduledInteraction}
-    scheduled_interactions_log::Vector{ScheduledInteractionLog}
-    # scheduled actions
+    # futures
+    futures::Vector{Future}
+    futures_log::Vector{FutureLog}
+    # controls
     controls::Vector{Control}
     controls_log::Vector{ControlLog}
 
     function Opera(uuid2agent_pairs...)
         new(Dict{UUID, AbstractAlgebraicAgent}(uuid2agent_pairs...),
             Vector{InstantiousInteraction}(undef, 0),
-            Vector{ScheduledInteraction}(undef, 0),
-            Vector{ScheduledInteractionLog}(undef, 0),
+            Vector{Future}(undef, 0),
+            Vector{FutureLog}(undef, 0),
             Vector{Control}(undef, 0),
             Vector{ControlLog}(undef, 0))
     end
@@ -102,14 +102,13 @@ function add_instantious_interaction!(opera::Opera, action::InstantiousInteracti
     end
 end
 
-"Execute instantious interactions."
+# Execute instantious interactions
 function execute_instantious_interaction!(opera::Opera)
     while !isempty(opera.instantious_interactions)
         call(opera, pop!(opera.instantious_interactions).call)
     end
 end
 
-## interface
 """
     poke(agent, priority=0)
 Schedule an interaction. Interactions are implemented within an instance `Opera`, sorted by their priorities.
@@ -152,24 +151,24 @@ macro call(opera, call, priority = 0.0)
 end
 
 """
-    add_scheduled_interaction!(opera, time, call[, id])
-    add_scheduled_interaction!(agent, time, call[, id])
+    add_future!(opera, time, call[, id])
+    add_future!(agent, time, call[, id])
 Schedule a (delayed) execution of `call` at `time`. Optionally, provide a textual identifier `id` of the action.
 
 See also [`Opera`](@ref).
 """
-function add_scheduled_interaction! end
+function add_future! end
 
-function add_scheduled_interaction!(opera::Opera, time, call,
-                                    id = "scheduled_action_" * randstring(4))
+function add_future!(opera::Opera, time, call,
+                     id = "future__" * randstring(4))
     new_action = (; id, call, time)
     # sorted insert
-    pushfirst!(opera.scheduled_interactions, new_action)
+    pushfirst!(opera.futures, new_action)
     ix = 1
-    while ix < length(opera.scheduled_interactions)
-        if new_action.time > opera.scheduled_interactions[ix + 1].time
-            opera.scheduled_interactions[ix] = opera.scheduled_interactions[ix + 1]
-            opera.scheduled_interactions[ix + 1] = new_action
+    while ix < length(opera.futures)
+        if new_action.time > opera.futures[ix + 1].time
+            opera.futures[ix] = opera.futures[ix + 1]
+            opera.futures[ix + 1] = new_action
             ix += 1
         else
             break
@@ -177,55 +176,56 @@ function add_scheduled_interaction!(opera::Opera, time, call,
     end
 end
 
-function add_scheduled_interaction!(agent::AbstractAlgebraicAgent, args...)
-    add_scheduled_interaction!(getopera(agent), args...)
+function add_future!(agent::AbstractAlgebraicAgent, args...)
+    add_future!(getopera(agent), args...)
 end
 
 """
-    @schedule opera time call [id]
-    @schedule agent time call [id]
+    @future opera time call [id]
+    @future agent time call [id]
 Schedule a (delayed) execution of `call` at `time`. Optionally, provide a textual identifier `id` of the action.
 
 `call` is an expression, which will be wrapped into an anonymous, parameterless function `() -> call`.
 
-See also [`@schedule`](@ref) and [`Opera`](@ref).
+See also [`@future`](@ref) and [`Opera`](@ref).
 """
-macro schedule(opera, time, call, id = "scheduled_action_" * randstring(4))
+macro future(opera, time, call, id = "future__" * randstring(4))
     quote
-        add_scheduled_interaction!($(esc(opera)), $(esc(time)), () -> $(esc(call)),
-                                   $(esc(id)))
+        add_future!($(esc(opera)), $(esc(time)), () -> $(esc(call)),
+                    $(esc(id)))
     end
 end
 
-function execute_scheduled_interactions!(opera::Opera, time)
-    while !isempty(opera.scheduled_interactions)
-        action = first(opera.scheduled_interactions)
+# execute futures (delayed interactions)
+function execute_futures!(opera::Opera, time)
+    while !isempty(opera.futures)
+        action = first(opera.futures)
         if action.time <= time
             # execute, log
             log_record = (; id = action.id, time, retval = call(opera, action.call))
-            push!(opera.scheduled_interactions_log, log_record)
+            push!(opera.futures_log, log_record)
 
             # delete action
-            popfirst!(opera.scheduled_interactions)
+            popfirst!(opera.futures)
         else
             break
         end
     end
 
     # least time among scheduled actions
-    if isempty(opera.scheduled_interactions)
+    if isempty(opera.futures)
         nothing
     else
-        first(opera.scheduled_interactions).time
+        first(opera.futures).time
     end
 end
 
 """
     add_control!(opera, call[, id])
-    add_scheduled_interaction!(agent, call[, id])
+    add_future!(agent, call[, id])
 Add a control to the system. Optionally, provide a textual identifier `id` of the action.
 
-See also [`@control](@ref) and [`Opera`](@ref).
+See also [`@control`](@ref) and [`Opera`](@ref).
 """
 function add_control! end
 
@@ -253,6 +253,7 @@ macro control(opera, call, id = "control_" * randstring(4))
     end
 end
 
+# execute system controls
 function execute_controls!(opera::Opera, time)
     foreach(opera.controls) do action
         log_record = (; id = action.id, time, retval = call(opera, action.call))
