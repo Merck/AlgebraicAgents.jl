@@ -114,15 +114,15 @@ end
 
     AlgebraicAgents._projected_to(a::MyAgent2) = a.time >= a.max_time ? true : a.time
 
-    alice = MyAgent2{Float64}("alice", 0.0, 1.0, 10.)
-    bob = MyAgent2{Float64}("bob", 0.0, 1.5, 15.)
+    alice = MyAgent2{Float64}("alice", 0.0, 1.0, 10.0)
+    bob = MyAgent2{Float64}("bob", 0.0, 1.5, 15.0)
 
     joint_system = ⊕(alice, bob, name = "joint")
 
-    @schedule alice 5. interact(alice) "alice_schedule"
-    @schedule bob 20. interact(bob)
-    
-    simulate(joint_system, 100.)
+    @schedule alice 5.0 interact(alice) "alice_schedule"
+    @schedule bob 20.0 interact(bob)
+
+    simulate(joint_system, 100.0)
 
     opera = getopera(joint_system)
 
@@ -131,7 +131,6 @@ end
     @test opera.scheduled_interactions_log[1].retval == alice
     @test opera.scheduled_interactions_log[2].retval == bob
 end
-
 
 @testset "control interactions" begin
     @aagent struct MyAgent3{T <: Real}
@@ -154,18 +153,18 @@ end
 
     AlgebraicAgents._projected_to(a::MyAgent3) = a.time >= a.max_time ? true : a.time
 
-    alice = MyAgent3{Float64}("alice", 0.0, 1.0, 10.)
-    bob = MyAgent3{Float64}("bob", 0.0, 1.5, 15.)
+    alice = MyAgent3{Float64}("alice", 0.0, 1.0, 10.0)
+    bob = MyAgent3{Float64}("bob", 0.0, 1.5, 15.0)
 
     joint_system = ⊕(alice, bob, name = "joint")
 
     @control alice control_alice(alice) "control_alice"
     @control joint_system control(joint_system)
 
-    simulate(joint_system, 100.)
+    simulate(joint_system, 100.0)
 
     opera = getopera(joint_system)
-    
+
     @test length(opera.controls) == 2
     @test length(opera.controls_log) == 32
     @test opera.controls_log[1].retval == "alice"

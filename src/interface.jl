@@ -209,10 +209,10 @@ end
 Return `true` if all algebraic agent's time horizon was reached (or `nothing` in case of delegated evolution).
 Else return the minimum time up to which the evolution of an algebraic agent, and all its descendants, has been projected.
 """
-function projected_to(a::AbstractAlgebraicAgent; root=true)
+function projected_to(a::AbstractAlgebraicAgent; root = true)
     ret = _projected_to(a)
     foreach(values(inners(a))) do a
-        @ret ret projected_to(a; root=false)
+        @ret ret projected_to(a; root = false)
     end
 
     foreach(getopera(a).scheduled_interactions) do i

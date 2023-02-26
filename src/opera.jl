@@ -2,11 +2,13 @@
 
 ## action types
 const InstantiousInteraction = NamedTuple{(:call, :priority), <:Tuple{Function, Any}}
-const ScheduledInteraction = NamedTuple{(:id, :call, :time), <:Tuple{AbstractString, Function, Any}} 
-const ScheduledInteractionLog = NamedTuple{(:id, :time, :retval), <:Tuple{AbstractString, Any, Any}}
-const Control = NamedTuple{(:id, :call), <:Tuple{AbstractString, Function}} 
+const ScheduledInteraction = NamedTuple{(:id, :call, :time),
+                                        <:Tuple{AbstractString, Function, Any}}
+const ScheduledInteractionLog = NamedTuple{(:id, :time, :retval),
+                                           <:Tuple{AbstractString, Any, Any}}
+const Control = NamedTuple{(:id, :call), <:Tuple{AbstractString, Function}}
 const ControlLog = NamedTuple{(:id, :time, :retval), <:Tuple{AbstractString, Any, Any}}
-   
+
 """
     Opera(uuid2agent_pairs...)
 A dynamic structure that 
@@ -71,9 +73,10 @@ function call(opera::Opera, call::Function)
         call()
     elseif hasmethod(call, Tuple{Opera})
         call(opera)
-    elseif length(opera.directory) > 1 && hasmethod(call, Tuple{typeof(topmost(first(opera.directory).value))})
+    elseif length(opera.directory) > 1 &&
+           hasmethod(call, Tuple{typeof(topmost(first(opera.directory).value))})
         call(topmost(first(opera.directory).value))
-    else 
+    else
         @error """interaction $call must have one of the following forms:
             - be parameterless,
             - be a function of `Opera` instance,
@@ -86,7 +89,7 @@ end
 function add_instantious_interaction!(opera::Opera, action::InstantiousInteraction)
     # sorted insert
     pushfirst!(opera.instantious_interactions, action)
-    
+
     ix = 1
     while ix < length(opera.instantious_interactions)
         if action.priority > opera.instantious_interactions[ix + 1].priority
@@ -119,8 +122,10 @@ See also [`Opera`](@ref).
 poke(agent, 1.)
 ```
 """
-function poke(agent, priority = .0)
-    add_instantious_interaction!(getopera(agent), (; call = () -> _interact!(agent), priority=Float64(priority)))
+function poke(agent, priority = 0.0)
+    add_instantious_interaction!(getopera(agent),
+                                 (; call = () -> _interact!(agent),
+                                  priority = Float64(priority)))
 end
 
 """
@@ -137,10 +142,12 @@ bob_agent = only(getagent(agent, r"bob"))
 @call agent wake_up(bob_agent)
 ```
 """
-macro call(opera, call, priority = .0)
+macro call(opera, call, priority = 0.0)
     quote
         opera = $(esc(opera)) isa Opera ? $(esc(opera)) : getopera($(esc(opera)))
-        add_instantious_interaction!(opera, (; call = () -> $(esc(call)), priority=Float64($(esc(priority)))))
+        add_instantious_interaction!(opera,
+                                     (; call = () -> $(esc(call)),
+                                      priority = Float64($(esc(priority)))))
     end
 end
 
@@ -153,7 +160,8 @@ See also [`Opera`](@ref).
 """
 function add_scheduled_interaction! end
 
-function add_scheduled_interaction!(opera::Opera, time, call, id = "scheduled_action_" * randstring(4))
+function add_scheduled_interaction!(opera::Opera, time, call,
+                                    id = "scheduled_action_" * randstring(4))
     new_action = (; id, call, time)
     # sorted insert
     pushfirst!(opera.scheduled_interactions, new_action)
@@ -184,7 +192,8 @@ See also [`@schedule`](@ref) and [`Opera`](@ref).
 """
 macro schedule(opera, time, call, id = "scheduled_action_" * randstring(4))
     quote
-        add_scheduled_interaction!($(esc(opera)), $(esc(time)), () -> $(esc(call)), $(esc(id)))
+        add_scheduled_interaction!($(esc(opera)), $(esc(time)), () -> $(esc(call)),
+                                   $(esc(id)))
     end
 end
 
