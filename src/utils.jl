@@ -21,7 +21,7 @@ macro ret(old, ret)
     end
 end
 
-iscontinuable(ret) = !isnothing(ret) && (ret !== true)
+iscontinuable(ret) = !isnothing(ret) && !isa(ret, Bool)
 
 "Turns aargs into a uuid-indexed dict."
 function yield_aargs(a::AbstractAlgebraicAgent, aargs...)

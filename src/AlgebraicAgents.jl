@@ -22,8 +22,9 @@ export getagent, by_name, entangle!, disentangle!
 include("opera.jl")
 export AbstractOperaCall, AgentCall, Opera
 # Opera interface
-export poke, @call
+export add_instantious_interaction!, poke, @call
 export add_scheduled_interaction!, @schedule
+export add_control!, @control
 
 # utility functions
 include("utils.jl")

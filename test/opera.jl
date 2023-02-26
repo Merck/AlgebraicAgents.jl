@@ -1,5 +1,4 @@
 using Test, AlgebraicAgents
-using DataStructures: enqueue!
 
 @testset "opera interaction with two agents on different time steps" begin
     @aagent struct MyAgent{T <: Real}
@@ -96,4 +95,79 @@ end
     @test bob.counter1_t == collect(0:1.5:7.5)
     @test bob.counter2_t == [1.5, 1.5, 3, 4.5, 4.5, 6, 7.5, 7.5, 9]
     @test bob.counter2_tt == alice.counter1_t
+end
+
+@testset "scheduled interactions" begin
+    @aagent struct MyAgent2{T <: Real}
+        time::T
+        Δt::T
+
+        max_time::T
+    end
+
+    # scheduled interaction
+    interact = agent -> agent
+
+    function AlgebraicAgents._step!(a::MyAgent2{T}) where {T}
+        a.time += a.Δt
+    end
+
+    AlgebraicAgents._projected_to(a::MyAgent2) = a.time >= a.max_time ? true : a.time
+
+    alice = MyAgent2{Float64}("alice", 0.0, 1.0, 10.)
+    bob = MyAgent2{Float64}("bob", 0.0, 1.5, 15.)
+
+    joint_system = ⊕(alice, bob, name = "joint")
+
+    @schedule alice 5. interact(alice) "alice_schedule"
+    @schedule bob 20. interact(bob)
+    
+    simulate(joint_system, 100.)
+
+    opera = getopera(joint_system)
+
+    @test isempty(opera.scheduled_interactions)
+    @test length(opera.scheduled_interactions_log) == 2
+    @test opera.scheduled_interactions_log[1].retval == alice
+    @test opera.scheduled_interactions_log[2].retval == bob
+end
+
+
+@testset "control interactions" begin
+    @aagent struct MyAgent3{T <: Real}
+        time::T
+        Δt::T
+
+        max_time::T
+    end
+
+    # scheduled interaction
+    control = function (model::AbstractAlgebraicAgent)
+        projected_to(model)
+    end
+
+    control_alice = agent -> getname(agent)
+
+    function AlgebraicAgents._step!(a::MyAgent3{T}) where {T}
+        a.time += a.Δt
+    end
+
+    AlgebraicAgents._projected_to(a::MyAgent3) = a.time >= a.max_time ? true : a.time
+
+    alice = MyAgent3{Float64}("alice", 0.0, 1.0, 10.)
+    bob = MyAgent3{Float64}("bob", 0.0, 1.5, 15.)
+
+    joint_system = ⊕(alice, bob, name = "joint")
+
+    @control alice control_alice(alice) "control_alice"
+    @control joint_system control(joint_system)
+
+    simulate(joint_system, 100.)
+
+    opera = getopera(joint_system)
+    
+    @test length(opera.controls) == 2
+    @test length(opera.controls_log) == 32
+    @test opera.controls_log[1].retval == "alice"
+    @test opera.controls_log[2].retval == 1.0
 end

@@ -189,16 +189,15 @@ macro schedule(opera, time, call, id = "scheduled_action_" * randstring(4))
 end
 
 function execute_scheduled_interactions!(opera::Opera, time)
-    ix = 1
-    while ix <= length(opera.scheduled_interactions)
-        action = opera.scheduled_interactions[ix]
+    while !isempty(opera.scheduled_interactions)
+        action = first(opera.scheduled_interactions)
         if action.time <= time
             # execute, log
             log_record = (; id = action.id, time, retval = call(opera, action.call))
             push!(opera.scheduled_interactions_log, log_record)
 
             # delete action
-            deleteat!(opera.scheduled_interactions, ix)
+            popfirst!(opera.scheduled_interactions)
         else
             break
         end
@@ -246,8 +245,8 @@ macro control(opera, call, id = "control_" * randstring(4))
 end
 
 function execute_controls!(opera::Opera, time)
-    foreach(opera.controls) do c
-        log_record = (; id = action.id, time, retval = call(opera, c.call))
+    foreach(opera.controls) do action
+        log_record = (; id = action.id, time, retval = call(opera, action.call))
         push!(opera.controls_log, log_record)
     end
 end
