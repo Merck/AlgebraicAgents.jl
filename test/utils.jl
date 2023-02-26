@@ -26,15 +26,13 @@ end
     entangle!(base, AgentType1("agent3"))
 
     # no uuid
-    hierarchy = prewalk_ret(agent_hierarchy_mmd, base)
-    hierarchy = cat(hierarchy..., dims = 1)
+    hierarchy = agent_hierarchy_mmd(base)
     @test hierarchy[1] == "classDiagram\n"
     @test hierarchy[2] == "class agent1\n"
     @test hierarchy[end] == "agent1 <|-- agent3\n"
 
     # uuid
-    hierarchy = prewalk_ret(a -> agent_hierarchy_mmd(a, use_uuid = 2), base)
-    hierarchy = cat(hierarchy..., dims = 1)
+    hierarchy = agent_hierarchy_mmd(base; use_uuid = 2)
 
     @test occursin(r"[0-9]{2}", hierarchy[2][(end - 2):(end - 1)])
     @test occursin(r"[0-9]{2}", hierarchy[3][(end - 2):(end - 1)])
