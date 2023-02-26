@@ -195,7 +195,10 @@ function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
     end
     @ret ret _projected_to(a)
 
-    isroot && opera_run!(getopera(a))
+    if isroot
+        execute_instantious_interaction!(getopera(a))
+        @ret ret execute_scheduled_interactions!(getopera(a), t)
+    end
 
     ret
 end

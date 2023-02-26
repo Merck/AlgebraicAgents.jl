@@ -52,7 +52,7 @@ function f_(u,p,t)
     poke(agent)
     ## alternatively, provide a function call f(args...)
     ## this will be expanded to a call f(agent, args...)
-    @call agent custom_function(t)
+    @call agent custom_function(agent, t)
 
     min(2., 1.01*u + o1 + o2 + o3)
 end

@@ -4,9 +4,9 @@ using Requires
 
 using Glob
 using UUIDs
-using DataStructures
 using MacroTools
 using Crayons
+using Random: randstring
 
 # abstract algebraic agent types
 include("abstract.jl")
@@ -21,8 +21,9 @@ export getagent, by_name, entangle!, disentangle!
 # and and which contains a directory of algebraic integrators
 include("opera.jl")
 export AbstractOperaCall, AgentCall, Opera
-## enqueue an action
-export opera_enqueue!
+# Opera interface
+export poke, @call
+export add_scheduled_interaction!, @schedule
 
 # utility functions
 include("utils.jl")
@@ -31,7 +32,7 @@ export @wrap
 ## declare derived sequence
 export @derived
 ## convenient observable accessor, interaction schedulers
-export @observables, poke, @call
+export @observables
 ## flat representation of agent hierarchy
 export flatten
 ## instantiate an integration and add it to Julia's load path

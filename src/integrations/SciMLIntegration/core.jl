@@ -184,7 +184,7 @@ getobservable(::Val{DummyType}, args...) = 0
 gettimeobservable(::Val{DummyType}, args...) = 0
 getopera(::Val{DummyType}) = Val(DummyType)
 AgentCall(::Val{DummyType}, args...) = Val(DummyType)
-opera_enqueue!(::Val{DummyType}, args...) = nothing
+add_instantious_interaction!(::Val{DummyType}, args...) = nothing
 
 # custom pretty-printing
 function print_custom(io::IO, mime::MIME"text/plain", a::DiffEqAgent)

@@ -37,49 +37,6 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
 end
 
 """
-    poke(agent, priority=0)
-Schedule an interaction. Interactions are implemented within an instance `Opera`, sorted by their priorities.
-Internally, reduces to `_interact!(agent)`.
-
-See also [`Opera`](@ref).
-
-# Examples
-```julia
-poke(agent, 1.)
-```
-"""
-function poke(agent, priority = 0)
-    opera_enqueue!(getopera(agent), AgentCall(agent), Float64(priority))
-end
-
-"""
-    @call agent call priority=0
-Schedule an interaction (call). Interactions are implemented within an instance `Opera`, sorted by their priorities.
-Internally, the `call=f(args...)` expression will be transformed to an anonymous function `agent -> f(agent, args...)`.
-
-See also [`Opera`](@ref).
-
-# Examples
-```julia
-@call agent f(t)
-```
-"""
-macro call(agent, call, priority = 0)
-    call = if call isa Expr && Meta.isexpr(call, :call)
-        sym = gensym()
-        insert!(call.args, 2, sym)
-        :($sym -> $(call))
-    else
-        call
-    end
-
-    quote
-        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent)), $(esc(call))),
-                       Float64($(esc(priority))))
-    end
-end
-
-"""
     @observables agent path:obs path:(obs1, obs2) path:[obs1, obs2]
 Retrieve (a vector of) observables relative to `agent`.
 
