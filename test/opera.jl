@@ -17,7 +17,7 @@ using Test, AlgebraicAgents
 
     function AlgebraicAgents._step!(a::MyAgent{T}) where {T}
         if a.name == "alice"
-            poke(only(getagent(a, r"bob")))
+            poke(only(getagent(a, r"bob")), 0.0)
         else
             poke(only(getagent(a, r"alice")))
         end
@@ -44,6 +44,24 @@ using Test, AlgebraicAgents
     @test bob.counter2 == 9
     @test bob.counter1_t == collect(0:1.5:7.5)
     @test bob.counter2_t == [1.5, 1.5, 3, 4.5, 4.5, 6, 7.5, 7.5, 9]
+
+    opera = getopera(joint_system)
+    @test length(opera.instantious_interactions_log) == 15
+    @test opera.instantious_interactions_log[1].id == "instantious_1"
+    @test opera.instantious_interactions_log[2].id == "instantious_2"
+
+    # check if operas get out of sync after disentangling the agents
+    disentangle!(alice)
+    add_instantious!(alice, () -> nothing)
+    add_instantious!(alice, () -> nothing, 0)
+    add_instantious!(bob, () -> nothing, 0)
+
+    @test length(getopera(alice).instantious_interactions) == 2
+    @test length(getopera(bob).instantious_interactions) == 1
+
+    @test getopera(alice).instantious_interactions[1].id == "instantious_17"
+    @test getopera(alice).instantious_interactions[2].id == "instantious_16"
+    @test getopera(bob).instantious_interactions[1].id == "instantious_16"
 end
 
 @testset "opera agent call with two agents on different time steps" begin

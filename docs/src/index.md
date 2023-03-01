@@ -109,7 +109,7 @@ by_name
 Opera
 poke
 @call
-add_instantious_interaction!
+add_instantious!
 @future
 add_future!
 @control

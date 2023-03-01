@@ -136,13 +136,18 @@ function disentangle!(agent::AbstractAlgebraicAgent; remove_relpathrefs = true)
     isnothing(getparent(agent)) && return agent
 
     opera_inners = Opera()
+    # copy interactions
+    foreach(setdiff(fieldnames(Opera), (:directory,))) do f
+        setproperty!(opera_inners, f, getproperty(getopera(agent), f) |> deepcopy)
+    end
+
     inners_uuid = UUID[]
     prewalk(agent) do a
         push!(inners_uuid, getuuid(a))
         push!(opera_inners.directory, getuuid(a) => a)
     end
 
-    # for each algebraic agent, rm relpath reference to an agent
+    # sync operas for hierarchy under agent
     prewalk(agent) do agent_
         sync_opera!(agent_, opera_inners)
     end

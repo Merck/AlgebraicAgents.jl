@@ -32,7 +32,7 @@ The Opera system allows interactions between agents to be scheduled. By default,
    [`poke`](@ref) is used to schedule a "wake up" call to the agent, custom behavior can be implemented by defining [`AlgebraicAgents._interact!`](@ref) for subtypes of `AbstractAlgebraicAgent`.
   * [`@call`](@ref) is used to schedule a callback function to the agent.
 
-However the system can work with arbitrary types of interactions. To do so, simply define a new call type that is a subtype of `AbstractOperaCall`. The methods `execute_action!` and `add_instantious_interaction!` must be specialized for your new call type. After that, your new interaction type can be used just like any other! To see an example, please check out our tests.
+However the system can work with arbitrary types of interactions. To do so, simply define a new call type that is a subtype of `AbstractOperaCall`. The methods `execute_action!` and `add_instantious!` must be specialized for your new call type. After that, your new interaction type can be used just like any other! To see an example, please check out our tests.
 
 For more details, see the API documentation of [`Opera`](@ref) and our tests.
 
@@ -59,13 +59,14 @@ Once the action is executed, the return value with corresponding action id and e
 See [`add_control!`](@ref) and [`@control`](@ref).
 
 ### Instantious Interactions
+
 You may schedule additional interactions which exist within a single step of the model;
-such actions are modeled as named tuples `(priority=0., call)`. Here, `call` is a (parameterless) anonymous function.
+such actions are modeled as named tuples `(id, priority=0., call)`. Here, `call` is a (parameterless) anonymous function.
 
 They exist within a single step of the model and are executed after the calls
-to `_prestep!` and `_step!` finish.
+to `_prestep!` and `_step!` finish, in the order of the assigned priorities.
 
 In particular, you may schedule interactions of two kinds:
  
- - `poke(agent)`, which will translate into a call `_interact!(agent)`,
- - `@call opera expresion priority=0`, which will translate into a call `() -> expression`.
+ - `poke(agent, priority)`, which will translate into a call `() -> _interact!(agent)`, with the specified priority,
+ - `@call opera expresion priority`, which will translate into a call `() -> expression`, with the specified priority.
