@@ -21,7 +21,7 @@ macro ret(old, ret)
     end
 end
 
-iscontinuable(ret) = !isnothing(ret) && (ret !== true)
+iscontinuable(ret) = !isnothing(ret) && !isa(ret, Bool)
 
 "Turns aargs into a uuid-indexed dict."
 function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
@@ -34,52 +34,6 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
     end
 
     naargs
-end
-
-"
-    @schedule agent priority=0
-Schedule an interaction. Interactions are implemented within an instance `Opera`, sorted by their priorities.
-Internally, reduces to `_interact!(agent)`.
-
-See also [`Opera`](@ref).
-
-# Examples
-```julia
-@schedule agent 1.
-```
-"
-macro schedule(agent, priority = 0)
-    quote
-        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent))),
-                       Float64($(esc(priority))))
-    end
-end
-
-"
-    @schedule agent call priority=0
-Schedule an interaction (call). Interactions are implemented within an instance `Opera`, sorted by their priorities.
-Internally, the `call=f(args...)` expression will be transformed to an anonymous function `agent -> f(agent, args...)`.
-
-See also [`Opera`](@ref).
-
-# Examples
-```julia
-@schedule agent f(t)
-```
-"
-macro schedule_call(agent, call, priority = 0)
-    call = if call isa Expr && Meta.isexpr(call, :call)
-        sym = gensym()
-        insert!(call.args, 2, sym)
-        :($sym -> $(call))
-    else
-        call
-    end
-
-    quote
-        opera_enqueue!(getopera($(esc(agent))), AgentCall($(esc(agent)), $(esc(call))),
-                       Float64($(esc(priority))))
-    end
 end
 
 """

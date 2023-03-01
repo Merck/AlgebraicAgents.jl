@@ -38,10 +38,10 @@ function f_(u, p, t)
     # schedule interaction
     ## first, schedule a call to `_interact!(agent)` with priority 0
     ## this is the default behavior
-    @schedule agent
+    poke(agent)
     ## alternatively, provide a function call f(args...)
     ## this will be expanded to a call f(agent, args...)
-    @schedule_call agent custom_function(t)
+    @call agent custom_function(agent, t)
 
     min(2.0, 1.01 * u + o1 + o2 + o3)
 end

@@ -1,5 +1,4 @@
 using Test, AlgebraicAgents
-using DataStructures: enqueue!
 
 @testset "opera interaction with two agents on different time steps" begin
     @aagent struct MyAgent{T <: Real}
@@ -18,9 +17,9 @@ using DataStructures: enqueue!
 
     function AlgebraicAgents._step!(a::MyAgent{T}) where {T}
         if a.name == "alice"
-            @schedule only(getagent(a, r"bob")) 0
+            poke(only(getagent(a, r"bob")), 0.0)
         else
-            @schedule only(getagent(a, r"alice")) 0
+            poke(only(getagent(a, r"alice")))
         end
 
         a.counter1 += 1
@@ -45,6 +44,24 @@ using DataStructures: enqueue!
     @test bob.counter2 == 9
     @test bob.counter1_t == collect(0:1.5:7.5)
     @test bob.counter2_t == [1.5, 1.5, 3, 4.5, 4.5, 6, 7.5, 7.5, 9]
+
+    opera = getopera(joint_system)
+    @test length(opera.instantious_interactions_log) == 15
+    @test opera.instantious_interactions_log[1].id == "instantious_1"
+    @test opera.instantious_interactions_log[2].id == "instantious_2"
+
+    # check if operas get out of sync after disentangling the agents
+    disentangle!(alice)
+    add_instantious!(alice, () -> nothing)
+    add_instantious!(alice, () -> nothing, 0)
+    add_instantious!(bob, () -> nothing, 0)
+
+    @test length(getopera(alice).instantious_interactions) == 2
+    @test length(getopera(bob).instantious_interactions) == 1
+
+    @test getopera(alice).instantious_interactions[1].id == "instantious_17"
+    @test getopera(alice).instantious_interactions[2].id == "instantious_16"
+    @test getopera(bob).instantious_interactions[1].id == "instantious_16"
 end
 
 @testset "opera agent call with two agents on different time steps" begin
@@ -67,9 +84,9 @@ end
     function AlgebraicAgents._step!(a::MyAgent1{T}) where {T}
         tnow = a.time
         if a.name == "alice"
-            @schedule_call only(getagent(a, r"bob")) (a)->poke_other(a, tnow)
+            @call a poke_other(only(getagent(a, r"bob")), tnow)
         else
-            @schedule_call only(getagent(a, r"alice")) (a)->poke_other(a, tnow)
+            @call a poke_other(only(getagent(a, r"alice")), tnow)
         end
 
         a.counter1 += 1
@@ -98,61 +115,76 @@ end
     @test bob.counter2_tt == alice.counter1_t
 end
 
-@testset "test custom AbstractOperaCall" begin
-
-    # subtype of AbstractOperaCall which Opera can work with
-    struct TwoAgentCall{A <: AbstractAlgebraicAgent, B <: AbstractAlgebraicAgent,
-                        C <: Function} <: AbstractOperaCall
-        agentA::A
-        agentB::B
-        call::C
-    end
-
-    @aagent struct MyAgent2{T <: Real, M <: AbstractString}
+@testset "futures" begin
+    @aagent struct MyAgent2{T <: Real}
         time::T
         Δt::T
-        myinfo::M
+
+        max_time::T
     end
 
-    function interact_together(a, b)
-        tmp = a.myinfo
-        a.myinfo = b.myinfo
-        b.myinfo = tmp
-    end
+    # future: call
+    interact = agent -> agent
 
-    # Opera interface functions which need specialization
-    function AlgebraicAgents.execute_action!(::Opera, call::TwoAgentCall)
-        call.call(call.agentA, call.agentB)
-    end
-
-    function AlgebraicAgents.opera_enqueue!(opera::Opera, call::TwoAgentCall,
-                                            priority::Float64 = 0.0)
-        !haskey(opera.calls, call) && enqueue!(opera.calls, call => priority)
-    end
-
-    # general interface functions for MyAgent2 types
-    function AlgebraicAgents._step!(a::MyAgent2{T, M}) where {T, M}
-        if a.name == "alice"
-            opera_enqueue!(getopera(a),
-                           TwoAgentCall(a, only(getagent(a, r"bob")), interact_together))
-        end
-
+    function AlgebraicAgents._step!(a::MyAgent2{T}) where {T}
         a.time += a.Δt
     end
 
-    AlgebraicAgents._projected_to(a::MyAgent2) = a.time
+    AlgebraicAgents._projected_to(a::MyAgent2) = a.time >= a.max_time ? true : a.time
 
-    # simulate
-    alice = MyAgent2{Float64, String}("alice", 0.0, 1.0, "alice's info")
-    bob = MyAgent2{Float64, String}("bob", 0.0, 1.0, "bob's info")
+    alice = MyAgent2{Float64}("alice", 0.0, 1.0, 10.0)
+    bob = MyAgent2{Float64}("bob", 0.0, 1.5, 15.0)
 
     joint_system = ⊕(alice, bob, name = "joint")
 
-    @test alice.myinfo == "alice's info"
-    @test bob.myinfo == "bob's info"
+    @future alice 5.0 interact(alice) "alice_schedule"
+    @future bob 20.0 interact(bob)
 
-    simulate(joint_system, 1.0)
+    simulate(joint_system, 100.0)
 
-    @test alice.myinfo == "bob's info"
-    @test bob.myinfo == "alice's info"
+    opera = getopera(joint_system)
+
+    @test isempty(opera.futures)
+    @test length(opera.futures_log) == 2
+    @test opera.futures_log[1].retval == alice
+    @test opera.futures_log[2].retval == bob
+end
+
+@testset "control interactions" begin
+    @aagent struct MyAgent3{T <: Real}
+        time::T
+        Δt::T
+
+        max_time::T
+    end
+
+    # control
+    control = function (model::AbstractAlgebraicAgent)
+        projected_to(model)
+    end
+
+    control_alice = agent -> getname(agent)
+
+    function AlgebraicAgents._step!(a::MyAgent3{T}) where {T}
+        a.time += a.Δt
+    end
+
+    AlgebraicAgents._projected_to(a::MyAgent3) = a.time >= a.max_time ? true : a.time
+
+    alice = MyAgent3{Float64}("alice", 0.0, 1.0, 10.0)
+    bob = MyAgent3{Float64}("bob", 0.0, 1.5, 15.0)
+
+    joint_system = ⊕(alice, bob, name = "joint")
+
+    @control alice control_alice(alice) "control_alice"
+    @control joint_system control(joint_system)
+
+    simulate(joint_system, 100.0)
+
+    opera = getopera(joint_system)
+
+    @test length(opera.controls) == 2
+    @test length(opera.controls_log) == 32
+    @test opera.controls_log[1].retval == "alice"
+    @test opera.controls_log[2].retval == 1.0
 end

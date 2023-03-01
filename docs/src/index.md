@@ -107,9 +107,13 @@ by_name
 
 ```@docs
 Opera
-AbstractOperaCall
-AgentCall
-opera_enqueue!
+poke
+@call
+add_instantious!
+@future
+add_future!
+@control
+add_control!
 ```
 
 ### Operations
@@ -162,12 +166,10 @@ postwalk_ret
 @get_agent
 ```
 
-### Observable accessor, interaction schedulers
+### Retrieving observables
 
 ```@docs
 @observables
-@schedule
-@schedule_call
 ```
 
 ### Flat representation

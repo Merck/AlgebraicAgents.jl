@@ -195,7 +195,11 @@ function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
     end
     @ret ret _projected_to(a)
 
-    isroot && opera_run!(getopera(a))
+    if isroot
+        execute_instantious_interactions!(getopera(a), t)
+        @ret ret execute_futures!(getopera(a), t)
+        execute_controls!(getopera(a), t)
+    end
 
     ret
 end
@@ -205,10 +209,16 @@ end
 Return `true` if all algebraic agent's time horizon was reached (or `nothing` in case of delegated evolution).
 Else return the minimum time up to which the evolution of an algebraic agent, and all its descendants, has been projected.
 """
-function projected_to(a::AbstractAlgebraicAgent)
+function projected_to(a::AbstractAlgebraicAgent; isroot = true)
     ret = _projected_to(a)
     foreach(values(inners(a))) do a
-        @ret ret projected_to(a)
+        @ret ret projected_to(a; isroot = false)
+    end
+
+    if isroot
+        foreach(getopera(a).futures) do i
+            @ret ret i.time
+        end
     end
 
     ret
@@ -218,12 +228,14 @@ end
 function _projected_to(t::AbstractAlgebraicAgent)
     @error("type $(typeof(t)) doesn't implement `_projected_to`")
 end
+
 _projected_to(::FreeAgent) = nothing
 
 "Step an agent forward (call only if its projected time is equal to the least projected time, among all agents in the hierarchy)."
 function _step!(a::AbstractAlgebraicAgent)
     @error "algebraic agent $(typeof(a)) doesn't implement `_step!`"
 end
+
 _step!(::FreeAgent) = nothing
 
 "Pre-step to a step call (e.g., projecting algebraic agent's solution up to time `t`)."
