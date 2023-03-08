@@ -55,6 +55,8 @@ flowchart TD
 
     Opera -.-> Ret
 
+    RootDecision -->|no| Stop
+
     ControlOpera --> Stop((Exit program and\n return ret))
 
     classDef GreenNode fill:#D5E8D4,stroke:#82B366;
