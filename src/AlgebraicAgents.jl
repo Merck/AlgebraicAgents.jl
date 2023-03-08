@@ -20,7 +20,7 @@ export getagent, by_name, entangle!, disentangle!
 # dynamic structure to store priority queue of algebraic interactions
 # and and which contains a directory of algebraic integrators
 include("opera.jl")
-export AbstractOperaCall, AgentCall, Opera
+export AgentCall, Opera
 # Opera interface
 export add_instantious!, poke, @call
 export add_future!, @future
