@@ -50,3 +50,5 @@ makedocs(sitename = "AlgebraicAgents.jl",
          ; pages)
 
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
+
+rm(dirname(@__FILE__) * "/src/design_mmd.md")
