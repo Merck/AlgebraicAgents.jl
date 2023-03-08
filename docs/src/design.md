@@ -37,7 +37,7 @@ flowchart TD
 
     Inners -.-> Ret
 
-    Step --> LocalDecision{projected time == t}:::YellowNode
+    Step --> LocalDecision{local projected time == t\n equals the min projected time}:::YellowNode
 
     LocalDecision -->|yes| LocalStep[Local step]:::GreenNode
     LocalDecision -->|no| RootDecision{is root?}:::YellowNode
