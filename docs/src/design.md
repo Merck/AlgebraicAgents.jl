@@ -16,7 +16,51 @@ There are several functions in the interface for an [`AbstractAlgebraicAgent`](@
 
 These are collected into `ret`, which is an object that will be `true` if and only if all agents have returned `true`, and is otherwise the minimum of the numeric values (projection times) returned from each inner agent's step.
 
-![](assets/simloop.png)
+```mermaid
+flowchart TD
+
+    Start((Enter Program))-->Project[Set t equal to minimum \n projected time]:::GreenNode
+
+    Project-->PreWalk[Prestep inner agents]:::GreenNode
+
+    PreWalk -->|_prestep!| Inners([<:AbstractAlgebraicAgent]):::RedNode
+    
+    PreWalk --> Step[Step inner agents]:::GreenNode
+
+    Step -->|step!| Inners
+
+    subgraph inners
+    Inners
+    end
+
+    Ret([ret]):::RedNode
+
+    Inners -.-> Ret
+
+    Step --> LocalDecision{local projected time == t\n equals the min projected time}:::YellowNode
+
+    LocalDecision -->|yes| LocalStep[Local step]:::GreenNode
+    LocalDecision -->|no| RootDecision{is root?}:::YellowNode
+
+    LocalStep -.-> Ret
+
+    LocalStep --> RootDecision
+
+    subgraph Opera
+
+    RootDecision -->|yes| InstantOpera[Execute instantaneous interactions]:::GreenNode
+    InstantOpera --> FutureOpera[Execute delayed interactions]:::GreenNode
+    FutureOpera --> ControlOpera[Execute control interactions]:::GreenNode
+    end
+
+    Opera -.-> Ret
+
+    ControlOpera --> Stop((Exit program and\n return ret))
+
+    classDef GreenNode fill:#D5E8D4,stroke:#82B366;
+    classDef RedNode fill:#F8CECC,stroke:#B85450;
+    classDef YellowNode fill:#FFE6CC,stroke:#D79B00;
+```
 
 Above we show a caricature of the main simulation loop. "Enter program" corresponds to the call to `simulate`, the value of `ret` is (typically) initialized to `0.0`. The simulation continues to step while `ret` is not `true` (meaning the maximum time horizon has been reached by the slowest agent), or has not exceeded some maximum. 
 

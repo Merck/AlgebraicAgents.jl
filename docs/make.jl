@@ -4,9 +4,34 @@ using AlgebraicAgents
 using DifferentialEquations, Agents, AlgebraicDynamics
 using DataFrames, Plots
 
+# from https://github.com/MilesCranmer/SymbolicRegression.jl/blob/master/docs/make.jl
+# see discussion here https://github.com/JuliaDocs/Documenter.jl/issues/1943
+
+design = open(dirname(@__FILE__) * "/src/design.md") do io
+    read(io, String)
+end
+
+design = replace(design, r"```mermaid([^`]*)```" => s"```@raw html\n<div class=\"mermaid\">\n\1\n</div>\n```")
+
+# init mermaid.js:
+init_mermaid = """
+```@raw html
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
+```
+"""
+
+design_mmd = init_mermaid * design
+
+open(dirname(@__FILE__) * "/src/design_mmd.md", "w") do io
+    write(io, design_mmd)
+end
+
 pages = [
     "index.md",
-    "design.md",
+    "design_mmd.md",
     "Integrations" => [
         "integrations/AgentsIntegration.md",
         "integrations/SciMLIntegration.md",
@@ -25,3 +50,5 @@ makedocs(sitename = "AlgebraicAgents.jl",
          ; pages)
 
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
+
+rm(dirname(@__FILE__) * "/src/design_mmd.md")
