@@ -1,4 +1,4 @@
-using Documenter, DocumenterMarkdown
+using Documenter, DocumenterMarkdown, Literate
 using AlgebraicAgents
 
 using DifferentialEquations, Agents, AlgebraicDynamics
@@ -7,6 +7,7 @@ using DataFrames, Plots
 # from https://github.com/MilesCranmer/SymbolicRegression.jl/blob/master/docs/make.jl
 # see discussion here https://github.com/JuliaDocs/Documenter.jl/issues/1943
 
+# required for mmd
 design = open(dirname(@__FILE__) * "/src/design.md") do io
     read(io, String)
 end
@@ -28,6 +29,7 @@ design_mmd = init_mermaid * design
 open(dirname(@__FILE__) * "/src/design_mmd.md", "w") do io
     write(io, design_mmd)
 end
+# end required for mmd
 
 pages = [
     "index.md",
@@ -51,4 +53,5 @@ makedocs(sitename = "AlgebraicAgents.jl",
 
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
 
+# cleanup the mmd doc
 rm(dirname(@__FILE__) * "/src/design_mmd.md")
