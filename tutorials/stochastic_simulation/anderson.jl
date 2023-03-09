@@ -92,10 +92,12 @@ function AlgebraicAgents._projected_to(c::Clock)
 end
 
 function AlgebraicAgents._step!(c::Clock)
-    # println("calling step! on clock " * getname(c))
-    # if c.τ <= topmost(c).t
-    #     Infiltrator.@infiltrate
-    # end
+    println("calling step! on clock " * getname(c))
+
+    if isinf(c.τ)
+        return nothing
+    end
+ 
     topmost(c).Δ = c.τ - topmost(c).t
     topmost(c).t = c.τ # t += Δ
     topmost(c).X += c.ν # update state
@@ -117,7 +119,7 @@ end
 # end
 
 function control_clock(c::Clock)
-    # println("calling control_clock on clock " * getname(c))
+    println("calling control_clock on clock " * getname(c))
     c.T += c.a * topmost(c).Δ # Tk += ak*Δ
     c.a = c.intensity(topmost(c).X) # update intensity
     # update time of next firing
@@ -126,8 +128,6 @@ function control_clock(c::Clock)
     c.τ = topmost(c).t + c.Δt
 end
 
-# plotting thing
-AlgebraicAgents.@draw_df ReactionSystem df_output
 
 # add some clocks
 rs = make_reactionsystem("SIR", [990, 10, 0])
@@ -141,7 +141,7 @@ add_clock!(rs, "recovery", (x) -> γ*x[2], [0,-1,1])
 simulate(rs, floatmax(Float64))
 
 
-df_out = select(rs.df_output[1:end-2,:], Not(:clock))
+df_out = select(rs.df_output, Not(:clock))
 
 @df df_out plot(:time, cols([:X1,:X2,:X3]), label = ["S" "I" "R"])
 
@@ -162,3 +162,7 @@ add_clock!(rs, "infection", (x) -> β*x[2]/sum(x)*x[1], [-1,1,0])
 add_clock!(rs, "recovery", (x) -> γ*x[2], [0,-1,1])
 
 step!(rs)
+only(by_name(rs,"infection"))
+only(by_name(rs,"recovery"))
+
+simulate(rs, floatmax(Float64))
