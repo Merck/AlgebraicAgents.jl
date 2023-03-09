@@ -1,0 +1,6 @@
+[deps]
+AlgebraicAgents = "f6eb0ae3-10fa-40e6-88dd-9006ba45093a"
+Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Infiltrator = "5903a43b-9cc3-4c30-8d17-598619ec4e9b"
+JuliaInterpreter = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
