@@ -1,6 +1,6 @@
-using AlgebraicAgents, Distributions
+using AlgebraicAgents, Distributions, DataFrames
 
-using Infiltrator
+# using Infiltrator
 
 β = 0.05*10.0
 γ = 0.25
@@ -11,15 +11,24 @@ using Infiltrator
     Δ::T
     X::Vector{S}
     X0::Vector{S}
+    # simulation trajectory
+    df_output::DataFrame
 end
 
 function make_reactionsystem(name::T, X0::Vector{S}) where {T,S}
-    rs = ReactionSystem{Float64,S}(name, 0.0, 0.0, X0, X0)
+    df_output = DataFrame(time=Float64[])
+    for i in eachindex(X0)
+        insertcols!(df_output, Symbol("X"*string(i))=>S[])
+    end
+    rs = ReactionSystem{Float64,S}(name, 0.0, 0.0, X0, X0, df_output)
     entangle!(rs, FreeAgent("clocks"))
     return rs
 end
 
-AlgebraicAgents._step!(a::ReactionSystem) = nothing
+function AlgebraicAgents._step!(a::ReactionSystem)
+    # track hist
+    push!(a.df_output, [a.t, a.X...])
+end
 
 # function _reinit!(a::ReactionSystem{T,S}) where {T,S}
 #     a.t = zero(T)
@@ -31,7 +40,15 @@ AlgebraicAgents._step!(a::ReactionSystem) = nothing
 #     a.t
 # end
 
-AlgebraicAgents._projected_to(a::ReactionSystem) = nothing
+# AlgebraicAgents._projected_to(a::ReactionSystem) = nothing
+# AlgebraicAgents._projected_to(a::ReactionSystem) = a.t
+function AlgebraicAgents._projected_to(a::ReactionSystem)
+    ret = nothing
+    foreach(values(inners(a))) do a
+        AlgebraicAgents.@ret ret projected_to(a; isroot = false)
+    end
+    return ret
+end
 
 
 
