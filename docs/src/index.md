@@ -201,7 +201,7 @@ It is possible to run filter and transform queries on agent hierarchies.
 FilterQuery
 @f_str
 @filter
-AlgebraicAgents.filter(::AbstractAlgebraicAgent, ::GeneralFilterQuery)
+AlgebraicAgents.filter(::AbstractAlgebraicAgent, ::FilterQuery)
 ```
 
 To provide custom filter query types, you need to implement [`AlgebraicAgents._filter`](@ref) low-level matching method.

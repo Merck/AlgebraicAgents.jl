@@ -7,7 +7,7 @@ using DataFrames, Plots
 # from https://github.com/MilesCranmer/SymbolicRegression.jl/blob/master/docs/make.jl
 # see discussion here https://github.com/JuliaDocs/Documenter.jl/issues/1943
 
-design = open(dirname(@__FILE__) * "/src/design.md") do io
+design = open(dirname(@__FILE__) * "src/design.md") do io
     read(io, String)
 end
 
@@ -25,7 +25,7 @@ init_mermaid = """
 
 design_mmd = init_mermaid * design
 
-open(dirname(@__FILE__) * "/src/design_mmd.md", "w") do io
+open(dirname(@__FILE__) * "src/design_mmd.md", "w") do io
     write(io, design_mmd)
 end
 
@@ -39,7 +39,7 @@ pages = [
     ],
     "Three Sketches" => [
         "sketches/agents/agents.md",
-        #"sketches/pharma.md",
+        "sketches/pharma/pharma.md",
         "sketches/sciml/sciml.md",
         "sketches/algebraicdynamics/algebraicdynamics.md",
     ],
@@ -51,4 +51,4 @@ makedocs(sitename = "AlgebraicAgents.jl",
 
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
 
-rm(dirname(@__FILE__) * "/src/design_mmd.md")
+rm(dirname(@__FILE__) * "src/design_mmd.md")
