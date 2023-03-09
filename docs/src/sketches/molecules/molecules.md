@@ -13,7 +13,7 @@ The next step is to define the molecules and discovery units types. This is done
 
 ```@setup 1
 using AlgebraicAgents
-include("../../../tutorials/molecules/types.jl")
+include("types.jl")
 ```
 
 ## Integrating a Custom Dynamical System

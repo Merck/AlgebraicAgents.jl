@@ -38,10 +38,10 @@ pages = [
         "integrations/AlgebraicDynamicsIntegration.md",
     ],
     "Three Sketches" => [
-        "sketches/agents.md",
-        "sketches/pharma.md",
-        "sketches/sciml.md",
-        "sketches/algebraicdynamics.md",
+        "sketches/agents/agents.md",
+        #"sketches/pharma.md",
+        "sketches/sciml/sciml.md",
+        "sketches/algebraicdynamics/algebraicdynamics.md",
     ],
 ]
 
