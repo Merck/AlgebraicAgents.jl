@@ -74,7 +74,7 @@ getagent(m, glob"**/model?"s)
 sol = AlgebraicAgents.simulate(m)
 
 # plot solution
-draw(sol, "diagram1/model1")
+@testset "`draw` (SciML integration) outputs `Plot`" begin draw(sol, "diagram1/model1") end
 
 # output ports can couple dynamics
 @testset "observable (output) ports" begin

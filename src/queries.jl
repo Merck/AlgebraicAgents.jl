@@ -15,11 +15,8 @@ end
 abstract type AbstractQuery end
 
 ## filter queries
-"Supertype of filter queries."
-abstract type AbstractFilterQuery <: AbstractQuery end
-
 """
-    GeneralFilterQuery(query)
+    FilterQuery(query)
 Simple property query; references agents via underscores `_`.
 
 A query on an agent may result in an error; in that case, the agent will fail the filter condition by default.
@@ -32,14 +29,13 @@ filter(agents, f"_.age > 21 && _.name ∈ ['a', 'b']")
 agents |> @filter _.age > 21 && _.name ∈ ['a', 'b']
 ```
 """
-struct GeneralFilterQuery <: AbstractFilterQuery
-    query::Any
-    GeneralFilterQuery(q) = new(q)
+struct FilterQuery{T}
+    query::T
 end
 
 """
     f"query"
-Turn a query string into a query instance, see also [`GeneralFilterQuery`](@ref).
+Turn a query string into a query instance, see also [`FilterQuery`](@ref).
 
 Supports string interpolations.
 
@@ -50,7 +46,7 @@ i = 1; filter(agents, f"_.age > \$i && _.name ∈ ['a', 'b']")
 ```
 """
 macro f_str(query)
-    :(GeneralFilterQuery($(interpolate_underscores(query))))
+    :(FilterQuery($(interpolate_underscores(query))))
 end
 
 """
@@ -58,12 +54,12 @@ end
 Turnfilter query into a function of agents' hierarchy.
 Accepts expressions (corresponding to q-strings) and query string.
 
-See also [`GeneralFilterQuery`](@ref).
+See also [`FilterQuery`](@ref).
 """
 macro filter(query)
     # if query is a raw expression (not a query string), transform explicitly
     query = if !Meta.isexpr(query, :macrocall) || Meta.isexpr(query, :string)
-        :(GeneralFilterQuery($(interpolate_underscores(query))))
+        :(FilterQuery($(interpolate_underscores(query))))
     else
         Expr(:escape, query)
     end
@@ -84,12 +80,12 @@ Run filter query on agents in a hierarchy.
 filter(agent, f"_.age > 21 && _.name ∈ ['a', 'b']") # filter query
 ```
 """
-function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{<:AbstractFilterQuery})
+function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{<:FilterQuery})
     filter(collect(values(flatten(a))), queries...)
 end
 
 function Base.filter(a::Vector{<:AbstractAlgebraicAgent},
-                     queries::Vararg{<:AbstractFilterQuery})
+                     queries::Vararg{<:FilterQuery})
     filtered = AbstractAlgebraicAgent[]
     for a in a
         all(q -> _filter(a, q), queries) && push!(filtered, a)
@@ -104,9 +100,7 @@ end
     _filter(agent, query)
 Check if an agent satisfies filter condition.
 """
-function _filter(::AbstractAlgebraicAgent, ::AbstractFilterQuery) end
-
-_filter(a::AbstractAlgebraicAgent, query::GeneralFilterQuery) =
+_filter(a::AbstractAlgebraicAgent, query::FilterQuery) =
     try
         query.query(a)
     catch
@@ -114,11 +108,8 @@ _filter(a::AbstractAlgebraicAgent, query::GeneralFilterQuery) =
     end
 
 ## transform queries
-"Supertype of transform queries."
-abstract type AbstractTransformQuery <: AbstractQuery end
-
 """
-    GeneralTransformQuery(name, query)
+    TransformQuery(name, query)
 Simple transform query; references agents via underscores `_`.
 
 See also [`@transform`](@ref).
@@ -129,25 +120,30 @@ agent |> @transform(name=_.name)
 agent |> @transform(name=_.name, _.age)
 ```
 """
-struct GeneralTransformQuery <: AbstractTransformQuery
-    name::Any
-    query::Any
-    GeneralTransformQuery(name, query) = new(name, query)
+struct TransformQuery
+    name::Symbol
+    query::Function
+
+    function TransformQuery(name::T,
+                            query::Function) where {T <: Union{Symbol, AbstractString}}
+        new(Symbol(name), query)
+    end
 end
 
 """
     @transform queries...
-Turn transform queries into an anonymous function of agents' hierarchy. See also [`GeneralTransformQuery`](@ref).
+Turn transform queries into an anonymous function of agents' hierarchy. See also [`TransformQuery`](@ref).
 
 Accepts both anonymous queries (`_.name`) and named queries (`name=_.name`). By default, includes agent's uuid.
 """
 macro transform(exs...)
+    n_noname::Int = 0
     queries = map(ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) :
-                        (gensym(:query), ex), exs)
+                        (n_noname += 1; ("query_$n_noname", ex)), exs)
     names, queries = map(x -> x[1], queries), map(x -> x[2], queries)
     quote
-        queries = GeneralTransformQuery.($(names),
-                                         [$(interpolate_underscores.(queries)...)])
+        queries = TransformQuery.($(names),
+                                  [$(interpolate_underscores.(queries)...)])
 
         a -> transform(a, queries...)
     end
@@ -168,16 +164,16 @@ agent |> @transform(name=_.name)
 agent |> @transform(name=_.name, _.age)
 ```
 """
-function transform(a::AbstractAlgebraicAgent, queries::Vararg{<:AbstractTransformQuery})
+function transform(a::AbstractAlgebraicAgent, queries::Vararg{<:TransformQuery})
     transform(collect(values(flatten(a))), queries...)
 end
 
 function transform(a::Vector{<:AbstractAlgebraicAgent},
-                   queries::Vararg{<:AbstractTransformQuery})
+                   queries::Vararg{<:TransformQuery})
     results = []
     for a in a
         try
-            r = (; uuid = getuuid(a), (q.name => q.query(a) for q in queries)...)
+            r = (; uuid = getuuid(a), (Symbol(q.name) => q.query(a) for q in queries)...)
             push!(results, r)
         catch
         end

@@ -1,6 +1,8 @@
 # Lotka-Voltera Two Ways
 
-We showcase the integration of [AlgebraicDynamics.jl](https://github.com/AlgebraicJulia/AlgebraicDynamics.jl), we adopt [Lotka-Volterra Three Ways](https://algebraicjulia.github.io/AlgebraicDynamics.jl/dev/examples/Lotka-Volterra/) tutorial.
+We demonstrate an integration of [AlgebraicDynamics.jl](https://github.com/AlgebraicJulia/AlgebraicDynamics.jl).
+
+The tutorial is based on [AlgebraicDynamics.jl: Lotka-Volterra Three Ways](https://algebraicjulia.github.io/AlgebraicDynamics.jl/dev/examples/Lotka-Volterra/).
 
 ## Undirected Composition
 
