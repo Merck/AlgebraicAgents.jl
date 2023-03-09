@@ -1,6 +1,6 @@
-using AlgebraicAgents, Distributions, DataFrames
+using AlgebraicAgents, Distributions, DataFrames, Plots, StatsPlots
 
-# using Infiltrator
+using Infiltrator
 
 β = 0.05*10.0
 γ = 0.25
@@ -16,7 +16,7 @@ using AlgebraicAgents, Distributions, DataFrames
 end
 
 function make_reactionsystem(name::T, X0::Vector{S}) where {T,S}
-    df_output = DataFrame(time=Float64[])
+    df_output = DataFrame(time=Float64[],clock=String[])
     for i in eachindex(X0)
         insertcols!(df_output, Symbol("X"*string(i))=>S[])
     end
@@ -25,10 +25,11 @@ function make_reactionsystem(name::T, X0::Vector{S}) where {T,S}
     return rs
 end
 
-function AlgebraicAgents._step!(a::ReactionSystem)
-    # track hist
-    push!(a.df_output, [a.t, a.X...])
-end
+AlgebraicAgents._step!(a::ReactionSystem) = nothing
+# function AlgebraicAgents._step!(a::ReactionSystem)
+#     # track hist
+#     push!(a.df_output, [a.t, a.X...])
+# end
 
 # function _reinit!(a::ReactionSystem{T,S}) where {T,S}
 #     a.t = zero(T)
@@ -91,64 +92,73 @@ function AlgebraicAgents._projected_to(c::Clock)
 end
 
 function AlgebraicAgents._step!(c::Clock)
+    # println("calling step! on clock " * getname(c))
+    # if c.τ <= topmost(c).t
+    #     Infiltrator.@infiltrate
+    # end
     topmost(c).Δ = c.τ - topmost(c).t
     topmost(c).t = c.τ # t += Δ
     topmost(c).X += c.ν # update state
     c.P += rand(Exponential()) # Pμ += Exp(1)
+
+    push!(topmost(c).df_output, [topmost(c).t, getname(c), topmost(c).X...])
 end
 
-# now part of control. i dont like that.
+# the reason this wont work is that projected_to(a) will return 0.0
+# from the very first call to step! on the ReactionSystem.
+# after that when it comes time to call the local steps for each clock
+# their _projected_to will be tau but it will be compared to the input t,
+# which is zero and it wont be called.
+
 # # prestep to update time to next firing
 # function AlgebraicAgents._prestep!(c::Clock, _)
 #     c.Δt = (c.P - c.T) / c.a
 #     c.τ += c.Δt
 # end
 
-# function _reinit!(a::Clock{N,Fn}) where {N,Fn}
-#     # initialize
-#     a.Pk = zero(N)
-#     a.Tk = zero(N)
-#     a.delta_t = zero(N)
-#     a.ak = zero(N)
-
-#     # calculate intensity
-#     reactionsys = topmost(a)
-#     a.ak = a.intensity(reactionsys.X, 0.0)
-
-#     # draw internal jump times
-#     a.Pk = rand(Exponential())
-# end
-
-
-# control interactions to update state
-# function control_clock(c::Clock)
-#     c.T += c.a * topmost(c).Δ # Tk += ak*Δ
-#     c.a = c.intensity(topmost(c).X) # update intensity
-# end
-
 function control_clock(c::Clock)
+    # println("calling control_clock on clock " * getname(c))
     c.T += c.a * topmost(c).Δ # Tk += ak*Δ
     c.a = c.intensity(topmost(c).X) # update intensity
     # update time of next firing
     c.Δt = (c.P - c.T) / c.a
-    c.τ += c.Δt
+    # c.τ += c.Δt
+    c.τ = topmost(c).t + c.Δt
 end
 
+# plotting thing
+AlgebraicAgents.@draw_df ReactionSystem df_output
 
 # add some clocks
 rs = make_reactionsystem("SIR", [990, 10, 0])
 add_clock!(rs, "infection", (x) -> β*x[2]/sum(x)*x[1], [-1,1,0])
 add_clock!(rs, "recovery", (x) -> γ*x[2], [0,-1,1])
 
-using Debugger
-using JuliaInterpreter
+# step!(rs)
+# only(by_name(rs,"infection"))
+# only(by_name(rs,"recovery"))
 
-# breakpoint(step!)
-breakpoint(AlgebraicAgents.step!)
-breakpoint(AlgebraicAgents._step!)
-# breakpoint(AlgebraicAgents._prestep!)
-# breakpoint(control_clock)
+simulate(rs, floatmax(Float64))
 
-Debugger.@run step!(rs)
+
+df_out = select(rs.df_output[1:end-2,:], Not(:clock))
+
+@df df_out plot(:time, cols([:X1,:X2,:X3]), label = ["S" "I" "R"])
+
+# using Debugger
+# using JuliaInterpreter
+
+# # breakpoint(step!)
+# breakpoint(AlgebraicAgents.step!)
+# breakpoint(AlgebraicAgents._step!)
+# # breakpoint(AlgebraicAgents._prestep!)
+# # breakpoint(control_clock)
+
+# Debugger.@run step!(rs)
+
+# test when its over
+rs = make_reactionsystem("SIR", [0, 1, 10])
+add_clock!(rs, "infection", (x) -> β*x[2]/sum(x)*x[1], [-1,1,0])
+add_clock!(rs, "recovery", (x) -> γ*x[2], [0,-1,1])
 
 step!(rs)
