@@ -78,9 +78,9 @@ export ⊕, @sum
 
 # filter, transform queries in agent hierarchies
 include("queries.jl")
-export GeneralFilterQuery
+export FilterQuery
 export @f_str, @filter, filter
-export GeneralTransformQuery
+export TransformQuery
 export @transform, transform
 
 include("integrations/requires.jl")

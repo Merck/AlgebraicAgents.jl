@@ -198,7 +198,7 @@ It is possible to run filter and transform queries on agent hierarchies.
 ### Filter queries
 
 ```@docs
-GeneralFilterQuery
+FilterQuery
 @f_str
 @filter
 AlgebraicAgents.filter(::AbstractAlgebraicAgent, ::GeneralFilterQuery)
@@ -213,7 +213,7 @@ AlgebraicAgents._filter
 ### Transform queries
 
 ```@docs
-GeneralTransformQuery
+TransformQuery
 @transform
 transform
 ```
