@@ -75,24 +75,25 @@ function recover_or_die!(agent, model)
     end
 end
 
-
 @testset "Agents.jl and AlgebraicAgents.jl solution are equal" begin
     Random.seed!(1)
-    abm_algebraic_wrap = ABMAgent("sir_model", abm_algebraic; agent_step!, tspan=(0., 10.), adata=to_collect)
+    abm_algebraic_wrap = ABMAgent("sir_model", abm_algebraic; agent_step!,
+                                  tspan = (0.0, 10.0), adata = to_collect)
     simulate(abm_algebraic_wrap)
     data_algebraic = abm_algebraic_wrap.df_agents
 
     Random.seed!(1)
     data_agent, _ = run!(abm_agents, agent_step, 10; adata = to_collect)
 
-    @test abm_algebraic_wrap.t == 10.
+    @test abm_algebraic_wrap.t == 10.0
     @test data_algebraic == data_agent
     # test if number of surviving agents equals the number of wrap's "inner" agents
     @test length(inners(abm_algebraic_wrap)) == data_algebraic[end, :length_status]
 end
 
 @testset "plotting for ABM wraps" begin
-    abm_algebraic_wrap = ABMAgent("sir_model", abm_algebraic; agent_step!, tspan=(0., 10.), adata=to_collect)
+    abm_algebraic_wrap = ABMAgent("sir_model", abm_algebraic; agent_step!,
+                                  tspan = (0.0, 10.0), adata = to_collect)
     simulate(abm_algebraic_wrap)
 
     @test draw(abm_algebraic_wrap) isa Plots.Plot

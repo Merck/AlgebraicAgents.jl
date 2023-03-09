@@ -61,10 +61,11 @@ end
     filter1 = filter(container, f"_.property > 2", f"_.property < 9")
     @test length(filter1) == 6
 
-    filter2 = container |> @filter(_.property < 3) |> @filter(f"_.property > 1")
+    filter2 = container |> @filter(_.property<3) |> @filter(f"_.property > 1")
     @test only(filter2) == agents[2]
 
-    transform1 = transform(container, TransformQuery("query", a -> a.name), TransformQuery("index", a -> a.property))
+    transform1 = transform(container, TransformQuery("query", a -> a.name),
+                           TransformQuery("index", a -> a.property))
     @test all(x -> keys(x) == (:uuid, :query, :index), transform1)
     @test sort(map(x -> x.index, transform1)) == collect(1:10)
 

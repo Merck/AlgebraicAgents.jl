@@ -124,7 +124,8 @@ struct TransformQuery
     name::Symbol
     query::Function
 
-    function TransformQuery(name::T, query::Function) where T<:Union{Symbol, AbstractString}
+    function TransformQuery(name::T,
+                            query::Function) where {T <: Union{Symbol, AbstractString}}
         new(Symbol(name), query)
     end
 end
@@ -142,7 +143,7 @@ macro transform(exs...)
     names, queries = map(x -> x[1], queries), map(x -> x[2], queries)
     quote
         queries = TransformQuery.($(names),
-                                         [$(interpolate_underscores.(queries)...)])
+                                  [$(interpolate_underscores.(queries)...)])
 
         a -> transform(a, queries...)
     end
