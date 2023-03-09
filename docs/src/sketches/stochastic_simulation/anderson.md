@@ -1,8 +1,8 @@
 ```@meta
-EditURL = "<unknown>/anderson.jl"
+EditURL = "<unknown>/../tutorials/stochastic_simulation/anderson.jl"
 ```
 
-# [Continuous time stochastic simulation example](@id stochastic_example)
+# Simulating Stochastic Reaction Systems
 
 To demonstrate the generality of AlgebraicAgents.jl, we demonstrate here how
 to use the package to set up a type system capable of simulating continuous
@@ -12,7 +12,7 @@ time discrete state stochastic processes using the method described by
 We begin by importing packages we will use.
 
 ````@example anderson
-using AlgebraicAgents, Distributions, DataFrames, Plots, StatsPlots
+using AlgebraicAgents, Distributions, DataFrames, Plots
 ````
 
 ## Reaction System
@@ -21,7 +21,7 @@ called `ReactionSystem`. It contains data members:
 
   - `t`: current simulation time
   - `Δ`: the interarrival time between events
-  - `X``: current system state
+  - `X`: current system state
   - `X0`: initial system state
   - `df_output`: a `DataFrame` contining the sampled trajectory
 
@@ -31,11 +31,6 @@ called `ReactionSystem`. It contains data members:
     Δ::T
     X::Vector{S}
     X0::Vector{S}
-````
-
-simulation trajectory
-
-````@example anderson
     df_output::DataFrame
 end
 ````
@@ -146,36 +141,14 @@ updates.
 ````@example anderson
 function add_clock!(rs::ReactionSystem, name::T, intensity::U, ν::Vector{S}) where {T,U,S}
     c = Clock{Float64,U,S}(name, 0.0, 0.0, 0.0, 0.0, 0.0, intensity, ν)
-````
 
-calculate intensity
-
-````@example anderson
     c.a = c.intensity(rs.X)
-````
-
-draw internal jump times
-
-````@example anderson
     c.P = rand(Exponential())
-````
-
-update time of first firing (i dont like this)
-
-````@example anderson
     c.Δt = (c.P - c.T) / c.a
     c.τ += c.Δt
-````
 
-entangle the clock
-
-````@example anderson
     entangle!(inners(rs)["clocks"], c)
-````
 
-add the control (update integrated intensity)
-
-````@example anderson
     add_control!(rs, () -> control_clock(c), "control " * name)
 end
 ````
@@ -225,17 +198,12 @@ end
 Finally we must implement the control interaction which is applied to each clock at the end
 of an iteration in the loop. This implements steps 8,9, and 5 of Algorithm 3 (note that we
 are allowed to move step 5 to the end because we also included it in the "initialization" phase
-earlier).
+earlier). It also updates the putative next firing time.
 
 ````@example anderson
 function control_clock(c::Clock)
-    c.T += c.a * topmost(c).Δ # Tk += ak*Δ
-    c.a = c.intensity(topmost(c).X) # update intensity
-````
-
-update putative next firing time
-
-````@example anderson
+    c.T += c.a * topmost(c).Δ
+    c.a = c.intensity(topmost(c).X)
     c.Δt = (c.P - c.T) / c.a
     c.τ = topmost(c).t + c.Δt
 end
@@ -278,11 +246,7 @@ simulate(rs, floatmax(Float64))
 After simulation is complete, we can extract the simulated trajectory.
 
 ````@example anderson
-df_out = select(rs.df_output, Not(:clock))
-@df df_out plot(:time, cols([:X1,:X2,:X3]), label = ["S" "I" "R"])
+df_out = select(rs.df_output, Not(:clock));
+plot(df_out[!,:time], Matrix(df_out[:,[:X1,:X2,:X3]]), label = ["S" "I" "R"])
 ````
-
----
-
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

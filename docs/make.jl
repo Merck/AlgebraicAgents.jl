@@ -31,6 +31,15 @@ open(dirname(@__FILE__) * "/src/design_mmd.md", "w") do io
 end
 # end required for mmd
 
+# Literate for tutorials
+
+Literate.markdown(
+    joinpath(@__DIR__, "..", "tutorials/stochastic_simulation/anderson.jl"), 
+    joinpath(@__DIR__, "src/sketches/stochastic_simulation/"); 
+    documenter=true, credit=false
+)
+# end
+
 pages = [
     "index.md",
     "design_mmd.md",
@@ -44,6 +53,7 @@ pages = [
         "sketches/pharma.md",
         "sketches/sciml.md",
         "sketches/algebraicdynamics.md",
+        "sketches/stochastic_simulation/anderson.md"
     ],
 ]
 
