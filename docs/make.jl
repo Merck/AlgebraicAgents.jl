@@ -63,3 +63,5 @@ makedocs(sitename = "AlgebraicAgents.jl",
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
 
 rm(joinpath(dirname(@__FILE__), "src/design_mmd.md"))
+rm(joinpath(@__DIR__, "src/sketches/stochastic_simulation/anderson.md"))
+
