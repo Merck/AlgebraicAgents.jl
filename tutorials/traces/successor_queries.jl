@@ -21,7 +21,7 @@ end
 
 """
     p"query"
-Turn a sucessor query string into a query instance, see also [`GeneralFilterQuery`](@ref).
+Turn a sucessor query string into a query instance, see also [`FilterQuery`](@ref).
 
 Use `p"_ ≺ parent"` to check if a given agent is a successor of `parent` (when applicable, false by default).
 
@@ -33,5 +33,5 @@ filter(agents, p\"""_ ≺ "parent" \""")
 ```
 """
 macro p_str(query)
-    :(GeneralFilterQuery($(interpolate_underscores_sucessor(query))))
+    :(FilterQuery($(interpolate_underscores_sucessor(query))))
 end

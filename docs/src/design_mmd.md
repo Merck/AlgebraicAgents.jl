@@ -10,6 +10,12 @@
   mermaid.initialize({ startOnLoad: true });
 </script>
 ```
+```@raw html
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
+```
 # Framework design
 
 Here we describe the design principles of the AlgebraicAgents. It should be of most use to advanced users and persons interested in contributing to the software. New users are encouraged to start by reading one of the tutorials ("sketches").
@@ -35,17 +41,13 @@ flowchart TD
 
     Start((Enter Program))-->Project[Set t equal to minimum \n projected time]:::GreenNode
 
-    Project-->RootDecision1{is root?}:::YellowNode
+    Project-->PreWalk[Prestep inner agents]:::GreenNode
+
+    PreWalk -->|_prestep!| Inners([<:AbstractAlgebraicAgent]):::RedNode
     
-    RootDecision1 -->|yes| PreWalk[Prestep inner agents]:::GreenNode
+    PreWalk --> Step[Step inner agents]:::GreenNode
 
-    RootDecision1 -->|no| Step[Step inner agents]:::GreenNode
-
-    PreWalk -.->|_prestep!| Inners([<:AbstractAlgebraicAgent]):::RedNode
-    
-    PreWalk --> Step
-
-    Step -.->|step!| Inners
+    Step -->|step!| Inners
 
     subgraph inners
     Inners
@@ -53,27 +55,25 @@ flowchart TD
 
     Ret([ret]):::RedNode
 
-    Inners -.->|_projected_to| Ret
+    Inners -.-> Ret
 
     Step --> LocalDecision{local projected time == t\n equals the min projected time}:::YellowNode
 
     LocalDecision -->|yes| LocalStep[Local step]:::GreenNode
-    LocalDecision -->|no| RootDecision2{is root?}:::YellowNode
+    LocalDecision -->|no| RootDecision{is root?}:::YellowNode
 
-    LocalStep -.->|_projected_to| Ret
+    LocalStep -.-> Ret
 
-    LocalStep --> RootDecision2
+    LocalStep --> RootDecision
 
     subgraph Opera
 
-    RootDecision2 -->|yes| InstantOpera[Execute instantaneous interactions]:::GreenNode
+    RootDecision -->|yes| InstantOpera[Execute instantaneous interactions]:::GreenNode
     InstantOpera --> FutureOpera[Execute delayed interactions]:::GreenNode
     FutureOpera --> ControlOpera[Execute control interactions]:::GreenNode
     end
 
-    Opera -.->|_projected_to| Ret
-
-    RootDecision2 -->|no| Stop
+    Opera -.-> Ret
 
     ControlOpera --> Stop((Exit program and\n return ret))
 

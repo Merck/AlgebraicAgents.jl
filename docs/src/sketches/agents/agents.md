@@ -1,15 +1,30 @@
+# Agents.jl Integration
+
+We instantiate an agent-based SIR model based on [Agents.jl: SIR model for the spread of COVID-19](https://juliadynamics.github.io/Agents.jl/stable/examples/sir/) make use of a SIR model constructor from an Agents.jl' [SIR model for the spread of COVID-19](https://juliadynamics.github.io/Agents.jl/stable/examples/sir/), and then we simulate the model using AlgebraicAgents.jl
+
+## SIR Model in Agents.jl
+
+To begin with, we define the Agents.jl model:
+
+```@example 1
 # SIR model for the spread of COVID-19
 # taken from https://juliadynamics.github.io/Agents.jl/stable/examples/sir/
+using AlgebraicAgents
 using Agents, Random
 using Agents.DataFrames, Agents.Graphs
 using Distributions: Poisson, DiscreteNonParametric
 using DrWatson: @dict
+using Plots
 
 @agent PoorSoul GraphAgent begin
     days_infected::Int  # number of days since is infected
     status::Symbol  # 1: S, 2: I, 3:R
 end
+```
 
+Let's provide the constructors:
+
+```@example 1
 function model_initiation(;
                           Ns,
                           migration_rates,
@@ -106,7 +121,11 @@ function create_params(;
 
     return params
 end
+```
 
+It remains to provide the SIR stepping functions:
+
+```@example 1
 function agent_step!(agent, model)
     @get_model model
     @get_agent model agent
@@ -160,3 +179,40 @@ function recover_or_die!(agent, model)
         end
     end
 end
+```
+
+That's it!
+
+## Simulation Using AlgebraicAgents.jl
+
+We instantiate a sample `ABM` model:
+
+```@example 1
+# create a sample agent based model
+params = create_params(C = 8, max_travel_rate = 0.01)
+abm = model_initiation(; params...)
+```
+
+Let's specify what data to collect:
+
+```@example 1
+infected(x) = count(i == :I for i in x)
+recovered(x) = count(i == :R for i in x)
+to_collect = [(:status, f) for f in (infected, recovered, length)]
+```
+
+We wrap the model as an algebraic agent:
+
+```@example 1
+m = ABMAgent("sir_model", abm; agent_step!, tspan=(0., 100.), adata=to_collect)
+```
+
+And we simulate the dynamics:
+
+```@example 1
+simulate(m)
+```
+
+```@example 1
+draw(m)
+```
