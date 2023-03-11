@@ -1,4 +1,4 @@
-using Documenter, DocumenterMarkdown
+using Documenter, DocumenterMarkdown, Literate
 using AlgebraicAgents
 
 using DifferentialEquations, Agents, AlgebraicDynamics
@@ -28,6 +28,16 @@ design_mmd = init_mermaid * design
 open(joinpath(dirname(@__FILE__), "src/design_mmd.md"), "w") do io
     write(io, design_mmd)
 end
+# end required for mmd
+
+# Literate for tutorials
+
+Literate.markdown(
+    joinpath(@__DIR__, "..", "tutorials/stochastic_simulation/anderson.jl"), 
+    joinpath(@__DIR__, "src/sketches/stochastic_simulation/"); 
+    documenter=true, credit=false
+)
+# end
 
 pages = [
     "index.md",
@@ -42,6 +52,7 @@ pages = [
         "sketches/pharma/pharma.md",
         "sketches/sciml/sciml.md",
         "sketches/algebraicdynamics/algebraicdynamics.md",
+        "sketches/stochastic_simulation/anderson.md",
     ],
 ]
 
@@ -52,3 +63,5 @@ makedocs(sitename = "AlgebraicAgents.jl",
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
 
 rm(joinpath(dirname(@__FILE__), "src/design_mmd.md"))
+rm(joinpath(@__DIR__, "src/sketches/stochastic_simulation/anderson.md"))
+

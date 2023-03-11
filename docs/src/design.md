@@ -35,13 +35,17 @@ flowchart TD
 
     Start((Enter Program))-->Project[Set t equal to minimum \n projected time]:::GreenNode
 
-    Project-->PreWalk[Prestep inner agents]:::GreenNode
-
-    PreWalk -->|_prestep!| Inners([<:AbstractAlgebraicAgent]):::RedNode
+    Project-->RootDecision1{is root?}:::YellowNode
     
-    PreWalk --> Step[Step inner agents]:::GreenNode
+    RootDecision1 -->|yes| PreWalk[Prestep inner agents]:::GreenNode
 
-    Step -->|step!| Inners
+    RootDecision1 -->|no| Step[Step inner agents]:::GreenNode
+
+    PreWalk -.->|_prestep!| Inners([<:AbstractAlgebraicAgent]):::RedNode
+    
+    PreWalk --> Step
+
+    Step -.->|step!| Inners
 
     subgraph inners
     Inners
@@ -49,25 +53,27 @@ flowchart TD
 
     Ret([ret]):::RedNode
 
-    Inners -.-> Ret
+    Inners -.->|_projected_to| Ret
 
     Step --> LocalDecision{local projected time == t\n equals the min projected time}:::YellowNode
 
     LocalDecision -->|yes| LocalStep[Local step]:::GreenNode
-    LocalDecision -->|no| RootDecision{is root?}:::YellowNode
+    LocalDecision -->|no| RootDecision2{is root?}:::YellowNode
 
-    LocalStep -.-> Ret
+    LocalStep -.->|_projected_to| Ret
 
-    LocalStep --> RootDecision
+    LocalStep --> RootDecision2
 
     subgraph Opera
 
-    RootDecision -->|yes| InstantOpera[Execute instantaneous interactions]:::GreenNode
+    RootDecision2 -->|yes| InstantOpera[Execute instantaneous interactions]:::GreenNode
     InstantOpera --> FutureOpera[Execute delayed interactions]:::GreenNode
     FutureOpera --> ControlOpera[Execute control interactions]:::GreenNode
     end
 
-    Opera -.-> Ret
+    Opera -.->|_projected_to| Ret
+
+    RootDecision2 -->|no| Stop
 
     ControlOpera --> Stop((Exit program and\n return ret))
 
