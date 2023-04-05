@@ -33,14 +33,6 @@ getobservable(::GraphicalAgent, _) = nothing
 _step!(::GraphicalAgent) = nothing
 _projected_to(::GraphicalAgent) = nothing
 
-function ports_in(a::GraphicalAgent)
-    if a.system <: AbstractMachine
-        string.(a.system.interface.input_ports)
-    else
-        string.(a.system.interface.ports)
-    end
-end
-
 function exposed_ports(a::GraphicalAgent)
     if a.system <: AbstractMachine
         string.(a.system.interface.output_ports)
@@ -60,10 +52,6 @@ end
 "Print in/out observables of a DiffEq algebraic agent."
 function print_observables(io::IO, ::MIME"text/plain", a::GraphicalAgent)
     indent = get(io, :indent, 0)
-    if !isnothing(ports_in(a))
-        print(io, "\n", " "^indent, crayon"italics", "ports in: ", crayon"reset")
-        print(io, join(ports_in(a), ", "))
-    end
 
     if !isnothing(exposed_ports(a))
         print(io, "\n", " "^indent, crayon"italics", "ports out: ", crayon"reset")

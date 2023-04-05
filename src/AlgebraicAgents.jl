@@ -56,8 +56,8 @@ export getname, getuuid, getparent, inners
 export getopera, getdirectory, getparameters, setparameters!
 ## observable accessors
 export getobservable, gettimeobservable
-## list of observables observed by an agent and exported by an agent, respectively
-export ports_in, exposed_ports
+## list of observables exported by an agent
+export exposed_ports
 ## step!, simulate, least projected time
 export step!, simulate, projected_to
 ## plot

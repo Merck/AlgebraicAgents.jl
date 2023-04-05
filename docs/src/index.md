@@ -78,9 +78,8 @@ getobservable
 gettimeobservable
 ```
 
-### List observables observed by an agent and exported by an agent
+### List observables exported by an agent
 ```@docs
-ports_in
 exposed_ports
 ```
 

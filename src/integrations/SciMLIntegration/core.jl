@@ -4,16 +4,15 @@ import .DifferentialEquations: DiffEqBase, SciMLBase, OrdinaryDiffEq
 # wrap problem, integrator, solution type; DiffEq agents supertype 
 export DiffEqAgent
 # observables interface
-export push_ports_in!, push_exposed_ports!
+export push_exposed_ports!
 
 # define DE algebraic wrap
 """
-    DiffEqAgent(name, problem[, alg]; exposed_ports=nothing, ports_in=nothing, kwargs...)
+    DiffEqAgent(name, problem[, alg]; exposed_ports=nothing, kwargs...)
 Initialize DE problem algebraic wrap. 
 
 # Keywords
 - `exposed_ports`: either `nothing` or a dictionary which maps keys to observable's positional index in `u`,
-- `ports_in`: either `nothing` or a vector of (subjective) observables,
 - other kwargs will be propagated to the integrator at initialization step.
 """
 mutable struct DiffEqAgent <: AbstractAlgebraicAgent
@@ -29,11 +28,10 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
     integrator::DiffEqBase.DEIntegrator
 
     exposed_ports::Union{Dict{Any, Int}, Nothing}
-    ports_in::Union{Vector, Nothing}
 
     function DiffEqAgent(name, problem::DiffEqBase.DEProblem,
                          alg = DifferentialEquations.default_algorithm(problem)[1], args...;
-                         exposed_ports = nothing, ports_in = nothing, kwargs...)
+                         exposed_ports = nothing, kwargs...)
         problem = DifferentialEquations.remake(problem;
                                                p = Params(Val(DummyType), problem.p))
 
@@ -43,7 +41,6 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
 
         i.integrator = DiffEqBase.init(problem, alg, args...; kwargs...)
         i.exposed_ports = exposed_ports
-        i.ports_in = ports_in
 
         i.integrator.p.agent = i
 
@@ -113,34 +110,6 @@ function push_exposed_ports!(a::DiffEqAgent, pairs...)
     a
 end
 
-"""
-    push_ports_in!(a::DiffEqAgent, pairs...)
-Register explicit in-ports of an algebraic DiffEq model.
-Provide pairs `path => observable`, where `observable` may
-optionally be an iterable collection of observables' names.
-
-# Examples
-```julia
-push_ports_in!(deagent, path => observable, path => [observables...])
-```
-"""
-function push_ports_in!(a::DiffEqAgent, pairs...)
-    if isdefined(a, :ports_in) || isnothing(a.ports_in)
-        a.ports_in = []
-    end
-    for id in pairs
-        if id[2] isa Union{AbstractVector, Tuple}
-            for o in id[2]
-                push!(a.ports_in, id[1] => o)
-            end
-        else
-            push!(a.ports_in, id)
-        end
-    end
-
-    a
-end
-
 # implement internal step function
 function _step!(a::DiffEqAgent)
     ret = DiffEqBase.step!(a.integrator)
@@ -167,10 +136,6 @@ function _projected_to(a::DiffEqAgent)
 end
 
 _reinit!(a::DiffEqAgent) = SciMLBase.reinit!(a.integrator)
-
-function ports_in(a::DiffEqAgent)
-    isdefined(a, :ports_in) ? a.ports_in : nothing
-end
 
 function exposed_ports(a::DiffEqAgent)
     isdefined(a, :exposed_ports) && !isnothing(a.exposed_ports) ? a.exposed_ports : nothing
@@ -201,10 +166,6 @@ end
 "Print in/out observables of a DiffEq algebraic agent."
 function print_observables(io::IO, ::MIME"text/plain", a::DiffEqAgent)
     indent = get(io, :indent, 0)
-    if !isnothing(ports_in(a))
-        print(io, "\n", " "^indent, crayon"italics", "ports in: ", crayon"reset")
-        print(io, join(ports_in(a), ", "))
-    end
 
     if !isnothing(exposed_ports(a))
         print(io, "\n", " "^indent, crayon"italics", "ports out: ", crayon"reset")

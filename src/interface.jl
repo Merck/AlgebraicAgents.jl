@@ -304,10 +304,7 @@ function gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any)
     @error "algebraic agent $(typeof(a)) doesn't implement `gettimeobservable`"
 end
 
-"Return a list of algebraic agent's inner ports (subjective observables)."
-ports_in(::AbstractAlgebraicAgent) = nothing
-
-"Return a list of algebraic agent's outer ports (objective observables)."
+"Return a list of observables (explicitly) exported by algebraic agent."
 exposed_ports(::AbstractAlgebraicAgent) = nothing
 
 "Get algebraic agent's [`Opera`](@ref)."
