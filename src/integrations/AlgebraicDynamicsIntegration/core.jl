@@ -47,6 +47,7 @@ function print_custom(io::IO, mime::MIME"text/plain", a::GraphicalAgent)
     print(io, "\n", " "^(indent + 3), "custom properties:\n")
     print(io, " "^(indent + 3), crayon"italics", "model", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.system)
+    print_observables(IOContext(io, :indent => get(io, :indent, 0) + 3), mime, a)
 end
 
 "Print in/out observables of a DiffEq algebraic agent."
