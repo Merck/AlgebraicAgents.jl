@@ -258,8 +258,8 @@ Internally, a discovery unit will adjust the candidate generating process intens
 
 ````@example molecules
 # add SDE models for drug demand in respective areas
-demand_model_1 = DiffEqAgent("demand", prob_1, EM(); exposed_ports=Dict("demand" => 1), dt)
-demand_model_2 = DiffEqAgent("demand", prob_2, EM(); exposed_ports=Dict("demand" => 1), dt)
+demand_model_1 = DiffEqAgent("demand", prob_1, EM(); observables=Dict("demand" => 1), dt)
+demand_model_2 = DiffEqAgent("demand", prob_2, EM(); observables=Dict("demand" => 1), dt)
 
 # push market demand units to therapeutic areas
 entangle!(therapeutic_area1, demand_model_1)

@@ -305,7 +305,7 @@ function gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any)
 end
 
 "Return a list of observables (explicitly) exported by algebraic agent."
-exposed_ports(::AbstractAlgebraicAgent) = nothing
+observables(::AbstractAlgebraicAgent) = nothing
 
 "Get algebraic agent's [`Opera`](@ref)."
 getopera(a::AbstractAlgebraicAgent) = a.opera

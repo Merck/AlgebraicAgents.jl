@@ -33,7 +33,7 @@ getobservable(::GraphicalAgent, _) = nothing
 _step!(::GraphicalAgent) = nothing
 _projected_to(::GraphicalAgent) = nothing
 
-function exposed_ports(a::GraphicalAgent)
+function observables(a::GraphicalAgent)
     if a.system <: AbstractMachine
         string.(a.system.interface.output_ports)
     else
@@ -54,9 +54,9 @@ end
 function print_observables(io::IO, ::MIME"text/plain", a::GraphicalAgent)
     indent = get(io, :indent, 0)
 
-    if !isnothing(exposed_ports(a))
-        print(io, "\n", " "^indent, crayon"italics", "ports out: ", crayon"reset")
-        print(io, join(keys(exposed_ports(a)), ", "))
+    if !isnothing(observables(a))
+        print(io, "\n", " "^indent, crayon"italics", "observables: ", crayon"reset")
+        print(io, join(keys(observables(a)), ", "))
     end
 end
 

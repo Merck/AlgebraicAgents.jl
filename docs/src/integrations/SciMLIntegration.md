@@ -9,5 +9,5 @@ DiffEqAgent
 ## Observables
 
 ```@docs
-push_exposed_ports!
+add_observables!
 ```

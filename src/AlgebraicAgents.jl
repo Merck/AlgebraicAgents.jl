@@ -57,7 +57,7 @@ export getopera, getdirectory, getparameters, setparameters!
 ## observable accessors
 export getobservable, gettimeobservable
 ## list of observables exported by an agent
-export exposed_ports
+export observables
 ## step!, simulate, least projected time
 export step!, simulate, projected_to
 ## plot

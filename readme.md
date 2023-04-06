@@ -155,8 +155,8 @@ entangle!(therapeutic_area1, Discovery("dx", 5.2, 10.; dt=3.))
 entangle!(therapeutic_area2, Discovery("dx", 6., 8.; dt=5.))
 
 # add SDE models for drug demand in respective areas
-demand_model_1 = DiffEqAgent("demand", prob_1, EM(); exposed_ports=Dict("demand" => 1), dt)
-demand_model_2 = DiffEqAgent("demand", prob_2, EM(); exposed_ports=Dict("demand" => 1), dt)
+demand_model_1 = DiffEqAgent("demand", prob_1, EM(); observables=Dict("demand" => 1), dt)
+demand_model_2 = DiffEqAgent("demand", prob_2, EM(); observables=Dict("demand" => 1), dt)
 
 # push market demand units to therapeutic areas
 entangle!(therapeutic_area1, demand_model_1)

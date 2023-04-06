@@ -80,7 +80,7 @@ gettimeobservable
 
 ### List observables exported by an agent
 ```@docs
-exposed_ports
+observables
 ```
 
 ### Solving & plotting

@@ -14,9 +14,9 @@ m1 = DiffEqAgent("model1", prob)
 m2 = DiffEqAgent("model2", prob)
 m3 = DiffEqAgent("model3", prob)
 
-## declare observables (out ports) for a model
+## declare observables
 ## it will be possible to reference m3's first variable as both `o1`, `o2`
-push_exposed_ports!(m3, "o1" => 1, "o2" => 1)
+add_observables!(m3, "o1" => 1, "o2" => 1)
 
 ## simple function, calls to which will be scheduled during the model integration
 custom_function(agent, t) = 1#println(name(agent), " ", t)
@@ -77,7 +77,7 @@ sol = AlgebraicAgents.simulate(m)
 @testset "`draw` (SciML integration) outputs `Plot`" begin draw(sol, "diagram1/model1") end
 
 # output ports can couple dynamics
-@testset "observable (output) ports" begin
+@testset "observables (output) ports" begin
     tspan = (0.0, 4.0)
 
     function ẋ(u, p, t)
@@ -99,8 +99,8 @@ sol = AlgebraicAgents.simulate(m)
     agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px), Euler(), dt = 1e-4)
     agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py), Euler(), dt = 1e-4)
 
-    push_exposed_ports!(agent_x, "x" => 1)
-    push_exposed_ports!(agent_y, "y" => 1)
+    add_observables!(agent_x, "x" => 1)
+    add_observables!(agent_y, "y" => 1)
 
     joint_system = ⊕(agent_x, agent_y; name = "joint_system")
 
@@ -140,8 +140,8 @@ end
     agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px))
     agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py))
 
-    push_exposed_ports!(agent_x, "x" => 1)
-    push_exposed_ports!(agent_y, "y" => 1)
+    add_observables!(agent_x, "x" => 1)
+    add_observables!(agent_y, "y" => 1)
 
     joint_system = ⊕(agent_x, agent_y; name = "joint_system")
 
