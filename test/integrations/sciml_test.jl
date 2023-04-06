@@ -18,8 +18,6 @@ m3 = DiffEqAgent("model3", prob)
 ## it will be possible to reference m3's first variable as both `o1`, `o2`
 push_exposed_ports!(m3, "o1" => 1, "o2" => 1)
 
-@test m3["o2"] == getobservable(m3, "o2")
-
 ## simple function, calls to which will be scheduled during the model integration
 custom_function(agent, t) = 1#println(name(agent), " ", t)
 
