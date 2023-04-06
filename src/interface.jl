@@ -1,7 +1,7 @@
-## algebraic agent types
+## agent types
 
 """
-A container of algebraic agents.
+A container of agents.
 Doesn't implement a standalone evolutionary rule; delegates evolution to internal agents.
 """
 mutable struct FreeAgent <: AbstractAlgebraicAgent
@@ -16,7 +16,7 @@ mutable struct FreeAgent <: AbstractAlgebraicAgent
 
     @doc """
         FreeAgent(name, agents=[])
-    Initialize an algebraic agent. Optionally provide contained agents at the time of instantiation.
+    Initialize an agent. Optionally provide contained agents at the time of instantiation.
     See also [`entangle!`](@ref) and [`disentangle!`](@ref).
 
     # Examples 
@@ -46,25 +46,25 @@ end
 
 """
     getname(agent)
-Get algebraic agent's name.
+Get agent's name.
 """
 getname(a::AbstractAlgebraicAgent) = a.name
 
 """
     getuuid(agent)
-Get algebraic agent's uuid.
+Get agent's uuid.
 """
 getuuid(a::AbstractAlgebraicAgent) = a.uuid
 
 """
     getparent(agent)
-Get algebraic agent's parent.
+Get agent's parent.
 """
 getparent(a::AbstractAlgebraicAgent) = a.parent
 
 """
     setparent!(agent, parent)
-Set algebraic agent's parent.
+Set agent's parent.
 """
 function setparent!(a::AbstractAlgebraicAgent, p::Union{AbstractAlgebraicAgent, Nothing})
     !isnothing(getparent(a)) && pop!(inners(getparent(a)), getname(a))
@@ -73,13 +73,19 @@ end
 
 """
     inners(agent)
-Get dictionary of algebraic agent's inner agents. Follows `name => agent` format.
+Get dictionary of agent's inner agents. Follows `name => agent` format.
 """
 inners(a::AbstractAlgebraicAgent) = a.inners #@error "algebraic agent type $(typeof(a)) doesn't implement inner agents!"
 
 """
+    observables(agent)
+List observables explicitly exported by an agent.
+"""
+observables(a::AbstractAlgebraicAgent) = a.observables
+
+"""
     getparameters(agent)
-Retrieve algebraic agents' (incl. inner agents, if applicable) parameter space.
+Retrieve agents' (incl. inner agents, if applicable) parameter space.
 """
 function getparameters(a::AbstractAlgebraicAgent, path = ".", dict = Dict{String, Any}())
     params = _getparameters(a)
@@ -94,13 +100,13 @@ end
 
 """
     _getparameters(agent)
-Retrieve parameter space of an algebraic agent.
+Retrieve parameter space of an agent.
 """
 _getparameters(::AbstractAlgebraicAgent) = nothing
 
 """
     _setparameters!
-Mutate algebraic agent's parameter space.
+Mutate agent's parameter space.
 
 # Examples
 ```julia
@@ -124,7 +130,7 @@ end
 """
     setparameters!(agent, parameters)
 
-Assign algebraic agent's parameters.
+Assign agent's parameters.
 Parameters are accepted in the form of a dictionary containing `path => params` pairs.
 
 # Examples
@@ -146,7 +152,7 @@ end
 
 """
     simulate(agent::AbstractAlgebraicAgent, max_t=Inf)::AbstractAlgebraicAgent
-Solves an (initialized) algebraic problem. 
+Solves an (initialized) problem. 
 Runs a loop until all the agents return `true` (reached simulation horizon) or `nothing` (delegated evolution),
 or until the simulation horizon reaches `max_t`.
 Avoids front-running.
@@ -167,18 +173,17 @@ end
 
 """
     step!(agent, t=projected_to(agent))
-
-Performs a single evolutionary step of the algebraic hierarchy.
+Performs a single evolutionary step of the hierarchy.
 To avoid frontrunning, solutions will be projected only up to time `t``.
 This is a two-phase step; the corresponding stepping functions are `_prestep!` and `step!`.
 
 More particular behavior can be implemented using [`Opera`](@ref) protocol.
 
-For custom algebraic agents' types, it suffices to implement [`_step!`](@ref).
+For custom agents' types, it suffices to implement [`_step!`](@ref).
 
 # Return values
-Return `true` if all internal algebraic agent's time horizon was reached.
-Else return the minimum time up to which the algebraic agent's solution was projected.
+Return `true` if all internal agent's time horizon was reached.
+Else return the minimum time up to which the agent's solution was projected.
 """
 function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
     isroot && prewalk(a -> _prestep!(a, t), a) # first phase
@@ -206,8 +211,8 @@ end
 
 """
     projected_to(agent)
-Return `true` if all algebraic agent's time horizon was reached (or `nothing` in case of delegated evolution).
-Else return the minimum time up to which the evolution of an algebraic agent, and all its descendants, has been projected.
+Return `true` if all agent's time horizon was reached (or `nothing` in case of delegated evolution).
+Else return the minimum time up to which the evolution of an agent, and all its descendants, has been projected.
 """
 function projected_to(a::AbstractAlgebraicAgent; isroot = true)
     ret = _projected_to(a)
@@ -224,7 +229,7 @@ function projected_to(a::AbstractAlgebraicAgent; isroot = true)
     ret
 end
 
-"Return time to which algebraic agent's evolution was projected."
+"Return time to which agent's evolution was projected."
 function _projected_to(t::AbstractAlgebraicAgent)
     @error("type $(typeof(t)) doesn't implement `_projected_to`")
 end
@@ -235,7 +240,6 @@ _projected_to(::FreeAgent) = nothing
 function _step!(a::AbstractAlgebraicAgent)
     @error "algebraic agent $(typeof(a)) doesn't implement `_step!`"
 end
-
 _step!(::FreeAgent) = nothing
 
 "Pre-step to a step call (e.g., projecting algebraic agent's solution up to time `t`)."

@@ -8,11 +8,11 @@ using MacroTools
 using Crayons
 using Random: randstring
 
-# abstract algebraic agent types
+# abstract agent types
 include("abstract.jl")
 export AbstractAlgebraicAgent
 
-# path-like structure of algebraic agents
+# path-like structure of agents
 include("paths.jl")
 export @glob_str, @uuid_str # path wildcard, UUID obj constructor
 export getagent, by_name, entangle!, disentangle!
@@ -63,12 +63,12 @@ export step!, simulate, projected_to
 ## plot
 export draw
 
-# convenient algebraic agent subtyping
+# convenient agent subtyping
 include("agents.jl")
 export @aagent
 export setup_agent!
 
-# algebraic agents' structure walking
+# agents' structure walking
 include("walks.jl")
 export prewalk, prewalk_ret, postwalk, postwalk_ret, topmost
 

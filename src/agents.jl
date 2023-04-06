@@ -184,7 +184,7 @@ function get_param_tnames(type)
     end
 end
 
-"Populate common interface fields of an algebraic agent, incl. `uuid`, `parent`, `relpathrefs`, and `opera`."
+"Populate common interface fields of an agent, incl. `uuid`, `parent`, `relpathrefs`, and `opera`."
 function setup_agent!(agent::AbstractAlgebraicAgent, name::AbstractString)
     agent.name = name
     agent.uuid = AlgebraicAgents.uuid4()

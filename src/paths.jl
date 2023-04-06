@@ -13,12 +13,12 @@ macro uuid_str(uuid)
     :(UUID($uuid))
 end
 
-"Retrieve an algebraic agent at `path`, relatively to `agent`."
+"Retrieve an agent at `path`, relatively to `agent`."
 function getagent(::AbstractAlgebraicAgent, ::Any) end
 
 """
     getagent(a::AbstractAlgebraicAgent, uuid::UUID)
-Get an algebraic agent given its uuid.
+Get an agent given its uuid.
 
 ## Examples
 ```julia
@@ -69,7 +69,7 @@ end
 
 """
     getagent(agent::AbstractAlgebraicAgent, path::Union{Glob.FilenameMatch, Regex})
-Get an algebraic agent given a regex or glob string.
+Get an agent given a regex or glob string.
 
 ## Examples
 ```julia
@@ -176,7 +176,7 @@ function disentangle!(agent::AbstractAlgebraicAgent; remove_relpathrefs = true)
     agent
 end
 
-"Construct a hierarchy of algebraic agents from a dictionary of `path => agent` pairs."
+"Construct a hierarchy of agents from a dictionary of `path => agent` pairs."
 function construct(hierarchy::Dict{String, AbstractAlgebraicAgent})
     agents = []
     for (path, agent) in hierarchy

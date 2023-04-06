@@ -74,8 +74,7 @@ end
 
 """
     flatten(root_agent)
-
-Return flat representation of algebraic agents hierarchy.
+Return flat representation of agents' hierarchy.
 """
 function flatten(a::AbstractAlgebraicAgent)
     dir = getdirectory(a)

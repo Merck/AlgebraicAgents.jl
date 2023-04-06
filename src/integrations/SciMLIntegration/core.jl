@@ -163,7 +163,7 @@ function print_custom(io::IO, mime::MIME"text/plain", a::DiffEqAgent)
     print_observables(IOContext(io, :indent => get(io, :indent, 0) + 3), mime, a)
 end
 
-"Print in/out observables of a DiffEq algebraic agent."
+"Print in/out observables of a DiffEq nt."
 function print_observables(io::IO, ::MIME"text/plain", a::DiffEqAgent)
     indent = get(io, :indent, 0)
 
