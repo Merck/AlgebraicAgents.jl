@@ -31,13 +31,23 @@ end
 # end required for mmd
 
 # Literate for tutorials
+const literate_dir = joinpath(@__DIR__, "..", "tutorials")
+const generated_dir = joinpath(@__DIR__, "src", "sketches")
+const skip_dirs = ["traces"]
 
-Literate.markdown(
-    joinpath(@__DIR__, "..", "tutorials/stochastic_simulation/anderson.jl"), 
-    joinpath(@__DIR__, "src/sketches/stochastic_simulation/"); 
-    documenter=true, credit=false
-)
-# end
+for (root, dirs, files) in walkdir(literate_dir)
+    if any(occursin.(skip_dirs, root))
+        continue
+    end
+    out_dir = joinpath(generated_dir, relpath(root, literate_dir))
+    for file in files
+      f,l = splitext(file)
+      if l == ".jl" && !startswith(f, "_")
+        Literate.markdown(joinpath(root, file), out_dir;
+          documenter=true, credit=false)
+      end
+    end
+end
 
 pages = [
     "index.md",
@@ -47,9 +57,9 @@ pages = [
         "integrations/SciMLIntegration.md",
         "integrations/AlgebraicDynamicsIntegration.md",
     ],
-    "Three Sketches" => [
+    "Sketches" => [
         "sketches/agents/agents.md",
-        "sketches/pharma/pharma.md",
+        "sketches/molecules/molecules.md",
         "sketches/sciml/sciml.md",
         "sketches/algebraicdynamics/algebraicdynamics.md",
         "sketches/stochastic_simulation/anderson.md",
@@ -63,5 +73,3 @@ makedocs(sitename = "AlgebraicAgents.jl",
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
 
 rm(joinpath(dirname(@__FILE__), "src/design_mmd.md"))
-rm(joinpath(@__DIR__, "src/sketches/stochastic_simulation/anderson.md"))
-
