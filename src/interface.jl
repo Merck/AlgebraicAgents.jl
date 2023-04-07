@@ -266,6 +266,26 @@ end
 _reinit!(::AbstractAlgebraicAgent) = nothing
 
 """
+    getindex(a::AbstractAlgebraicAgent, keys...)
+Get inner agents of an algebraic agent using a convenient syntax.
+# Examples
+```julia
+myagent = FreeAgent("root", [FreeAgent("a"),FreeAgent("b")])
+myagent["a"]
+myagent["a","b"]
+myagent[["a","b"]...]
+```
+"""
+function Base.getindex(a::AbstractAlgebraicAgent, keys...)
+    if isempty(keys)
+        inners(a)
+    else
+        length(keys) > 1 ? getindex.(Ref(inners(a)), [keys...]) :
+        [getindex(inners(a), only(keys))]
+    end
+end
+
+"""
     getobservable(agent, args...)
 Get algebraic agent's observable.
 
@@ -279,40 +299,9 @@ function getobservable(a::AbstractAlgebraicAgent, args...)
     @error "algebraic agent $(typeof(a)) doesn't implement `getobservable`"
 end
 
-"""
-    getindex(a::AbstractAlgebraicAgent, keys...)
-Get algebraic agent's observables using a convenient syntax.
-"""
-function Base.getindex(a::AbstractAlgebraicAgent, keys...)
-    if isempty(keys)
-        a
-    else
-        getobservable(a, keys...)
-    end
-end
-
 "Get algebraic agent's observable at a given time."
 function gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any)
     @error "algebraic agent $(typeof(a)) doesn't implement `gettimeobservable`"
-end
-
-"""
-    getindex(a::FreeAgent, keys...)
-Get inner agents of a FreeAgent using a convenient syntax.
-# Examples
-```julia
-myagent = FreeAgent("root", [FreeAgent("a"),FreeAgent("b")])
-myagent["a"]
-myagent["a","b"]
-myagent[["a","b"]...]
-```
-"""
-function Base.getindex(a::FreeAgent, keys...)
-    if isempty(keys)
-        inners(a)
-    else
-        length(keys) > 1 ? getindex.(Ref(inners(a)), [keys...]) : [getindex(inners(a), only(keys))]
-    end
 end
 
 "Return a list of algebraic agent's inner ports (subjective observables)."
