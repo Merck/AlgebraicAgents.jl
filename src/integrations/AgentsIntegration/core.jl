@@ -5,7 +5,7 @@ export ABMAgent, AAgent
 export @get_model, @a
 
 # algebraic wrap for AgentBasedModel type
-## nt types
+## agent types
 """
     ABMAgent(name, abm; kwargs...)
 Initialize `ABMAgent`, incl. hierarchy of ABM's agents.

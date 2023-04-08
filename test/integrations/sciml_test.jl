@@ -30,7 +30,7 @@ function f_(u, p, t)
     o1 = getobservable(getagent(agent, "../model3"), "o1")
     o2 = getobservable(getagent(agent, "../model3"), "o2")
     ## fetch observable's value at **a given time point in the past**
-    o3 = gettimeobservable(getagent(agent, "../model3"), t/2, 1)
+    o3 = gettimeobservable(getagent(agent, "../model3"), t / 2, 1)
 
     # schedule interaction
     ## first, schedule a call to `_interact!(agent)` with priority 0

@@ -1,14 +1,14 @@
 # walking the agent hierarchy
 # implements walk(f, agent)
 
-"Applies `f` to each nt. Applies `f` to an agent before visiting its inners."
+"Applies `f` to each agent. Applies `f` to an agent before visiting its inners."
 function prewalk(f, agent::T) where {T <: AbstractAlgebraicAgent}
     f(agent)
     foreach(a -> prewalk(f, a), values(inners(agent)))
 end
 
 """
-Applies `f` to each nt. Applies `f` to an agent before visiting its inners.
+Applies `f` to each agent. Applies `f` to an agent before visiting its inners.
 The results of each application of `f` are appended to a vector and returned.
 """
 function prewalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
@@ -20,14 +20,14 @@ function prewalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
     return ret
 end
 
-"Applies `f` to each nt. Applies `f` to an agent after visiting its inners."
+"Applies `f` to each agent. Applies `f` to an agent after visiting its inners."
 function postwalk(f, agent::T) where {T <: AbstractAlgebraicAgent}
     foreach(a -> postwalk(f, a), values(inners(agent)))
     f(agent)
 end
 
 """
-Applies `f` to each nt. Applies `f` to an agent after visiting its inners.
+Applies `f` to each agent. Applies `f` to an agent after visiting its inners.
 The results of each application of `f` are appended to a vector and returned.
 """
 function postwalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
@@ -39,7 +39,7 @@ function postwalk_ret(f, agent::T) where {T <: AbstractAlgebraicAgent}
     return ret
 end
 
-"Applies `f` each nt in the agents tree and its relative path to `agent`."
+"Applies `f` each agent in the agents tree and its relative path to `agent`."
 function relpath_walk(f, agent::T) where {T <: AbstractAlgebraicAgent}
     _relpath_walk_up(f, agent, ".")
 end
@@ -57,7 +57,7 @@ function _relpath_walk_up(f, agent, path, source = nothing)
     _relpath_walk_down(f, agent, path, source)
 end
 
-"Recursively applies `f` to of the each nt's descendants."
+"Recursively applies `f` to of the each agent's descendants."
 function _relpath_walk_down(f, agent, path, source = nothing)
     for agent_ in values(inners(agent))
         path_ = normpath(joinpath(path, getname(agent_), "."))
@@ -69,7 +69,7 @@ function _relpath_walk_down(f, agent, path, source = nothing)
     end
 end
 
-"Get top-most nt in a hierarchy."
+"Get top-most agent in a hierarchy."
 function topmost(a::T) where {T <: AbstractAlgebraicAgent}
     isnothing(getparent(a)) ? a : topmost(getparent(a))
 end
