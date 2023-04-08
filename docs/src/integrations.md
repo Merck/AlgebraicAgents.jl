@@ -1,4 +1,4 @@
-# Third-Party Package Integrations
+# Integrations
 
 ## SciML Integration
 

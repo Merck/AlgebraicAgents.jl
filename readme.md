@@ -259,7 +259,7 @@ agent demand with uuid 18d7fbd7 of type DiffEqAgent
    integrator: 
 t: 100.0
 u: 2.3580108744816726
-   observables: demand (ix: 1)
+   observables: demand (index: 1)
    parent: therapeutic_area1
 ```
 

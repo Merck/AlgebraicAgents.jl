@@ -142,7 +142,7 @@ function print_observables(io::IO, ::MIME"text/plain", a::DiffEqAgent)
 
     if !isempty(observables(a))
         print(io, "\n", " "^indent, crayon"italics", "observables: ", crayon"reset")
-        print(io, join(["$key (ix: $val)" for (key, val) in observables(a)], ", "))
+        print(io, join(["$key (index: $val)" for (key, val) in observables(a)], ", "))
     end
 end
 

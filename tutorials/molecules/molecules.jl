@@ -248,7 +248,7 @@ entangle!(therapeutic_area1, demand_model_1)
 entangle!(therapeutic_area2, demand_model_2)
 
 ## sync with market demand
-getobservable(getagent(pharma_model, "therapeutic_area1/dx"), "demand")
+getobservable(getagent(pharma_model, "therapeutic_area1/demand"), "demand")
 
 # Let's inspect the composite model:
 
