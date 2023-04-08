@@ -151,7 +151,7 @@ end
 function AlgebraicAgents._step!(dx::Discovery)
     t = projected_to(dx)
     # sync with market demand
-    dx.discovery_intensity, = @observables dx "../demand":"demand"
+    dx.discovery_intensity = getobservable(getagent(dx, "../demand"), "demand")
     ν = dx.discovery_intensity * dx.dt
     small, large = rand(Poisson(ν * dx.rate_small)), rand(Poisson(ν * dx.rate_large))
     removeed = 0
@@ -266,7 +266,7 @@ entangle!(therapeutic_area1, demand_model_1)
 entangle!(therapeutic_area2, demand_model_2)
 
 # sync with market demand
-@observables first(by_name(pharma_model, "dx")) "../demand":"demand"
+getobservable(getagent(pharma_model, "therapeutic_area1/dx"), "demand")
 ````
 
 Let's inspect the composite model:

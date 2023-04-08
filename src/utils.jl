@@ -37,42 +37,6 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
 end
 
 """
-    @observables agent path:obs path:(obs1, obs2) path:[obs1, obs2]
-Retrieve (a vector of) observables relative to `agent`.
-
-# Examples
-```julia
-@observables agent "../agent":"o"
-@observables agent "../agent":("o1", "o2")
-```
-"""
-macro observables(agent, args...)
-    obs = Expr(:vcat)
-    for arg in args
-        if arg isa Expr && Meta.isexpr(arg, :call) && (arg.args[1] == :(:))
-            agent_ = arg.args[2]
-            obs_name = arg.args[3]
-
-            if obs_name isa Expr && (obs_name.head ∈ [:vect, :tuple])
-                for name in obs_name.args
-                    push!(obs.args,
-                          :(getobservable(getagent($(esc(agent)), $(esc(agent_))),
-                                          $(esc(name)))))
-                end
-            else
-                push!(obs.args,
-                      :(getobservable(getagent($(esc(agent)), $(esc(agent_))),
-                                      $(esc(obs_name)))))
-            end
-        else
-            push!(obs.args, :(getobservable(getagent($(esc(agent)), $(esc(arg))))))
-        end
-    end
-
-    obs
-end
-
-"""
     flatten(root_agent)
 Return flat representation of agents' hierarchy.
 """

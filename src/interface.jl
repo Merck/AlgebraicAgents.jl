@@ -78,12 +78,6 @@ Get dictionary of agent's inner agents. Follows `name => agent` format.
 inners(a::AbstractAlgebraicAgent) = a.inners #@error "algebraic agent type $(typeof(a)) doesn't implement inner agents!"
 
 """
-    observables(agent)
-List observables explicitly exported by an agent.
-"""
-observables(a::AbstractAlgebraicAgent) = a.observables
-
-"""
     getparameters(agent)
 Retrieve agents' (incl. inner agents, if applicable) parameter space.
 """
@@ -308,8 +302,10 @@ function gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any)
     @error "algebraic agent $(typeof(a)) doesn't implement `gettimeobservable`"
 end
 
-"Return a list of observables (explicitly) exported by algebraic agent."
-observables(::AbstractAlgebraicAgent) = nothing
+"Return a list of observables (explicitly) exported by algebraic agent. Use [`getobservable`](@ref) to retrieve the observable's value."
+function observables(a::AbstractAlgebraicAgent)
+    @error "algebraic agent $(typeof(a)) doesn't implement `observables`"
+end
 
 "Get algebraic agent's [`Opera`](@ref)."
 getopera(a::AbstractAlgebraicAgent) = a.opera

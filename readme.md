@@ -133,7 +133,7 @@ Internally, a discovery unit will adjust its productivity according to the obser
 
 ```julia
 # sync with market demand
-dx.productivity, = @observables dx "../demand":"demand"
+dx.productivity, = getobservable(getagent(dx,  "../demand"), "demand")
 ```
 
 ### Defining & Entangling the Systems
@@ -259,7 +259,7 @@ agent demand with uuid 18d7fbd7 of type DiffEqAgent
    integrator: 
 t: 100.0
 u: 2.3580108744816726
-   ports out: demand
+   observables: demand (ix: 1)
    parent: therapeutic_area1
 ```
 

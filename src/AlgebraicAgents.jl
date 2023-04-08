@@ -32,8 +32,6 @@ include("utils.jl")
 export @wrap
 ## declare derived sequence
 export @derived
-## convenient observable accessor, interaction schedulers
-export @observables
 ## flat representation of agent hierarchy
 export flatten
 ## instantiate an integration and add it to Julia's load path

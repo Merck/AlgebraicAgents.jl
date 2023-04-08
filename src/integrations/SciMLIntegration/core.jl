@@ -3,8 +3,6 @@ import .DifferentialEquations: DiffEqBase, SciMLBase, OrdinaryDiffEq
 
 # wrap problem, integrator, solution type; DiffEq agents supertype 
 export DiffEqAgent
-# observables interface
-export add_observables!
 
 # define DE algebraic wrap
 """
@@ -13,7 +11,7 @@ Initialize DE problem algebraic wrap.
 
 # Keywords
 - `observables`: either `nothing` or a dictionary which maps keys to observable's positional index in `u`,
-- other kwargs will be propagated to the integrator at initialization step.
+- other kwargs will be passed to the integrator during initialization step.
 """
 mutable struct DiffEqAgent <: AbstractAlgebraicAgent
     uuid::UUID
@@ -27,11 +25,11 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
 
     integrator::DiffEqBase.DEIntegrator
 
-    observables::Union{Dict{Any, Int}, Nothing}
+    observables::Dict{Any, Int}
 
     function DiffEqAgent(name, problem::DiffEqBase.DEProblem,
                          alg = DifferentialEquations.default_algorithm(problem)[1], args...;
-                         observables = nothing, kwargs...)
+                         observables = Dict{Any, Int}(), kwargs...)
         problem = DifferentialEquations.remake(problem;
                                                p = Params(Val(DummyType), problem.p))
 
@@ -41,10 +39,9 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
 
         i.integrator = DiffEqBase.init(problem, alg, args...; kwargs...)
         i.observables = observables
-
         i.integrator.p.agent = i
 
-        i
+        return i
     end
 end
 
@@ -77,7 +74,7 @@ end
 
 # implement common interface
 function getobservable_index(a::DiffEqAgent, obs)
-    isnothing(observables(a)) ? obs : get(observables(a), obs, obs)
+    get(observables(a), obs, obs)
 end
 
 function getobservable(a::DiffEqAgent, obs)
@@ -86,28 +83,6 @@ end
 
 function gettimeobservable(a::DiffEqAgent, t::Float64, obs)
     a.integrator(t)[getobservable_index(a, obs)]
-end
-
-"""
-    add_observables!(a::DiffEqAgent, pairs...)
-Register observables of an algebraic DiffEq model. 
-Enables aliasing of variable's positional index. That is,
-provide `key => ix` pair to alias `ix`th model's variable as `key`.
-
-# Examples
-```julia
-add_observables!(deagent, key => ix1, ix2)
-```
-"""
-function add_observables!(a::DiffEqAgent, pairs...)
-    if isdefined(a, :observables) || isnothing(a.observables)
-        (a.observables = Dict{Any, Int}())
-    end
-    for id in pairs
-        push!(a.observables, id isa Pair ? id : (id => id))
-    end
-
-    a
 end
 
 # implement internal step function
@@ -137,9 +112,7 @@ end
 
 _reinit!(a::DiffEqAgent) = SciMLBase.reinit!(a.integrator)
 
-function observables(a::DiffEqAgent)
-    isdefined(a, :observables) && !isnothing(a.observables) ? a.observables : nothing
-end
+observables(a::DiffEqAgent) = a.observables
 
 # hacks integrator step
 abstract type DummyType <: AbstractAlgebraicAgent end
@@ -167,9 +140,9 @@ end
 function print_observables(io::IO, ::MIME"text/plain", a::DiffEqAgent)
     indent = get(io, :indent, 0)
 
-    if !isnothing(observables(a))
+    if !isempty(observables(a))
         print(io, "\n", " "^indent, crayon"italics", "observables: ", crayon"reset")
-        print(io, join(keys(observables(a)), ", "))
+        print(io, join(["$key (ix: $val)" for (key, val) in observables(a)], ", "))
     end
 end
 

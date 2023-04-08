@@ -52,11 +52,7 @@ end
 pages = [
     "index.md",
     "design_mmd.md",
-    "Integrations" => [
-        "integrations/AgentsIntegration.md",
-        "integrations/SciMLIntegration.md",
-        "integrations/AlgebraicDynamicsIntegration.md",
-    ],
+    "integrations.md",
     "Sketches" => [
         "sketches/agents/agents.md",
         "sketches/molecules/molecules.md",

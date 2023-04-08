@@ -29,12 +29,11 @@ function _construct_agent(name::AbstractString, sharer::GraphicalModelType, args
 end
 
 # implement common interface
-getobservable(::GraphicalAgent, _) = nothing
 _step!(::GraphicalAgent) = nothing
 _projected_to(::GraphicalAgent) = nothing
 
 function observables(a::GraphicalAgent)
-    if a.system <: AbstractMachine
+    if a.system isa AbstractMachine
         string.(a.system.interface.output_ports)
     else
         string.(a.system.interface.ports)
@@ -47,17 +46,7 @@ function print_custom(io::IO, mime::MIME"text/plain", a::GraphicalAgent)
     print(io, "\n", " "^(indent + 3), "custom properties:\n")
     print(io, " "^(indent + 3), crayon"italics", "model", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.system)
-    print_observables(IOContext(io, :indent => get(io, :indent, 0) + 3), mime, a)
-end
-
-"Print in/out observables of a DiffEq nt."
-function print_observables(io::IO, ::MIME"text/plain", a::GraphicalAgent)
-    indent = get(io, :indent, 0)
-
-    if !isnothing(observables(a))
-        print(io, "\n", " "^indent, crayon"italics", "observables: ", crayon"reset")
-        print(io, join(keys(observables(a)), ", "))
-    end
+    print(io, " "^(indent + 3), crayon"italics", "ports: $(observables(a))")
 end
 
 # reduce sum `⊕` operation to `oapply`

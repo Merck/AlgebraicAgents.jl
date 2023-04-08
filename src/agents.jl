@@ -57,9 +57,9 @@ end
         extra_fields...
     end
 
-Create a custom algebraic agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
+Define a custom algebraic agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
 
-Fields are mutable by default, but can be made immutable using `const` keyword.
+Fields are mutable by default, but can be declared immutable using `const` keyword.
 
 Provides a constructor which takes agent's name at the input, and populates the common fields.
 

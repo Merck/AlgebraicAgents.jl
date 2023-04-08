@@ -16,7 +16,7 @@ m3 = DiffEqAgent("model3", prob)
 
 ## declare observables
 ## it will be possible to reference m3's first variable as both `o1`, `o2`
-add_observables!(m3, "o1" => 1, "o2" => 1)
+push!(observables(m3), "o1" => 1, "o2" => 1)
 
 ## simple function, calls to which will be scheduled during the model integration
 custom_function(agent, t) = 1#println(name(agent), " ", t)
@@ -26,14 +26,11 @@ function f_(u, p, t)
     # access the wrapping agent (hierarchy bond)
     agent = @get_agent p
 
-    # access observables 
-    ## first via convenient macro syntax
-    o1, o2 = @observables agent "../model3":("o1", "o2")
-    o1 = @observables agent "../model3":"o1"
-    ## more explicit notation
-    o1 = getobservable(getagent(agent, "../model3"), 1)
+    ## access observables 
+    o1 = getobservable(getagent(agent, "../model3"), "o1")
+    o2 = getobservable(getagent(agent, "../model3"), "o2")
     ## fetch observable's value at **a given time point in the past**
-    o3 = gettimeobservable(getagent(agent, "../model3"), t / 2, 1)
+    o3 = gettimeobservable(getagent(agent, "../model3"), t/2, 1)
 
     # schedule interaction
     ## first, schedule a call to `_interact!(agent)` with priority 0
@@ -99,8 +96,8 @@ sol = AlgebraicAgents.simulate(m)
     agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px), Euler(), dt = 1e-4)
     agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py), Euler(), dt = 1e-4)
 
-    add_observables!(agent_x, "x" => 1)
-    add_observables!(agent_y, "y" => 1)
+    push!(observables(agent_x), "x" => 1)
+    push!(observables(agent_y), "y" => 1)
 
     joint_system = ⊕(agent_x, agent_y; name = "joint_system")
 
@@ -140,8 +137,8 @@ end
     agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px))
     agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py))
 
-    add_observables!(agent_x, "x" => 1)
-    add_observables!(agent_y, "y" => 1)
+    push!(observables(agent_x), "x" => 1)
+    push!(observables(agent_y), "y" => 1)
 
     joint_system = ⊕(agent_x, agent_y; name = "joint_system")
 

@@ -16,17 +16,17 @@ FreeAgent(::AbstractString, ::Vector{<:AbstractAlgebraicAgent})
 
 To implement a custom algebraic agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface.
 
-Next step is to implement the required interface functions:
+Next step is to implement the mandatory interface functions:
 
 ```@docs
 AlgebraicAgents._step!(::AbstractAlgebraicAgent)
 AlgebraicAgents._projected_to(::AbstractAlgebraicAgent)
-AlgebraicAgents.getobservable(::AbstractAlgebraicAgent, ::Any)
 ```
 
 For a deeper integration of the agent type, you may specialize the following functions:
 
 ```@docs
+AlgebraicAgents.getobservable(::AbstractAlgebraicAgent, ::Any)
 AlgebraicAgents._getparameters(::AbstractAlgebraicAgent)
 AlgebraicAgents._setparameters!(::AbstractAlgebraicAgent, ::Any)
 AlgebraicAgents._draw(::AbstractAlgebraicAgent)
@@ -71,16 +71,12 @@ getdirectory
 getparameters
 setparameters!
 ```
-### Accessors
+### Observables
 
-```@docs
-getobservable
-gettimeobservable
-```
-
-### List observables exported by an agent
 ```@docs
 observables
+getobservable
+gettimeobservable
 ```
 
 ### Solving & plotting
@@ -163,12 +159,6 @@ postwalk_ret
 ```@docs
 @wrap
 @get_agent
-```
-
-### Retrieving observables
-
-```@docs
-@observables
 ```
 
 ### Flat representation
