@@ -27,6 +27,7 @@ For a deeper integration of the agent type, you may specialize the following fun
 
 ```@docs
 AlgebraicAgents.getobservable(::AbstractAlgebraicAgent, ::Any)
+AlgebraicAgents.observables(::AbstractAlgebraicAgent, ::Any)
 AlgebraicAgents._getparameters(::AbstractAlgebraicAgent)
 AlgebraicAgents._setparameters!(::AbstractAlgebraicAgent, ::Any)
 AlgebraicAgents._draw(::AbstractAlgebraicAgent)
@@ -45,13 +46,14 @@ Loading of the integrations is facilitated by [Requires.jl](https://github.com/J
 
 For example,
 
-```@example 0
+```@example
 using AlgebraicAgents
 @isdefined DiffEqAgent
 ```
 
-```@example 1
+```@example
 using AlgebraicAgents, DifferentialEquations
+@isdefined DiffEqAgent
 @wrap my_model ODEProblem((u, p, t) -> 1.01*u, [1/2], (0., 10.))
 ```
 
