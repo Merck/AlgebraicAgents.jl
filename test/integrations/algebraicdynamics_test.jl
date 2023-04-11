@@ -31,7 +31,8 @@ const UWD = UndirectedWiringDiagram
     rabbitfox_system = oapply(rabbitfox_pattern, [rabbit, fox])
 
     # AlgebraicAgents.jl wrap
-    rabbit_wrap = wrap_system("rabbit", ContinuousMachine{Float64}(1, 1, 1, dotr, (u, p, t) -> u))
+    rabbit_wrap = wrap_system("rabbit",
+                              ContinuousMachine{Float64}(1, 1, 1, dotr, (u, p, t) -> u))
     fox_wrap = wrap_system("fox", ContinuousMachine{Float64}(1, 1, 1, dotf, (u, p, t) -> u))
 
     # Compose
@@ -77,11 +78,14 @@ end
     rabbitfox_system = oapply(rabbitfox_pattern,
                               [rabbit_growth, rabbitfox_predation, fox_decline])
 
-    rabbit_growth_wrap = wrap_system("rabbit_growth", ContinuousResourceSharer{Float64}(1, dotr))
-    rabbitfox_predation_wrap = wrap_system("rabbitfox_predation", ContinuousResourceSharer{Float64
-                                                                                    }(2,
-                                                                                      dotrf))
-    fox_decline_wrap = wrap_system("fox_decline", ContinuousResourceSharer{Float64}(1, dotf))
+    rabbit_growth_wrap = wrap_system("rabbit_growth",
+                                     ContinuousResourceSharer{Float64}(1, dotr))
+    rabbitfox_predation_wrap = wrap_system("rabbitfox_predation",
+                                           ContinuousResourceSharer{Float64
+                                                                    }(2,
+                                                                      dotrf))
+    fox_decline_wrap = wrap_system("fox_decline",
+                                   ContinuousResourceSharer{Float64}(1, dotf))
 
     # Compose
     rabbitfox_system_wrap = ⊕(rabbit_growth_wrap, rabbitfox_predation_wrap,

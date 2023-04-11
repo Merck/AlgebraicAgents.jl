@@ -89,7 +89,7 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 end
 
 function wrap_system(name::AbstractString, abm::Agents.AgentBasedModel, args...;
-                          kwargs...)
+                     kwargs...)
     ABMAgent(name, abm, args...; kwargs...)
 end
 

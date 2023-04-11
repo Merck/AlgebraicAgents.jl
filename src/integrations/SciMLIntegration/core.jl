@@ -67,8 +67,8 @@ end
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
 function wrap_system(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
-                          alg = DifferentialEquations.default_algorithm(problem)[1],
-                          kwargs...)
+                     alg = DifferentialEquations.default_algorithm(problem)[1],
+                     kwargs...)
     DiffEqAgent(name, problem, alg, args...; kwargs...)
 end
 
