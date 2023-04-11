@@ -28,8 +28,7 @@ export add_control!, @control
 
 # utility functions
 include("utils.jl")
-## convenient expr wraps
-export @wrap
+
 ## declare derived sequence
 export @derived
 ## flat representation of agent hierarchy
@@ -38,10 +37,8 @@ export flatten
 export add_integration_to_path, @integration
 ## return a function which maps params to simulation results
 export objective
-## convenient algebraic wrap initialization
-export @wrap
-## extract wrap from complex types
-export @get_agent
+## wrap a dynamical system as an agent, extract agent as the system's property
+export wrap_system, extract_agent
 ## return type hierarchy suitable for Mermaid
 export typetree_mmd, agent_hierarchy_mmd
 
@@ -52,10 +49,8 @@ export FreeAgent
 ## general accessors
 export getname, getuuid, getparent, inners
 export getopera, getdirectory, getparameters, setparameters!
-## observable accessors
-export getobservable, gettimeobservable
-## list of observables exported by an agent
-export observables
+## observables interface
+export observables, getobservable, gettimeobservable
 ## step!, simulate, least projected time
 export step!, simulate, projected_to
 ## plot

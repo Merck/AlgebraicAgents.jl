@@ -75,7 +75,7 @@ end
     inners(agent)
 Get dictionary of agent's inner agents. Follows `name => agent` format.
 """
-inners(a::AbstractAlgebraicAgent) = a.inners #@error "algebraic agent type $(typeof(a)) doesn't implement inner agents!"
+inners(a::AbstractAlgebraicAgent) = a.inners #@error "agent type $(typeof(a)) doesn't implement inner agents!"
 
 """
     getparameters(agent)
@@ -123,7 +123,6 @@ end
 
 """
     setparameters!(agent, parameters)
-
 Assign agent's parameters.
 Parameters are accepted in the form of a dictionary containing `path => params` pairs.
 
@@ -232,11 +231,11 @@ _projected_to(::FreeAgent) = nothing
 
 "Step an agent forward (call only if its projected time is equal to the least projected time, among all agents in the hierarchy)."
 function _step!(a::AbstractAlgebraicAgent)
-    @error "algebraic agent $(typeof(a)) doesn't implement `_step!`"
+    @error "agent $(typeof(a)) doesn't implement `_step!`"
 end
 _step!(::FreeAgent) = nothing
 
-"Pre-step to a step call (e.g., projecting algebraic agent's solution up to time `t`)."
+"Pre-step to a step call (e.g., projecting agent's solution up to time `t`)."
 _prestep!(::AbstractAlgebraicAgent, _) = nothing
 
 "Wake up an agent. See [`Opera`](@ref)."
@@ -244,7 +243,7 @@ _interact!(::AbstractAlgebraicAgent) = nothing
 
 """
     reinit!(agent)
-Reinitialize state of algebraic agents hierarchy.
+Reinitialize state of agents hierarchy.
 
 # Examples
 ```julia
@@ -260,12 +259,12 @@ function reinit!(a::AbstractAlgebraicAgent)
     a
 end
 
-"Reinitialize the state of an algebraic agent."
+"Reinitialize the state of an agent."
 _reinit!(::AbstractAlgebraicAgent) = nothing
 
 """
-    getindex(a::AbstractAlgebraicAgent, keys...)
-Get inner agents of an algebraic agent using a convenient syntax.
+    getindex(agent, keys...)
+Get inner agents of an agent using a convenient syntax.
 # Examples
 ```julia
 myagent = FreeAgent("root", [FreeAgent("a"),FreeAgent("b")])
@@ -285,7 +284,7 @@ end
 
 """
     getobservable(agent, args...)
-Get algebraic agent's observable.
+Get agent's observable.
 
 # Examples
 ```julia
@@ -294,23 +293,26 @@ getobservable(getagent(agent, "../model"), 1)
 ```
 """
 function getobservable(a::AbstractAlgebraicAgent, args...)
-    @error "algebraic agent $(typeof(a)) doesn't implement `getobservable`"
+    @error "agent $(typeof(a)) doesn't implement `getobservable`"
 end
 
-"Get algebraic agent's observable at a given time."
+"Get agent's observable at a given time."
 function gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any)
-    @error "algebraic agent $(typeof(a)) doesn't implement `gettimeobservable`"
+    @error "agent $(typeof(a)) doesn't implement `gettimeobservable`"
 end
 
-"Return a list of observables (explicitly) exported by algebraic agent. Use [`getobservable`](@ref) to retrieve the observable's value."
+"""
+    observables(agent)
+Return a list of observables (explicitly) exported by an agent. Use [`getobservable`](@ref) to retrieve the observable's value.
+"""
 function observables(a::AbstractAlgebraicAgent)
-    @error "algebraic agent $(typeof(a)) doesn't implement `observables`"
+    @error "agent $(typeof(a)) doesn't implement `observables`"
 end
 
-"Get algebraic agent's [`Opera`](@ref)."
+"Get agent's [`Opera`](@ref)."
 getopera(a::AbstractAlgebraicAgent) = a.opera
 
-"Get algebraic agent's directory. See also [`Opera`](@ref)."
+"Get agent's directory. See also [`Opera`](@ref)."
 getdirectory(a::AbstractAlgebraicAgent) = getopera(a).directory
 
 "Let `a`'s Opera refer to `o`."
@@ -325,7 +327,7 @@ end
 "Return relative path to uuid map."
 relpathrefs(a::AbstractAlgebraicAgent) = a.relpathrefs
 
-"Pretty-print algebraic agent's header: name, uuid, and type. Optionally specify indent."
+"Pretty-print agent's header: name, uuid, and type. Optionally specify indent."
 function print_header end
 
 function print_header(io::IO, ::MIME"text/plain", a::AbstractAlgebraicAgent)
@@ -343,7 +345,7 @@ function print_header(io::IO, a::AbstractAlgebraicAgent)
           "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
 end
 
-"Pretty-print algebraic agent's parent and inners. Optionally specify indent."
+"Pretty-print agent's parent and inners. Optionally specify indent."
 function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
                          expand_inners = true)
     indent = get(io, :indent, 0)
@@ -369,7 +371,7 @@ function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
     end
 end
 
-"Pretty-print custom fields of an algebraic agent."
+"Pretty-print custom fields of an agent."
 function print_custom(io::IO, mime::MIME"text/plain", a::AbstractAlgebraicAgent)
     extra_fields = setdiff(propertynames(a), fieldnames(FreeAgent))
     indent = get(io, :indent, 0)
@@ -398,7 +400,7 @@ Base.show(io::IO, a::AbstractAlgebraicAgent) = print_header(io, a)
 #    print(io, " "^indent * "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
 #end
 
-"Plot an algebraic agent's state. For internal implementation, see [`_draw`](@ref)."
+"Plot an agent's state. For internal implementation, see [`_draw`](@ref)."
 function draw end
 
 """
@@ -410,7 +412,7 @@ function draw(a::AbstractAlgebraicAgent, path = ".", args...; kwargs...)
     _draw(getagent(a, path), args...; kwargs...)
 end
 
-"Return plot of an algebraic agent's state. Defaults to `nothing`."
+"Return plot of an agent's state. Defaults to `nothing`."
 function _draw(a::AbstractAlgebraicAgent)
-    @warn "`_draw` for algebraic agent type $(typeof(a)) not implemented"
+    @warn "`_draw` for agent type $(typeof(a)) not implemented"
 end

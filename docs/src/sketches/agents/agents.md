@@ -132,7 +132,7 @@ It remains to provide the SIR stepping functions:
 ````@example agents
 function agent_step!(agent, model)
     @get_model model
-    @get_agent model agent
+    extract_agent(model, agent)
     migrate!(agent, model)
     transmit!(agent, model)
     update!(agent, model)
@@ -205,7 +205,7 @@ recovered(x) = count(i == :R for i in x)
 to_collect = [(:status, f) for f in (infected, recovered, length)]
 ````
 
-We wrap the model as an algebraic agent:
+We wrap the model as an agent:
 
 ````@example agents
 m = ABMAgent("sir_model", abm; agent_step!, tspan=(0., 100.), adata=to_collect)

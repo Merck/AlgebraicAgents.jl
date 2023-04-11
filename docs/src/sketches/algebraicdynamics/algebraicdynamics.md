@@ -31,9 +31,9 @@ dotr(u,p,t) = p.α*u
 dotrf(u,p,t) = [-p.β*u[1]*u[2], p.γ*u[1]*u[2]]
 dotf(u,p,t) = -p.δ*u
 
-rabbit_growth = @wrap rabbit_growth ContinuousResourceSharer{Float64}(1, dotr)
-rabbitfox_predation = @wrap "rabbitfox_predation" ContinuousResourceSharer{Float64}(2, dotrf)
-fox_decline = @wrap "fox_decline" ContinuousResourceSharer{Float64}(1, dotf)
+rabbit_growth = wrap_system("rabbit_growth", ContinuousResourceSharer{Float64}(1, dotr))
+rabbitfox_predation = wrap_system("rabbitfox_predation", ContinuousResourceSharer{Float64}(2, dotrf))
+fox_decline = wrap_system("fox_decline", ContinuousResourceSharer{Float64}(1, dotf))
 ````
 
 Define the composition pattern
@@ -92,8 +92,8 @@ Define the primitive systems
 dotr(u, x, p, t) = [p.α*u[1] - p.β*u[1]*x[1]]
 dotf(u, x, p, t) = [p.γ*u[1]*x[1] - p.δ*u[1]]
 
-rabbit = @wrap rabbit ContinuousMachine{Float64}(1,1,1, dotr, (u, p, t) -> u)
-fox    = @wrap fox ContinuousMachine{Float64}(1,1,1, dotf, (u, p, t) -> u)
+rabbit = wrap_system("rabbit", ContinuousMachine{Float64}(1,1,1, dotr, (u, p, t) -> u))
+fox    = wrap_system("fox", ContinuousMachine{Float64}(1,1,1, dotf, (u, p, t) -> u))
 ````
 
 Define the composition pattern

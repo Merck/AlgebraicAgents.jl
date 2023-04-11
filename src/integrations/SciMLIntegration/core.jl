@@ -66,7 +66,7 @@ function Base.getindex(::Params, ::Any)
 end
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
-function _construct_agent(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
+function wrap_system(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
                           alg = DifferentialEquations.default_algorithm(problem)[1],
                           kwargs...)
     DiffEqAgent(name, problem, alg, args...; kwargs...)
@@ -150,4 +150,5 @@ function _draw(a::DiffEqAgent, args...; kwargs...)
     @warn "`DiffEqAgent` requires package `Plots` to be loaded for plotting"
 end
 
-_get_agent(p::Params) = p.agent
+# retrieve algebraic agent as a property of the core dynamical system
+extract_agent(p::Params) = p.agent

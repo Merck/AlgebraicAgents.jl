@@ -25,7 +25,7 @@ abm_algebraic, _, _ = Agents.Models.sir()
 # modify stepping functions
 function agent_step!(agent, model)
     @get_model model
-    @get_agent model agent
+    extract_agent(model, agent)
     migrate!(agent, model)
     transmit!(agent, model)
     update!(agent, model)

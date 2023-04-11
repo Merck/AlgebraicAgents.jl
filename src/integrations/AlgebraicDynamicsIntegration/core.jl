@@ -23,7 +23,7 @@ GraphicalAgent("rabbit", ContinuousMachine{Float64}(1,1,1, dotr, (u, p, t) -> u)
     system::GraphicalModelType
 end
 
-function _construct_agent(name::AbstractString, sharer::GraphicalModelType, args...;
+function wrap_system(name::AbstractString, sharer::GraphicalModelType, args...;
                           kwargs...)
     GraphicalAgent(name, sharer, args...; kwargs...)
 end

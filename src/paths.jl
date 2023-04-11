@@ -1,4 +1,4 @@
-"Returns a glob string to enable wildcard matching of algebraic agents paths."
+"Returns a glob string to enable wildcard matching of agents paths."
 macro glob_str(pattern, flags...)
     if "s" ∈ flags
         pattern *= "/"
@@ -30,13 +30,13 @@ function getagent(a::AbstractAlgebraicAgent, uuid::UUID)
     if haskey(getdirectory(a), uuid)
         getdirectory(a)[uuid]
     else
-        @error "algebraic agent with uuid $uuid not found!"
+        @error "agent with uuid $uuid not found!"
     end
 end
 
 """
     getagent(agent::AbstractAlgebraicAgent, path::AbstractString)
-Get an algebraic agent given its relative path.
+Get an agent given its relative path.
 
 ## Examples
 ```julia
@@ -80,7 +80,7 @@ getagent(a, glob"**/agent/")
 function getagent(agent::AbstractAlgebraicAgent, path::Union{Glob.FilenameMatch, Regex})
     # get relpathrefs
     get_relpathrefs!(agent)
-    # walk the relpathrefs, filter algebraic agent's paths
+    # walk the relpathrefs, filter agent's paths
     refs = UUID[]
     foreach(relpathrefs(agent)) do relpathref
         if occursin(path, relpathref[1])

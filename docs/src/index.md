@@ -14,28 +14,28 @@ FreeAgent(::AbstractString, ::Vector{<:AbstractAlgebraicAgent})
 
 ## Implementing custom types
 
-To implement a custom algebraic agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface.
+To implement a custom agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface.
 
-Next step is to implement the mandatory interface functions:
+### Required methods
 
 ```@docs
 AlgebraicAgents._step!(::AbstractAlgebraicAgent)
 AlgebraicAgents._projected_to(::AbstractAlgebraicAgent)
 ```
 
-For a deeper integration of the agent type, you may specialize the following functions:
+### Optional methods
 
 ```@docs
 AlgebraicAgents.getobservable(::AbstractAlgebraicAgent, ::Any)
-AlgebraicAgents.observables(::AbstractAlgebraicAgent, ::Any)
+AlgebraicAgents.observables(::AbstractAlgebraicAgent)
 AlgebraicAgents._getparameters(::AbstractAlgebraicAgent)
 AlgebraicAgents._setparameters!(::AbstractAlgebraicAgent, ::Any)
 AlgebraicAgents._draw(::AbstractAlgebraicAgent)
 AlgebraicAgents._reinit!(::AbstractAlgebraicAgent)
 AlgebraicAgents._interact!(::AbstractAlgebraicAgent)
 AlgebraicAgents._prestep!(::AbstractAlgebraicAgent, ::Float64)
-_construct_agent(::AbstractString, args...)
-_get_agent(::Any, args...)
+AlgebraicAgents.wrap_system
+AlgebraicAgents.extract_agent
 ```
 
 ## Loading third-party package integrations
@@ -54,7 +54,7 @@ using AlgebraicAgents
 ```@example
 using AlgebraicAgents, DifferentialEquations
 @isdefined DiffEqAgent
-@wrap my_model ODEProblem((u, p, t) -> 1.01*u, [1/2], (0., 10.))
+wrap_system("my_model", ODEProblem((u, p, t) -> 1.01*u, [1/2], (0., 10.)))
 ```
 
 For plotting, you will want to load `Plots` as well. Nevertheless, function `draw` will inform you when necessary.
@@ -156,11 +156,11 @@ postwalk_ret
 
 ## Utility functions
 
-### Initialize wrap, extract wrap
+### Wrap a dynamical system, extract agent wrap
 
 ```@docs
-@wrap
-@get_agent
+wrap_system
+extract_agent
 ```
 
 ### Flat representation

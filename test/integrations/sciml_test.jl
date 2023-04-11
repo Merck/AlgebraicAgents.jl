@@ -24,7 +24,7 @@ custom_function(agent, t) = 1#println(name(agent), " ", t)
 ## a bit more intricate logic - 
 function f_(u, p, t)
     # access the wrapping agent (hierarchy bond)
-    agent = @get_agent p
+    agent = extract_agent(p)
 
     ## access observables 
     o1 = getobservable(getagent(agent, "../model3"), "o1")
@@ -44,7 +44,7 @@ function f_(u, p, t)
 end
 
 ## yet another atomic model
-m4 = @wrap "model4" ODEProblem(f_, u0, tspan) # convenience macro
+m4 = wrap_system("model4", ODEProblem(f_, u0, tspan)) # convenience macro
 
 ### alternative way to set-up reference 
 # m4 = DiffEqAgent("model4", prob_)
@@ -78,7 +78,7 @@ sol = AlgebraicAgents.simulate(m)
     tspan = (0.0, 4.0)
 
     function ẋ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         y = getobservable(getagent(agent, "../agent_y"), "y")
         return [p.α * y]
     end
@@ -86,7 +86,7 @@ sol = AlgebraicAgents.simulate(m)
     x0 = [0.1]
 
     function ẏ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         x = getobservable(getagent(agent, "../agent_x"), "x")
         return [p.β * x]
     end
@@ -119,7 +119,7 @@ end
     tspan = (0.0, 100.0)
 
     function ẋ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         y = getobservable(getagent(agent, "../agent_y"), "y")
         return [p.α * y]
     end
@@ -127,7 +127,7 @@ end
     x0 = [0.1]
 
     function ẏ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         x = getobservable(getagent(agent, "../agent_x"), "x")
         return [p.β * x]
     end

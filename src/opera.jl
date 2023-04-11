@@ -15,7 +15,7 @@ const ControlLog = NamedTuple{(:id, :time, :retval), <:Tuple{AbstractString, Any
 """
     Opera(uuid2agent_pairs...)
 A dynamic structure that 
- - contains a **directory of algebraic agents** (dictionary of `uuid => agent` pairs);
+ - contains a **directory of agents** (dictionary of `uuid => agent` pairs);
  - keeps track of, and executes, **futures (delayed interactions)**;
  - keeps track of, and executes, **system controls**;
  - keeps track of, and executes, **instantious interactions**;

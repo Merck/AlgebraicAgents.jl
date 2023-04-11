@@ -29,7 +29,7 @@ custom_function(agent, t) = println("inside $agent at time $t")
 ## a bit more intricate logic - 
 function f_(u,p,t)
     ## access the wrapping agent (hierarchy bond)
-    agent = @get_agent p
+    agent = extract_agent(p)
     
     ## access observables 
     o1 = getobservable(getagent(agent, "../model3"), "o1")
@@ -56,7 +56,7 @@ m4 = DiffEqAgent("model4", prob_)
 # alternative way to set-up reference 
 
 ## m4 = DiffEqAgent("model4", prob_; oref=:__aagent__)
-## m4 = @wrap prob_ ODEProblem(f_,u0,tspan) oref=:__agent__
+## m4 = wrap_system("prob_", ODEProblem(f_,u0,tspan), oref=:__agent__)
 
 # ## Hierarchical Sum of Atomic Models
 
