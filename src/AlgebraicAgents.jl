@@ -8,11 +8,11 @@ using MacroTools
 using Crayons
 using Random: randstring
 
-# abstract algebraic agent types
+# abstract agent types
 include("abstract.jl")
 export AbstractAlgebraicAgent
 
-# path-like structure of algebraic agents
+# path-like structure of agents
 include("paths.jl")
 export @glob_str, @uuid_str # path wildcard, UUID obj constructor
 export getagent, by_name, entangle!, disentangle!
@@ -28,22 +28,17 @@ export add_control!, @control
 
 # utility functions
 include("utils.jl")
-## convenient expr wraps
-export @wrap
+
 ## declare derived sequence
 export @derived
-## convenient observable accessor, interaction schedulers
-export @observables
 ## flat representation of agent hierarchy
 export flatten
 ## instantiate an integration and add it to Julia's load path
 export add_integration_to_path, @integration
 ## return a function which maps params to simulation results
 export objective
-## convenient algebraic wrap initialization
-export @wrap
-## extract wrap from complex types
-export @get_agent
+## wrap a dynamical system as an agent, extract agent as the system's property
+export wrap_system, extract_agent
 ## return type hierarchy suitable for Mermaid
 export typetree_mmd, agent_hierarchy_mmd
 
@@ -54,21 +49,19 @@ export FreeAgent
 ## general accessors
 export getname, getuuid, getparent, inners
 export getopera, getdirectory, getparameters, setparameters!
-## observable accessors
-export getobservable, gettimeobservable
-## list of observables observed by an agent and exported by an agent, respectively
-export ports_in, exposed_ports
+## observables interface
+export observables, getobservable, gettimeobservable
 ## step!, simulate, least projected time
 export step!, simulate, projected_to
 ## plot
 export draw
 
-# convenient algebraic agent subtyping
+# convenient agent subtyping
 include("agents.jl")
 export @aagent
 export setup_agent!
 
-# algebraic agents' structure walking
+# agents' structure walking
 include("walks.jl")
 export prewalk, prewalk_ret, postwalk, postwalk_ret, topmost
 

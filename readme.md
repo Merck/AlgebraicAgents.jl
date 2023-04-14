@@ -133,7 +133,7 @@ Internally, a discovery unit will adjust its productivity according to the obser
 
 ```julia
 # sync with market demand
-dx.productivity, = @observables dx "../demand":"demand"
+dx.productivity, = getobservable(getagent(dx,  "../demand"), "demand")
 ```
 
 ### Defining & Entangling the Systems
@@ -155,8 +155,8 @@ entangle!(therapeutic_area1, Discovery("dx", 5.2, 10.; dt=3.))
 entangle!(therapeutic_area2, Discovery("dx", 6., 8.; dt=5.))
 
 # add SDE models for drug demand in respective areas
-demand_model_1 = DiffEqAgent("demand", prob_1, EM(); exposed_ports=Dict("demand" => 1), dt)
-demand_model_2 = DiffEqAgent("demand", prob_2, EM(); exposed_ports=Dict("demand" => 1), dt)
+demand_model_1 = DiffEqAgent("demand", prob_1, EM(); observables=Dict("demand" => 1), dt)
+demand_model_2 = DiffEqAgent("demand", prob_2, EM(); observables=Dict("demand" => 1), dt)
 
 # push market demand units to therapeutic areas
 entangle!(therapeutic_area1, demand_model_1)
@@ -259,7 +259,7 @@ agent demand with uuid 18d7fbd7 of type DiffEqAgent
    integrator: 
 t: 100.0
 u: 2.3580108744816726
-   ports out: demand
+   observables: demand (index: 1)
    parent: therapeutic_area1
 ```
 

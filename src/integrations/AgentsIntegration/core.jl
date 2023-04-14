@@ -5,7 +5,7 @@ export ABMAgent, AAgent
 export @get_model, @a
 
 # algebraic wrap for AgentBasedModel type
-## algebraic agent types
+## agent types
 """
     ABMAgent(name, abm; kwargs...)
 Initialize `ABMAgent`, incl. hierarchy of ABM's agents.
@@ -88,8 +88,8 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
     end
 end
 
-function _construct_agent(name::AbstractString, abm::Agents.AgentBasedModel, args...;
-                          kwargs...)
+function wrap_system(name::AbstractString, abm::Agents.AgentBasedModel, args...;
+                     kwargs...)
     ABMAgent(name, abm, args...; kwargs...)
 end
 
@@ -218,8 +218,8 @@ function print_custom(io::IO, mime::MIME"text/plain", a::AAgent)
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.agent)
 end
 
-# macros to retrieve algebraic model's, agent's wrappers
-function _get_agent(model::Agents.ABM, agent::Agents.AbstractAgent)
+# retrieve algebraic agent as a property of the core dynamical system
+function extract_agent(model::Agents.ABM, agent::Agents.AbstractAgent)
     model.properties[:__aagent__].inners[string(agent.id)]
 end
 

@@ -31,8 +31,9 @@ const UWD = UndirectedWiringDiagram
     rabbitfox_system = oapply(rabbitfox_pattern, [rabbit, fox])
 
     # AlgebraicAgents.jl wrap
-    rabbit_wrap = @wrap rabbit ContinuousMachine{Float64}(1, 1, 1, dotr, (u, p, t) -> u)
-    fox_wrap = @wrap fox ContinuousMachine{Float64}(1, 1, 1, dotf, (u, p, t) -> u)
+    rabbit_wrap = wrap_system("rabbit",
+                              ContinuousMachine{Float64}(1, 1, 1, dotr, (u, p, t) -> u))
+    fox_wrap = wrap_system("fox", ContinuousMachine{Float64}(1, 1, 1, dotf, (u, p, t) -> u))
 
     # Compose
     rabbitfox_system_wrap = ⊕(rabbit_wrap, fox_wrap; diagram = rabbitfox_pattern,
@@ -43,7 +44,7 @@ const UWD = UndirectedWiringDiagram
     params = LVector(α = 0.3, β = 0.015, γ = 0.015, δ = 0.7)
     tspan = (0.0, 100.0)
 
-    @testset "AlgebraicDynamics.jl and (wrap) AlgebraicAgents.jl solutions are equal" begin
+    @testset "AlgebraicDynamics.jl and (wrapped) AlgebraicAgents.jl solutions are equal" begin
         # pure
         prob_ode = ODEProblem(rabbitfox_system, u0, tspan, params)
         sol_ode = solve(prob_ode, Tsit5())
@@ -77,11 +78,14 @@ end
     rabbitfox_system = oapply(rabbitfox_pattern,
                               [rabbit_growth, rabbitfox_predation, fox_decline])
 
-    rabbit_growth_wrap = @wrap rabbit_growth ContinuousResourceSharer{Float64}(1, dotr)
-    rabbitfox_predation_wrap = @wrap "rabbitfox_predation" ContinuousResourceSharer{Float64
-                                                                                    }(2,
-                                                                                      dotrf)
-    fox_decline_wrap = @wrap "fox_decline" ContinuousResourceSharer{Float64}(1, dotf)
+    rabbit_growth_wrap = wrap_system("rabbit_growth",
+                                     ContinuousResourceSharer{Float64}(1, dotr))
+    rabbitfox_predation_wrap = wrap_system("rabbitfox_predation",
+                                           ContinuousResourceSharer{Float64
+                                                                    }(2,
+                                                                      dotrf))
+    fox_decline_wrap = wrap_system("fox_decline",
+                                   ContinuousResourceSharer{Float64}(1, dotf))
 
     # Compose
     rabbitfox_system_wrap = ⊕(rabbit_growth_wrap, rabbitfox_predation_wrap,
@@ -93,7 +97,7 @@ end
     params = LVector(α = 0.3, β = 0.015, γ = 0.015, δ = 0.7)
     tspan = (0.0, 100.0)
 
-    @testset "AlgebraicDynamics.jl and (wrap) AlgebraicAgents.jl solutions are equal" begin
+    @testset "AlgebraicDynamics.jl and (wrapped) AlgebraicAgents.jl solutions are equal" begin
         # pure
         prob_ode = ODEProblem(rabbitfox_system, u0, tspan, params)
         sol_ode = solve(prob_ode, Tsit5())

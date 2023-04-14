@@ -57,9 +57,9 @@ end
         extra_fields...
     end
 
-Create a custom algebraic agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
+Define a custom agent type, and include fields expected by default interface methods (see [`FreeAgent`](@ref)).
 
-Fields are mutable by default, but can be made immutable using `const` keyword.
+Fields are mutable by default, but can be declared immutable using `const` keyword.
 
 Provides a constructor which takes agent's name at the input, and populates the common fields.
 
@@ -184,7 +184,7 @@ function get_param_tnames(type)
     end
 end
 
-"Populate common interface fields of an algebraic agent, incl. `uuid`, `parent`, `relpathrefs`, and `opera`."
+"Populate common interface fields of an agent, incl. `uuid`, `parent`, `relpathrefs`, and `opera`."
 function setup_agent!(agent::AbstractAlgebraicAgent, name::AbstractString)
     agent.name = name
     agent.uuid = AlgebraicAgents.uuid4()

@@ -4,7 +4,7 @@
 CurrentModule = AlgebraicAgents
 ```
 
-## Algebraic agent types
+## Agent types
 
 ```@docs
 AbstractAlgebraicAgent
@@ -14,17 +14,16 @@ FreeAgent(::AbstractString, ::Vector{<:AbstractAlgebraicAgent})
 
 ## Implementing custom types
 
-To implement a custom algebraic agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface.
+To implement a custom agent type, you may want to use the convenience macro [`@aagent`](@ref) which supplies type fields expected (not required, though) by the interface.
 
-Next step is to implement the required interface functions:
+### Required methods
 
 ```@docs
 AlgebraicAgents._step!(::AbstractAlgebraicAgent)
 AlgebraicAgents._projected_to(::AbstractAlgebraicAgent)
-AlgebraicAgents.getobservable(::AbstractAlgebraicAgent, ::Any)
 ```
 
-For a deeper integration of the agent type, you may specialize the following functions:
+### Optional methods
 
 ```@docs
 AlgebraicAgents._getparameters(::AbstractAlgebraicAgent)
@@ -33,9 +32,13 @@ AlgebraicAgents._draw(::AbstractAlgebraicAgent)
 AlgebraicAgents._reinit!(::AbstractAlgebraicAgent)
 AlgebraicAgents._interact!(::AbstractAlgebraicAgent)
 AlgebraicAgents._prestep!(::AbstractAlgebraicAgent, ::Float64)
-_construct_agent(::AbstractString, args...)
-_get_agent(::Any, args...)
 ```
+
+Other optional methods include
+ - [`getobservable(::AbstractAlgebraicAgent, ::Any)`](@ref)
+ - [`observables(::AbstractAlgebraicAgent)`](@ref)
+ - [`wrap_system`](@ref)
+ - [`extract_agent`](@ref)
 
 ## Loading third-party package integrations
 
@@ -45,14 +48,15 @@ Loading of the integrations is facilitated by [Requires.jl](https://github.com/J
 
 For example,
 
-```@example 0
+```@example
 using AlgebraicAgents
 @isdefined DiffEqAgent
 ```
 
-```@example 1
+```@example
 using AlgebraicAgents, DifferentialEquations
-@wrap my_model ODEProblem((u, p, t) -> 1.01*u, [1/2], (0., 10.))
+@isdefined DiffEqAgent
+wrap_system("my_model", ODEProblem((u, p, t) -> 1.01*u, [1/2], (0., 10.)))
 ```
 
 For plotting, you will want to load `Plots` as well. Nevertheless, function `draw` will inform you when necessary.
@@ -71,17 +75,12 @@ getdirectory
 getparameters
 setparameters!
 ```
-### Accessors
+### Observables
 
 ```@docs
+observables
 getobservable
 gettimeobservable
-```
-
-### List observables observed by an agent and exported by an agent
-```@docs
-ports_in
-exposed_ports
 ```
 
 ### Solving & plotting
@@ -159,17 +158,11 @@ postwalk_ret
 
 ## Utility functions
 
-### Initialize wrap, extract wrap
+### Wrap a dynamical system, extract agent wrap
 
 ```@docs
-@wrap
-@get_agent
-```
-
-### Retrieving observables
-
-```@docs
-@observables
+wrap_system
+extract_agent
 ```
 
 ### Flat representation

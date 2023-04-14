@@ -3,18 +3,15 @@ import .DifferentialEquations: DiffEqBase, SciMLBase, OrdinaryDiffEq
 
 # wrap problem, integrator, solution type; DiffEq agents supertype 
 export DiffEqAgent
-# observables interface
-export push_ports_in!, push_exposed_ports!
 
 # define DE algebraic wrap
 """
-    DiffEqAgent(name, problem[, alg]; exposed_ports=nothing, ports_in=nothing, kwargs...)
+    DiffEqAgent(name, problem[, alg]; observables=nothing, kwargs...)
 Initialize DE problem algebraic wrap. 
 
 # Keywords
-- `exposed_ports`: either `nothing` or a dictionary which maps keys to observable's positional index in `u`,
-- `ports_in`: either `nothing` or a vector of (subjective) observables,
-- other kwargs will be propagated to the integrator at initialization step.
+- `observables`: either `nothing` or a dictionary which maps keys to observable's positional index in `u`,
+- other kwargs will be passed to the integrator during initialization step.
 """
 mutable struct DiffEqAgent <: AbstractAlgebraicAgent
     uuid::UUID
@@ -28,12 +25,11 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
 
     integrator::DiffEqBase.DEIntegrator
 
-    exposed_ports::Union{Dict{Any, Int}, Nothing}
-    ports_in::Union{Vector, Nothing}
+    observables::Dict{Any, Int}
 
     function DiffEqAgent(name, problem::DiffEqBase.DEProblem,
                          alg = DifferentialEquations.default_algorithm(problem)[1], args...;
-                         exposed_ports = nothing, ports_in = nothing, kwargs...)
+                         observables = Dict{Any, Int}(), kwargs...)
         problem = DifferentialEquations.remake(problem;
                                                p = Params(Val(DummyType), problem.p))
 
@@ -42,12 +38,10 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
         setup_agent!(i, name)
 
         i.integrator = DiffEqBase.init(problem, alg, args...; kwargs...)
-        i.exposed_ports = exposed_ports
-        i.ports_in = ports_in
-
+        i.observables = observables
         i.integrator.p.agent = i
 
-        i
+        return i
     end
 end
 
@@ -72,15 +66,15 @@ function Base.getindex(::Params, ::Any)
 end
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
-function _construct_agent(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
-                          alg = DifferentialEquations.default_algorithm(problem)[1],
-                          kwargs...)
+function wrap_system(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
+                     alg = DifferentialEquations.default_algorithm(problem)[1],
+                     kwargs...)
     DiffEqAgent(name, problem, alg, args...; kwargs...)
 end
 
 # implement common interface
 function getobservable_index(a::DiffEqAgent, obs)
-    isnothing(exposed_ports(a)) ? obs : get(exposed_ports(a), obs, obs)
+    get(observables(a), obs, obs)
 end
 
 function getobservable(a::DiffEqAgent, obs)
@@ -89,56 +83,6 @@ end
 
 function gettimeobservable(a::DiffEqAgent, t::Float64, obs)
     a.integrator(t)[getobservable_index(a, obs)]
-end
-
-"""
-    push_exposed_ports!(a::DiffEqAgent, pairs...)
-Register explicit out-ports of an algebraic DiffEq model. 
-Enables aliasing of variable's positional index. That is,
-provide `key => ix` pair to alias `ix`th model's variable as `key`.
-
-# Examples
-```julia
-push_exposed_ports!(deagent, key => ix1, ix2)
-```
-"""
-function push_exposed_ports!(a::DiffEqAgent, pairs...)
-    if isdefined(a, :exposed_ports) || isnothing(a.exposed_ports)
-        (a.exposed_ports = Dict{Any, Int}())
-    end
-    for id in pairs
-        push!(a.exposed_ports, id isa Pair ? id : (id => id))
-    end
-
-    a
-end
-
-"""
-    push_ports_in!(a::DiffEqAgent, pairs...)
-Register explicit in-ports of an algebraic DiffEq model.
-Provide pairs `path => observable`, where `observable` may
-optionally be an iterable collection of observables' names.
-
-# Examples
-```julia
-push_ports_in!(deagent, path => observable, path => [observables...])
-```
-"""
-function push_ports_in!(a::DiffEqAgent, pairs...)
-    if isdefined(a, :ports_in) || isnothing(a.ports_in)
-        a.ports_in = []
-    end
-    for id in pairs
-        if id[2] isa Union{AbstractVector, Tuple}
-            for o in id[2]
-                push!(a.ports_in, id[1] => o)
-            end
-        else
-            push!(a.ports_in, id)
-        end
-    end
-
-    a
 end
 
 # implement internal step function
@@ -168,13 +112,7 @@ end
 
 _reinit!(a::DiffEqAgent) = SciMLBase.reinit!(a.integrator)
 
-function ports_in(a::DiffEqAgent)
-    isdefined(a, :ports_in) ? a.ports_in : nothing
-end
-
-function exposed_ports(a::DiffEqAgent)
-    isdefined(a, :exposed_ports) && !isnothing(a.exposed_ports) ? a.exposed_ports : nothing
-end
+observables(a::DiffEqAgent) = a.observables
 
 # hacks integrator step
 abstract type DummyType <: AbstractAlgebraicAgent end
@@ -198,17 +136,13 @@ function print_custom(io::IO, mime::MIME"text/plain", a::DiffEqAgent)
     print_observables(IOContext(io, :indent => get(io, :indent, 0) + 3), mime, a)
 end
 
-"Print in/out observables of a DiffEq algebraic agent."
+"Print in/out observables of a `DiffEqAgent`."
 function print_observables(io::IO, ::MIME"text/plain", a::DiffEqAgent)
     indent = get(io, :indent, 0)
-    if !isnothing(ports_in(a))
-        print(io, "\n", " "^indent, crayon"italics", "ports in: ", crayon"reset")
-        print(io, join(ports_in(a), ", "))
-    end
 
-    if !isnothing(exposed_ports(a))
-        print(io, "\n", " "^indent, crayon"italics", "ports out: ", crayon"reset")
-        print(io, join(keys(exposed_ports(a)), ", "))
+    if !isempty(observables(a))
+        print(io, "\n", " "^indent, crayon"italics", "observables: ", crayon"reset")
+        print(io, join(["$key (index: $val)" for (key, val) in observables(a)], ", "))
     end
 end
 
@@ -216,4 +150,5 @@ function _draw(a::DiffEqAgent, args...; kwargs...)
     @warn "`DiffEqAgent` requires package `Plots` to be loaded for plotting"
 end
 
-_get_agent(p::Params) = p.agent
+# retrieve algebraic agent as a property of the core dynamical system
+extract_agent(p::Params) = p.agent

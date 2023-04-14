@@ -37,45 +37,8 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
 end
 
 """
-    @observables agent path:obs path:(obs1, obs2) path:[obs1, obs2]
-Retrieve (a vector of) observables relative to `agent`.
-
-# Examples
-```julia
-@observables agent "../agent":"o"
-@observables agent "../agent":("o1", "o2")
-```
-"""
-macro observables(agent, args...)
-    obs = Expr(:vcat)
-    for arg in args
-        if arg isa Expr && Meta.isexpr(arg, :call) && (arg.args[1] == :(:))
-            agent_ = arg.args[2]
-            obs_name = arg.args[3]
-
-            if obs_name isa Expr && (obs_name.head ∈ [:vect, :tuple])
-                for name in obs_name.args
-                    push!(obs.args,
-                          :(getobservable(getagent($(esc(agent)), $(esc(agent_))),
-                                          $(esc(name)))))
-                end
-            else
-                push!(obs.args,
-                      :(getobservable(getagent($(esc(agent)), $(esc(agent_))),
-                                      $(esc(obs_name)))))
-            end
-        else
-            push!(obs.args, :(getobservable(getagent($(esc(agent)), $(esc(arg))))))
-        end
-    end
-
-    obs
-end
-
-"""
     flatten(root_agent)
-
-Return flat representation of algebraic agents hierarchy.
+Return flat representation of agents' hierarchy.
 """
 function flatten(a::AbstractAlgebraicAgent)
     dir = getdirectory(a)
@@ -107,14 +70,6 @@ function objective(agent::AbstractAlgebraicAgent, max_t = Inf)
     end
 end
 
-"""
-Specialize the function to support convenience wrap initialization, dispatched on the arguments' types.
-See [`@wrap`](@ref). 
-"""
-function _construct_agent(::AbstractString, args...)
-    @error "`_construct_agent` for type $(typeof(args[1])) not defined"
-end
-
 "Return a vector of arg and kwargs expression in `args`, respectively."
 function args_kwargs(args)
     filtered_args = Any[]
@@ -131,42 +86,32 @@ function args_kwargs(args)
 end
 
 """
-    @wrap name args... kwargs...
-A convenience macro to initialize an algebraic wrap, dispatched on the arguments' types.
-See [`_construct_agent`](@ref).
+    wrap_system(name, system, args...; kwargs...)
+Typically, the function will dispatch on the type of `system` and initialise an algebraic agent which wraps the core dynamical system.
+This allows you to specify the core dynamics directly using a third-party package syntax and hide the internals on this package's side from the user.
+
+For instance, you may define a method `wrap_system(name, prob::DiffEqBase.DEProblem)`, which internally will invoke the constructor of `DiffEqAgent`.
 
 # Examples
 ```julia
-@wrap "ode_agent" prob ODEProblem(f, u0, tspan)
-@wrap ode_agent prob ODEProblem(f, u0, tspan)
+wrap_system("ode_agent", ODEProblem(f, u0, tspan))
+wrap_system("abm_agent", ABM(agent, space; properties))
 ```
 """
-macro wrap(name, fields...)
-    args, kwargs = args_kwargs(fields)
-    quote
-        AlgebraicAgents._construct_agent($(string(name)), $(args...); $(kwargs...))
-    end |> esc
-end
-
-"Extract algebraic wrap from `obj`."
-_get_agent(obj, _...) = @error "`_get_agent` for type $(typeof(obj)) not implemented"
+function wrap_system end
 
 """
-    @get_agent obj
-Extract algebraic wrap from `obj`.
-Reduces to [`_get_agent`](@ref), as overloaded by third-party packages integrations.
+    extract_agent
+Extract an agent from as a property of the dynamical system (wrapped by the agent).
 
 # Examples
 ```julia
-wrap = @get_agent params # for SciML integration
-wrap = @get_agent model agent # for ABM integration
+agent = extract_agent(params) # for SciML integration
+agent = extract_agent(model, agent) # for ABM integration
 ```
 """
-macro get_agent(obj, args...)
-    quote
-        AlgebraicAgents._get_agent($obj, $(args...))
-    end |> esc
-end
+function extract_agent end
+### ? write an error msg? the method would need a signature then
 
 # typetree
 rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end

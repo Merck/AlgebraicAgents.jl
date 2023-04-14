@@ -14,9 +14,9 @@ m1 = DiffEqAgent("model1", prob)
 m2 = DiffEqAgent("model2", prob)
 m3 = DiffEqAgent("model3", prob)
 
-## declare observables (out ports) for a model
+## declare observables
 ## it will be possible to reference m3's first variable as both `o1`, `o2`
-push_exposed_ports!(m3, "o1" => 1, "o2" => 1)
+push!(observables(m3), "o1" => 1, "o2" => 1)
 
 ## simple function, calls to which will be scheduled during the model integration
 custom_function(agent, t) = 1#println(name(agent), " ", t)
@@ -24,14 +24,11 @@ custom_function(agent, t) = 1#println(name(agent), " ", t)
 ## a bit more intricate logic - 
 function f_(u, p, t)
     # access the wrapping agent (hierarchy bond)
-    agent = @get_agent p
+    agent = extract_agent(p)
 
-    # access observables 
-    ## first via convenient macro syntax
-    o1, o2 = @observables agent "../model3":("o1", "o2")
-    o1 = @observables agent "../model3":"o1"
-    ## more explicit notation
-    o1 = getobservable(getagent(agent, "../model3"), 1)
+    ## access observables 
+    o1 = getobservable(getagent(agent, "../model3"), "o1")
+    o2 = getobservable(getagent(agent, "../model3"), "o2")
     ## fetch observable's value at **a given time point in the past**
     o3 = gettimeobservable(getagent(agent, "../model3"), t / 2, 1)
 
@@ -47,10 +44,7 @@ function f_(u, p, t)
 end
 
 ## yet another atomic model
-m4 = @wrap "model4" ODEProblem(f_, u0, tspan) # convenience macro
-
-### alternative way to set-up reference 
-# m4 = DiffEqAgent("model4", prob_)
+m4 = wrap_system("model4", ODEProblem(f_, u0, tspan)) # convenience macro
 
 # hierarchical sum of atomic models
 m = ⊕(m1, m2; name = "diagram1") ⊕ ⊕(m3, m4; name = "diagram2")
@@ -77,11 +71,11 @@ sol = AlgebraicAgents.simulate(m)
 @testset "`draw` (SciML integration) outputs `Plot`" begin draw(sol, "diagram1/model1") end
 
 # output ports can couple dynamics
-@testset "observable (output) ports" begin
+@testset "observables (output) ports" begin
     tspan = (0.0, 4.0)
 
     function ẋ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         y = getobservable(getagent(agent, "../agent_y"), "y")
         return [p.α * y]
     end
@@ -89,7 +83,7 @@ sol = AlgebraicAgents.simulate(m)
     x0 = [0.1]
 
     function ẏ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         x = getobservable(getagent(agent, "../agent_x"), "x")
         return [p.β * x]
     end
@@ -99,8 +93,8 @@ sol = AlgebraicAgents.simulate(m)
     agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px), Euler(), dt = 1e-4)
     agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py), Euler(), dt = 1e-4)
 
-    push_exposed_ports!(agent_x, "x" => 1)
-    push_exposed_ports!(agent_y, "y" => 1)
+    push!(observables(agent_x), "x" => 1)
+    push!(observables(agent_y), "y" => 1)
 
     joint_system = ⊕(agent_x, agent_y; name = "joint_system")
 
@@ -122,7 +116,7 @@ end
     tspan = (0.0, 100.0)
 
     function ẋ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         y = getobservable(getagent(agent, "../agent_y"), "y")
         return [p.α * y]
     end
@@ -130,7 +124,7 @@ end
     x0 = [0.1]
 
     function ẏ(u, p, t)
-        agent = @get_agent p
+        agent = extract_agent(p)
         x = getobservable(getagent(agent, "../agent_x"), "x")
         return [p.β * x]
     end
@@ -140,8 +134,8 @@ end
     agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px))
     agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py))
 
-    push_exposed_ports!(agent_x, "x" => 1)
-    push_exposed_ports!(agent_y, "y" => 1)
+    push!(observables(agent_x), "x" => 1)
+    push!(observables(agent_y), "y" => 1)
 
     joint_system = ⊕(agent_x, agent_y; name = "joint_system")
 

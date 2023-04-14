@@ -21,7 +21,7 @@ m3 = DiffEqAgent("model3", prob)
 
 ## declare observables (out ports) for a model
 ## it will be possible to reference m3's first variable as both `o1`, `o2`
-push_exposed_ports!(m3, "o1" => 1, "o2" => 1)
+push!(observables(m3), "o1" => 1, "o2" => 1)
 
 ## simple function, calls to which will be scheduled during the model integration
 custom_function(agent, t) = println("inside $agent at time $t")
@@ -29,14 +29,11 @@ custom_function(agent, t) = println("inside $agent at time $t")
 ## a bit more intricate logic - 
 function f_(u,p,t)
     ## access the wrapping agent (hierarchy bond)
-    agent = @get_agent p
+    agent = extract_agent(p)
     
     ## access observables 
-    ## first via convenient macro syntax
-    o1, o2 = @observables agent "../model3":("o1", "o2")
-    o1 = @observables agent "../model3":"o1"
-    ## more explicit notation
-    o1 = getobservable(getagent(agent, "../model3"), 1)
+    o1 = getobservable(getagent(agent, "../model3"), "o1")
+    o2 = getobservable(getagent(agent, "../model3"), "o2")
     ## fetch observable's value at **a given time point in the past**
     o3 = gettimeobservable(getagent(agent, "../model3"), t/2, 1)
 
@@ -53,13 +50,7 @@ end
 
 # ## Another Atomic Model
 
-prob_ = ODEProblem(f_,u0,tspan)
-m4 = DiffEqAgent("model4", prob_)
-
-# alternative way to set-up reference 
-
-## m4 = DiffEqAgent("model4", prob_; oref=:__aagent__)
-## m4 = @wrap prob_ ODEProblem(f_,u0,tspan) oref=:__agent__
+m4 = DiffEqAgent("model4", ODEProblem(f_,u0,tspan))
 
 # ## Hierarchical Sum of Atomic Models
 

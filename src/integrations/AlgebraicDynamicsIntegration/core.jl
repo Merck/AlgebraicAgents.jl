@@ -23,26 +23,17 @@ GraphicalAgent("rabbit", ContinuousMachine{Float64}(1,1,1, dotr, (u, p, t) -> u)
     system::GraphicalModelType
 end
 
-function _construct_agent(name::AbstractString, sharer::GraphicalModelType, args...;
-                          kwargs...)
+function wrap_system(name::AbstractString, sharer::GraphicalModelType, args...;
+                     kwargs...)
     GraphicalAgent(name, sharer, args...; kwargs...)
 end
 
 # implement common interface
-getobservable(::GraphicalAgent, _) = nothing
 _step!(::GraphicalAgent) = nothing
 _projected_to(::GraphicalAgent) = nothing
 
-function ports_in(a::GraphicalAgent)
-    if a.system <: AbstractMachine
-        string.(a.system.interface.input_ports)
-    else
-        string.(a.system.interface.ports)
-    end
-end
-
-function exposed_ports(a::GraphicalAgent)
-    if a.system <: AbstractMachine
+function observables(a::GraphicalAgent)
+    if a.system isa AbstractMachine
         string.(a.system.interface.output_ports)
     else
         string.(a.system.interface.ports)
@@ -55,20 +46,7 @@ function print_custom(io::IO, mime::MIME"text/plain", a::GraphicalAgent)
     print(io, "\n", " "^(indent + 3), "custom properties:\n")
     print(io, " "^(indent + 3), crayon"italics", "model", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.system)
-end
-
-"Print in/out observables of a DiffEq algebraic agent."
-function print_observables(io::IO, ::MIME"text/plain", a::GraphicalAgent)
-    indent = get(io, :indent, 0)
-    if !isnothing(ports_in(a))
-        print(io, "\n", " "^indent, crayon"italics", "ports in: ", crayon"reset")
-        print(io, join(ports_in(a), ", "))
-    end
-
-    if !isnothing(exposed_ports(a))
-        print(io, "\n", " "^indent, crayon"italics", "ports out: ", crayon"reset")
-        print(io, join(keys(exposed_ports(a)), ", "))
-    end
+    print(io, " "^(indent + 3), crayon"italics", "ports: $(observables(a))")
 end
 
 # reduce sum `⊕` operation to `oapply`
