@@ -59,14 +59,7 @@ end
 ## Another Atomic Model
 
 ````@example sciml
-prob_ = ODEProblem(f_,u0,tspan)
-m4 = DiffEqAgent("model4", prob_)
-````
-
-alternative way to set-up reference
-
-````@example sciml
-# m4 = wrap_system("prob_", ODEProblem(f_,u0,tspan))
+m4 = DiffEqAgent("model4", ODEProblem(f_,u0,tspan))
 ````
 
 ## Hierarchical Sum of Atomic Models
