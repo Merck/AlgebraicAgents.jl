@@ -4,7 +4,7 @@
 CurrentModule = AlgebraicAgents
 ```
 
-## Algebraic agent types
+## Agent types
 
 ```@docs
 AbstractAlgebraicAgent
@@ -26,17 +26,19 @@ AlgebraicAgents._projected_to(::AbstractAlgebraicAgent)
 ### Optional methods
 
 ```@docs
-AlgebraicAgents.getobservable(::AbstractAlgebraicAgent, ::Any)
-AlgebraicAgents.observables(::AbstractAlgebraicAgent)
 AlgebraicAgents._getparameters(::AbstractAlgebraicAgent)
 AlgebraicAgents._setparameters!(::AbstractAlgebraicAgent, ::Any)
 AlgebraicAgents._draw(::AbstractAlgebraicAgent)
 AlgebraicAgents._reinit!(::AbstractAlgebraicAgent)
 AlgebraicAgents._interact!(::AbstractAlgebraicAgent)
 AlgebraicAgents._prestep!(::AbstractAlgebraicAgent, ::Float64)
-AlgebraicAgents.wrap_system
-AlgebraicAgents.extract_agent
 ```
+
+Other optional methods include
+ - [`getobservable(::AbstractAlgebraicAgent, ::Any)`](@ref)
+ - [`observables(::AbstractAlgebraicAgent)`](@ref)
+ - [`wrap_system`](@ref)
+ - [`extract_agent`](@ref)
 
 ## Loading third-party package integrations
 

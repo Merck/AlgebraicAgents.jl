@@ -55,8 +55,7 @@ m4 = DiffEqAgent("model4", prob_)
 
 # alternative way to set-up reference 
 
-## m4 = DiffEqAgent("model4", prob_; oref=:__aagent__)
-## m4 = wrap_system("prob_", ODEProblem(f_,u0,tspan), oref=:__agent__)
+## m4 = wrap_system("prob_", ODEProblem(f_,u0,tspan))
 
 # ## Hierarchical Sum of Atomic Models
 
