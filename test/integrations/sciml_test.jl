@@ -46,9 +46,6 @@ end
 ## yet another atomic model
 m4 = wrap_system("model4", ODEProblem(f_, u0, tspan)) # convenience macro
 
-### alternative way to set-up reference 
-# m4 = DiffEqAgent("model4", prob_)
-
 # hierarchical sum of atomic models
 m = ⊕(m1, m2; name = "diagram1") ⊕ ⊕(m3, m4; name = "diagram2")
 
