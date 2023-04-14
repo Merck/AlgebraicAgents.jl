@@ -167,7 +167,7 @@ end
 """
     step!(agent, t=projected_to(agent))
 Performs a single evolutionary step of the hierarchy.
-To avoid frontrunning, solutions will be projected only up to time `t``.
+To avoid frontrunning, solutions will be projected only up to time `t`.
 This is a two-phase step; the corresponding stepping functions are `_prestep!` and `step!`.
 
 More particular behavior can be implemented using [`Opera`](@ref) protocol.
