@@ -1,12 +1,19 @@
-#=
-declare type hierarchy of a toy preclinical development model:
- - overarching pharma model (FreeAgent),
- - discovery unit (emits drug candidates),
- - preclinical unit; orchestrates experiments, executes queries, 
- - assay; reduces uncertainty about candidate's activity but bears cost,
- - candidate molecule; undergoes experiments.
-=#
 using AlgebraicAgents
+using Dates
+using Distributions, Random
+using MacroTools
+
+include("successor_queries.jl")
+
+#=
+declare type hierarchy of a discovery straw man
+processes:
+ - discovery unit
+ - preclinical unit
+entities:
+ - candidate molecule
+ - experiments (capabilities; experiments implement their own schedule)
+=#
 
 # candidate molecules
 abstract type AbstractMolecule <: AbstractAlgebraicAgent end
@@ -18,88 +25,88 @@ const uncertainty_threshold = 0.2
 # in-silico belief 
 const init_belief_generator = (r = rand(N); r ./ sum(r))
 
-# candidate molecule; carries a scientist's belief about its activity
+# candidate molecule
 "Candidate molecule, parametrized by a chemical fingerprint."
 @aagent FreeAgent AbstractMolecule struct Molecule
-    birth_time::Float64
-    decision_time::Union{Float64, Missing}
+    birth_time::Date
+    decision_time::Union{Date, Nothing}
 
     fingerprint::NTuple{N, Float64}
     path::Vector{AbstractString}
 
-    is_allocated::Bool
+    is_allocated::Bool # is in an experiment?
 
-    belief::Float64
-    trace::Vector{<:Any}
+    belief::Float64 # belief about biological activity
+    trace::Vector # experiments ran
 end
 
 # preclinical experiments
 abstract type AbstractAssay <: AbstractAlgebraicAgent end
 
-# parametric experiment; updates belief about candidate's activity
-"Parametric experiment, updates belief about candidate's activity."
+# experiment; updates belief about candidate's activity
+"Parametric experiment, updates belief about a candidate molecule's biological activity."
 @aagent FreeAgent AbstractAssay struct Assay
-    duration::Float64
+    duration::Period
     cost::Float64
-    capacity::Float64
+    capacity::Int
 
     belief_model::NTuple{N, Float64}
 
     allocated::Vector{AlgebraicAgents.UUID}
     planned::Vector{AlgebraicAgents.UUID}
 
-    t::Float64
-    t0::Float64
+    t::Date
+    t0::Date
 end
 
-## toy discovery unit - emits molecules with chemical fingerprints
+## discovery unit;generates candidate molecules with chemical fingerprints
 @aagent struct Discovery
     rate::Float64 # expected number of mols per unit step
 
-    t::Float64
-    dt::Float64
+    t::Date
+    dt::Period
 
-    t0::Float64
+    t0::Date
 end
 
 ## toy preclinical development model - orchestrates experiments, runs queries
 "Toy discovery unit; emits molecules."
 @aagent struct Preclinical
-    queries_accept::Vector{AlgebraicAgents.AbstractQuery}
-    queries_reject::Vector{AlgebraicAgents.AbstractQuery}
+    queries_accept::Vector{<:AlgebraicAgents.AbstractQuery}
+    queries_reject::Vector{<:AlgebraicAgents.AbstractQuery}
 
     total_costs::Float64
 
     perturb_rate::Float64 # expected number of perturbed mols (successors) born per a unit step
 
-    t::Float64
-    t0::Float64
-    dt::Float64
+    t::Date
+    t0::Date
+    dt::Period
 end
 
 # constructors
-"Emit a candidate molecule."
-function Molecule(mol, fingerprint, t, path = AbstractString[])
-    Molecule(mol, t, missing, fingerprint, path, false, init_belief_from_fingerprint(i), [])
+"Generate a candidate molecule."
+function Molecule(mol::AbstractString, fingerprint, t, path = AbstractString[])
+    Molecule(mol, t, nothing, fingerprint, path, false, init_belief_from_fingerprint(fingerprint), [])
 end
 
 "Initialize a discovery unit, parametrized by molecule production rate."
-function Discovery(name, rate, t = 0.0; dt = 2.0)
-    Discovery(name, rate, t, dt, t0)
+function Discovery(name::AbstractString, rate, t::Date; dt::Period = Week(1))
+    Discovery(name, rate, t, dt, t)
 end
 
 "Initialize an assay, parametrized by duration, cost, capacity, and a belief model."
-function Assay(name, duration::Float64, cost::Float64, capacity::Float64,
-               belief_model = tuple(rand(-1:1, 5)...), t = 0.0)
+function Assay(name::AbstractString, duration::Period, cost::Float64, capacity::Float64, t::Date,
+               belief_model = tuple(rand(-1:1, 5)...))
     Assay(name, duration, cost, capacity, belief_model,
           Vector{AlgebraicAgents.UUID}(undef, 0), Vector{AlgebraicAgents.UUID}(undef, 0),
           t, t)
 end
 
 "Initialize a preclinical unit comprising candidate molecules and parametrized by removal queries."
-function Preclinical(name, perturb_rate::Float64, t = 0.0; dt = 1.0,
-                     queries_accept = AlgebraicAgents.AbstractQuery[],
-                     queries_reject = AlgebraicAgents.AbstractQuery[])
+function Preclinical(name::AbstractString, perturb_rate::Float64, t::Date; dt::Period=Week(1),
+                     queries_accept=AlgebraicAgents.AbstractQuery[],
+                     queries_reject=AlgebraicAgents.AbstractQuery[])
     p = Preclinical(name, queries_accept, queries_reject, 0.0, perturb_rate, t, t, dt)
 
     # candidates and accepted, rejected candidates
@@ -116,7 +123,7 @@ end
 function AlgebraicAgents._step!(dx::Discovery)
     t = projected_to(dx)
     # emit candidates
-    for _ in 1:rand(Poisson(dx.rate * dx.dt))
+    for _ in 1:rand(Poisson(dx.rate * Day(dx.dt).value))
         mol = Molecule(randstring(5), Tuple(rand(N)), t)
         entangle!(getagent(getparent(dx), "preclinical/candidates"), mol)
     end
@@ -153,13 +160,10 @@ end
 
 AlgebraicAgents._projected_to(a::Assay) = a.t
 
-# empty schedule
-AlgebraicAgents._reinit!(a::Assay) = empty!(a.allocated)
-
 ## belief updating
 ### output in-silico belief
-function init_belief_from_fingerprint(mol::Molecule)
-    mol.belief = init_belief_generator' * collect(mol.fingerprint)
+function init_belief_from_fingerprint(fingerprint)
+    init_belief_generator' * collect(fingerprint)
 end
 
 ### update belief (in vitro/vivo), update trace
@@ -237,16 +241,22 @@ function AlgebraicAgents._step!(a::Preclinical)
     # add perturbed candidates (from accepted)
     if !isempty(inners(getagent(a, "accepted")))
         for c in rand(collect(values(inners(getagent(a, "accepted")))),
-                      rand(Poisson(a.dt * a.perturb_rate)))
+                      rand(Poisson(Day(a.dt).value * a.perturb_rate)))
             mol = Molecule(randstring(5), c.fingerprint .+ 0.1 .* Tuple(rand(N)), t,
                            [c.path; "parent_$(rand(1:2))"; c.name])
             entangle!(getagent(a, "candidates"), mol)
         end
     end
+
     a.t += a.dt
 end
 
 AlgebraicAgents._projected_to(a::Preclinical) = a.t
 
 # empty schedule
-AlgebraicAgents._reinit!(a::Assay) = (a.t = a.t0; a.total_costs = 0.0)
+function AlgebraicAgents._reinit!(a::Assay)
+    a.t = a.t0; a.total_costs = 0.0
+    empty!(a.allocated)
+
+    a
+end
