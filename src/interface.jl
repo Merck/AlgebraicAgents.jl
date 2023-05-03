@@ -275,9 +275,13 @@ myagent[:]
 """
 
 Base.getindex(a::AbstractAlgebraicAgent, key::AbstractString) = getindex(inners(a), key)
-Base.getindex(a::AbstractAlgebraicAgent, I::AbstractVector{<:AbstractString}) = getindex.(Ref(inners(a)), [I...])
+function Base.getindex(a::AbstractAlgebraicAgent, I::AbstractVector{<:AbstractString})
+    getindex.(Ref(inners(a)), [I...])
+end
 Base.getindex(a::AbstractAlgebraicAgent, ::Colon) = collect(values(inners(a)))
-Base.getindex(::AbstractAlgebraicAgent, args...) = throw(ArgumentError("invalid index: $(args) of type $(typeof(args))"))
+function Base.getindex(::AbstractAlgebraicAgent, args...)
+    throw(ArgumentError("invalid index: $(args) of type $(typeof(args))"))
+end
 
 """
     getobservable(agent, args...)
