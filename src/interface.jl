@@ -269,18 +269,15 @@ Get inner agents of an agent using a convenient syntax.
 ```julia
 myagent = FreeAgent("root", [FreeAgent("a"),FreeAgent("b")])
 myagent["a"]
-myagent["a","b"]
-myagent[["a","b"]...]
+myagent[["a","b"]]
+myagent[:]
 ```
 """
-function Base.getindex(a::AbstractAlgebraicAgent, keys...)
-    if isempty(keys)
-        inners(a)
-    else
-        length(keys) > 1 ? getindex.(Ref(inners(a)), [keys...]) :
-        [getindex(inners(a), only(keys))]
-    end
-end
+
+Base.getindex(a::AbstractAlgebraicAgent, key::AbstractString) = getindex(inners(a), key)
+Base.getindex(a::AbstractAlgebraicAgent, I::AbstractVector{<:AbstractString}) = getindex.(Ref(inners(a)), [I...])
+Base.getindex(a::AbstractAlgebraicAgent, ::Colon) = collect(values(inners(a)))
+Base.getindex(::AbstractAlgebraicAgent, args...) = throw(ArgumentError("invalid index: $(args) of type $(typeof(args))"))
 
 """
     getobservable(agent, args...)
