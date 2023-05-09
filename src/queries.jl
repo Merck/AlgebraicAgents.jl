@@ -51,7 +51,7 @@ end
 
 """
     @filter query
-Turnfilter query into a function of agents' hierarchy.
+Turn a filter query into a function of agents' hierarchy.
 Accepts expressions (corresponding to q-strings) and query string.
 
 See also [`FilterQuery`](@ref).
@@ -120,12 +120,12 @@ agent |> @transform(name=_.name)
 agent |> @transform(name=_.name, _.age)
 ```
 """
-struct TransformQuery
+struct TransformQuery{F <: Function} <: AbstractQuery
     name::Symbol
-    query::Function
+    query::F
 
     function TransformQuery(name::T,
-                            query::Function) where {T <: Union{Symbol, AbstractString}}
+                            query::F) where {T <: Union{Symbol, AbstractString}, F<:Function}
         new(Symbol(name), query)
     end
 end
