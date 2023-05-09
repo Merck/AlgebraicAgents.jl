@@ -1,6 +1,5 @@
 ---
 title: "Cellular Automata Simulation Using Petri Nets"
-# output: html_document
 format:
   html:
     code-fold: false
