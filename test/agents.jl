@@ -84,10 +84,9 @@ end
 
 @testset "getindex for FreeAgent" begin
     myagent = FreeAgent("root", [FreeAgent("a"), FreeAgent("b")])
-    @test length(myagent["a"]) == 1
-    @test length(myagent["a", "b"]) == 2
-    @test length(myagent[["a", "b"]...]) == 2
-    @test myagent[] == inners(myagent)
-    @test_throws KeyError myagent[1]
+    @test myagent["a"] isa AbstractAlgebraicAgent
+    @test length(myagent[["a", "b"]]) == 2
+    @test myagent[:] == collect(values(inners(myagent)))
+    @test_throws ArgumentError myagent[1]
     @test_throws KeyError myagent["bbb"]
 end

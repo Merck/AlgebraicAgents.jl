@@ -29,7 +29,7 @@ filter(agents, f"_.age > 21 && _.name ∈ ['a', 'b']")
 agents |> @filter _.age > 21 && _.name ∈ ['a', 'b']
 ```
 """
-struct FilterQuery{T}
+struct FilterQuery{T} <: AbstractQuery
     query::T
 end
 
