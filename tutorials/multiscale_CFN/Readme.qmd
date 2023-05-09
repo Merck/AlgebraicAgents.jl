@@ -1,0 +1,25 @@
+# Introduction
+Multi-scale cell fit networks are a fascinating area of research that explores the intricate connections between different scales of biological systems. At the cell level, these networks examine the complex interactions between cells and their environment, while at the self-cell communication level, they delve into the intricate signaling pathways that allow cells to communicate with one another. These networks also explore the distribution of signals and the continuous dynamical systems that can occur within a single cell. All of these fascinating phenomena can be explored and analyzed using QMD files, making multi-scale cell fit networks an exciting and promising area of research for scientists and researchers alike.
+
+
+# Goal of this tutorial
+- The goal of this tutorial is to demonstrate Algebraicagents.jl and SciML ecosystem can be used to understand the multi-scale cell fate decision network with perturbation (external signals) under heterogeneous cell types and cell-cell interactions.
+- 
+
+# Setup
+How to create a multi-scale cell fit network hierarchy using AlgebraicAgent.jl
+
+
+# Agent types configurations
+
+
+# Single Cell Network dynamics
+
+
+# cell-cell interactions
+
+
+# Multi-scale cell networks with heterogeneous cell-cell interactions
+
+
+# Results
