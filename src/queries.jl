@@ -125,8 +125,9 @@ struct TransformQuery{F <: Function} <: AbstractQuery
     query::F
 
     function TransformQuery(name::T,
-                            query::F) where {T <: Union{Symbol, AbstractString}, F<:Function}
-        new(Symbol(name), query)
+                            query::F) where {T <: Union{Symbol, AbstractString},
+                                             F <: Function}
+        new{F}(Symbol(name), query)
     end
 end
 
