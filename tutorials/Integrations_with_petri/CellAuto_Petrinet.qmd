@@ -20,7 +20,7 @@ We start by importing the necessary packages:
 using Revise
 using DifferentialEquations, AlgebraicAgents
 using Plots
-using Random
+using Random, DataFrames
 Random.seed!(0)
 ```
 
