@@ -115,7 +115,7 @@ function _setparameters!(a::AbstractAlgebraicAgent, parameters)
     elseif params isa AbstractArray
         params .= parameters
     else
-        @error("type $(typeof(a)) doesn't implement `_setparameters!`")
+        error("type $(typeof(a)) doesn't implement `_setparameters!`")
     end
 
     params
@@ -224,7 +224,7 @@ end
 
 "Return time to which agent's evolution was projected."
 function _projected_to(t::AbstractAlgebraicAgent)
-    @error("type $(typeof(t)) doesn't implement `_projected_to`")
+    error("type $(typeof(t)) doesn't implement `_projected_to`")
 end
 
 _projected_to(::FreeAgent) = nothing

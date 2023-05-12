@@ -135,7 +135,10 @@ function aagent(base_type, super_type, type, __module)
                                        extra_fields = setdiff(fieldnames($tname_plain),
                                                               $common_interface_fields)
                                        if length(args) != length(extra_fields)
-                                           @error "agent type $($tname_plain) expects fields $extra_fields, but only $(length(args)) were given"
+                                           error("""the agent type $tname_plain default constructor `$tname_plain(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
+
+                                                 If you intended to call a custom constructor and you passed a string as the first variable, please check that the custom constructor declares the type of the first positional argument to be `AbstractString` (so that dynamic dispatch works).
+                                                 """)
                                        end
 
                                        # initialize agent
@@ -152,7 +155,7 @@ function aagent(base_type, super_type, type, __module)
         # check if the base type implements the common interface fields
         check = quote
             if !all(f -> f ∈ fieldnames($$(esc(base_type))), $$(common_interface_fields))
-                @error "type $($$(esc(base_type))) does not implement common interface fields $($$(common_interface_fields))"
+                error("type $($$(esc(base_type))) does not implement common interface fields $($$(common_interface_fields))")
             end
         end
         Base.eval($__module, check)
