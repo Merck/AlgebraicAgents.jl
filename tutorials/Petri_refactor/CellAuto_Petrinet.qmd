@@ -1,12 +1,14 @@
 ---
 title: "Cellular Automata Simulation Using Petri Nets"
+subtitle: "version 0.1.0"
 format:
   html:
     code-fold: false
-# jupyter: julia-1.8
+jupyter: julia-1.9
 toc: true
 author: Tianchi Chen
 ---
+
 
 # Introduction
 
@@ -329,7 +331,7 @@ end
 ```
 
 
-```{julia}
+<!-- ```{julia}
 # Initialize Petri Net
 pn = init_petri_net()
 
@@ -345,7 +347,7 @@ for t in 1:100
     # Plot current state
     plot_petri_net(pn)
 end
-```
+``` -->
 
 
 ```{julia}
