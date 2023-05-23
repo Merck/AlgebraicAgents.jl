@@ -1,6 +1,6 @@
 ---
 title: "Cellular Automata Simulation Using Petri Nets"
-subtitle: "version 0.1.0"
+subtitle: "version 0.1.2"
 format:
   html:
     code-fold: false
@@ -14,8 +14,27 @@ author: Tianchi Chen
 
 This document provides a detailed walkthrough of a cellular automata model simulated as a Petri Net. The model represents cells with a dynamical state (active, inactive, dormant) that can change based on the presence of cancer cells. Each cell also has a type (NormalCellA, NormalCellB, CancerCellA, CancerCellB) which is randomly assigned at the start of the simulation. The system evolves over time and the current state of the system is recorded and visualized in a plot.
 
-# Setup
 
+# Biological Systems
+A Petri net framework can be used to model a biological system like cancer, as it represents dynamic processes in which individual items pass through multiple states. Petri nets are composed of places, transitions, and arcs. Places represent the state of an item and transitions represent the operations that affect the item. The arcs link the various places and transitions together to create a flow of information. For example, in the case of a cancer system, the places could represent tumor growth and the transitions could represent treatments that are administered, such as chemotherapy or radiation. The arcs between the places and transitions would then dictate how the treatments affect the tumor growth. The Petri net framework can then be used to analyze the system as a whole and identify potential areas for improvement or areas of focus.
+
+# Theoretical and computational framework
+In this document, we will show how to use the Petri Net framework to simulate a cellular automata model. We will also see how to use the Petri Net framework to analyze the system as a whole.
+The Petri Net framework consists several key elements:
+1. A Petri Net
+   1. Input Arc
+      1. connect Places to a transition
+      2. with arc weight to be the number of tokens required for the transition
+      3. contains 
+   2. Output Arc
+   3. Place
+   4. Transition
+   5. Marking
+2. Tokens
+3. Dynamical state
+
+
+# Simulation examples for heterogeneous hierarchical dynamic cancer networks using the Petri Net framework
 We start by importing the necessary packages:
 
 ```{julia}
@@ -26,7 +45,7 @@ using Random, DataFrames
 Random.seed!(0)
 ```
 
-# Defining the Cell Types
+## Defining the Cell Types
 We define an abstract type AbstractCellType and four concrete types NormalCellA, NormalCellB, CancerCellA, and CancerCellB that inherit from AbstractCellType.
 
 ```{julia}
@@ -37,7 +56,7 @@ struct CancerCellA <: AbstractCellType end
 struct CancerCellB <: AbstractCellType end
 ```
 
-# Defining the Cell and Place
+## Defining the Cell and Place
 We define a mutable struct Cell with fields for the cell type, an ID, the dynamical state, and the time in active state. We also define a struct Place that represents a location with a name and a vector of cells (tokens).
 
 ```{julia}
@@ -54,7 +73,7 @@ mutable struct Place
 end
 ```
 
-# Defining the Transition
+## Defining the Transition
 A Transition represents a transformation from input places to output places. It has fields for the name of the transition, the input places, and the output places.
 
 ```{julia}
@@ -65,7 +84,7 @@ struct Transition
 end
 ```
 
-# Adding and Removing Tokens
+## Adding and Removing Tokens
 We define two helper functions add_token! and remove_token! to add and remove cells from a place.
 
 ```{julia}
@@ -78,7 +97,7 @@ function remove_token!(place::Place, token::Cell)
 end
 ```
 
-# Simulating the Dynamical State
+## Simulating the Dynamical State
 We define a function simulate_dynamical_state! that updates the dynamical state of a cell based on the presence of cancer cells in the same place.
 
 ```{julia}
@@ -99,7 +118,7 @@ end
 ```
 
 
-# Performing the Transition
+## Performing the Transition
 The function perform_transition! checks the feasibility of a transition by confirming if it has the required number of tokens in the input places. If the transition is feasible, it removes the tokens from the input places and adds new tokens to the output places. The function also updates the dynamical state of the tokens based on the presence of cancer cells.
 
 ```{julia}
@@ -146,7 +165,7 @@ function perform_transition!(transition::Transition)
 end
 ```
 
-# Defining the Petri Net
+## Defining the Petri Net
 We define a Petri Net using the previously defined Place and Transition structures. The Petri Net also includes InputArc and OutputArc structures that connect Places and Transitions.
 
 ```{julia}
@@ -174,7 +193,7 @@ end
 
 
 
-# Simulation of the Petri Net
+## Simulation of the Petri Net
 We initialize the Petri Net with a certain number of cells and let the system evolve over a predefined number of time steps. At each time step, we update the dynamical state of each cell, check if each transition can fire, and if so, fire the transition. We also record the state of the system at each time step.
 
 
@@ -206,7 +225,7 @@ end
 ```
 
 
-# Visualization of the Petri Net Evolution
+## Visualization of the Petri Net Evolution
 the Plots package to visualize the evolution of the system. At each time step, we create a bar plot of the count of each type of cell in each dynamical state.
 
 ```{julia}
@@ -224,10 +243,10 @@ end
 ```
 
 
-# Running the Simulation
+## Running the Simulation
 To run the simulation, we initialize the Petri Net and then perform a series of updates in a loop. At each time step, we print out the current state of the Petri Net and generate a plot.
 
-# Initializing the Petri Net
+## Initializing the Petri Net
 
 We initialize the Petri net by creating the places (P1 and P2), the transitions (T1), and setting up the input and output arcs.
 
@@ -261,7 +280,7 @@ function init_petri_net(num_cells::Int, max_active_time::Int)
 end
 
 ```
-# Updating the Petri Net
+## Updating the Petri Net
 We update the Petri net by checking the state of the cells and performing transitions if possible.
 
 ```{julia}
@@ -288,7 +307,7 @@ function update_petri_net(pn::PetriNet)
     end
 end
 ```
-# Cell trajectory visulization
+## Cell trajectory visulization
 
 ```{julia}
 function plot_trajectory(cell_trajectory::Vector{Dict{Tuple{DataType, Symbol}, Int}})

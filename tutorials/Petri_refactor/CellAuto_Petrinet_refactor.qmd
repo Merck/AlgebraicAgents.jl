@@ -1,0 +1,139 @@
+---
+title: "Cellular Automata Simulation Using Petri Nets"
+subtitle: "version 0.1.2"
+format:
+  html:
+    code-fold: false
+jupyter: julia-1.9
+toc: true
+author: Tianchi Chen
+---
+
+# Aim of this document
+Trying to build the module for stochastic petric net with arc multiplicity and implicit dynamical state without internal dynamics inside the token agent. 
+
+# Introduction
+
+This document provides a detailed walkthrough of a cellular automata model simulated as a Petri Net. The model represents cells with a dynamical state (active, inactive, dormant) that can change based on the presence of cancer cells. Each cell also has a type (NormalCellA, NormalCellB, CancerCellA, CancerCellB) which is randomly assigned at the start of the simulation. The system evolves over time and the current state of the system is recorded and visualized in a plot.
+
+
+# Biological Systems
+A Petri net framework can be used to model a biological system like cancer, as it represents dynamic processes in which individual items pass through multiple states. Petri nets are composed of places, transitions, and arcs. Places represent the state of an item and transitions represent the operations that affect the item. The arcs link the various places and transitions together to create a flow of information. For example, in the case of a cancer system, the places could represent tumor growth and the transitions could represent treatments that are administered, such as chemotherapy or radiation. The arcs between the places and transitions would then dictate how the treatments affect the tumor growth. The Petri net framework can then be used to analyze the system as a whole and identify potential areas for improvement or areas of focus.
+
+# Theoretical and computational framework
+In this document, we will show how to use the Petri Net framework to simulate a cellular automata model. We will also see how to use the Petri Net framework to analyze the system as a whole.
+The Petri Net framework consists several key elements:
+1. A Petri Net
+   1. Input Arc
+      1. connect Places to a transition
+      2. with arc weight to be the number of tokens required for the transition
+      3. contains 
+   2. Output Arc
+   3. Place
+   4. Transition
+   5. Marking
+2. Tokens
+3. Dynamical state
+
+
+
+# how to estimate the transition rate in a SPN
+A Stochastic Petri Net (SPN) models complex systems with concurrent, asynchronous, distributed, parallel, nondeterministic, and/or stochastic activity. In an SPN, the firing rate of a transition (event) is often modeled as a stochastic or random process.
+
+If the firing rate of a transition depends on the token's density in a place, and there may be multiple input arcs to a transition from different places, each with potentially different token densities, then you're dealing with a more complex situation. Here are a few ways to approach it:
+
+Weighted Average Approach: You can treat the firing rate of a transition as a weighted average of the token densities from each place (input arc). The weight can be proportional to the token's multiplicity in each place. This would result in a firing rate that is influenced more by the places with higher token multiplicity.
+Maximum Density Approach: Alternatively, you could use the maximum token density from all the places connected to a transition. This makes the firing rate sensitive to the place with the most tokens.
+Minimum Density Approach: Another approach would be to use the minimum token density from all the places connected to a transition. This would make the firing rate sensitive to the place with the fewest tokens, modeling a "bottleneck" situation.
+Probabilistic Approach: If the SPN is being simulated, another approach is to generate a random number for each firing and choose the firing rate according to a probability distribution that is a function of the token densities.
+Remember that these are approximations and might not fully capture the actual behavior of your system. The appropriate approach to use depends on the specific characteristics and requirements of the system you are modeling.
+
+Also, it is worth mentioning that the firing rate function should satisfy Markovian properties (memorylessness) to maintain the stochastic nature of SPN. However, in complex systems with multiple inputs and token densities, this might be challenging to implement, and non-Markovian Stochastic Petri Nets (NMSPN) might be a more suitable choice.
+
+
+
+
+```{julia}
+using Revise
+using DifferentialEquations, AlgebraicAgents
+using Plots
+using Random, DataFrames, TensorOperations
+Random.seed!(0)
+```
+
+```{julia}
+using Distributions
+
+# Define the places
+places = ["P1", "P2", "P3"]
+
+# Define the transitions
+transitions = ["T1", "T2", "T3"]
+
+# Define the token types
+token_types = ["TokenA", "TokenB", "TokenC"]
+
+# Create the tensor with the specified dimensions
+num_places = length(places)
+num_transitions = length(transitions)
+num_token_types = length(token_types)
+tensor = zeros(Int, num_places, num_transitions, num_token_types)
+
+# Define the arc multiplicity matrix
+arc_multiplicity = [2 0 1;
+                    1 1 0;
+                    0 2 1]
+
+# Fill the tensor with the arc multiplicity values
+for i in 1:num_places, j in 1:num_transitions, k in 1:num_token_types
+    tensor[i, j, k] = arc_multiplicity[i, k]
+end
+
+# Define the token counts for each place and token type
+token_counts = Dict("P1" => Dict("TokenA" => 3, "TokenB" => 2, "TokenC" => 1),
+                    "P2" => Dict("TokenA" => 1, "TokenB" => 2, "TokenC" => 3),
+                    "P3" => Dict("TokenA" => 2, "TokenB" => 1, "TokenC" => 3))
+
+# Determine the available transitions based on token availability and arc multiplicity
+available_transitions = [transition
+                         for transition in transitions
+                         if all(token_counts[place][token_type] >= tensor[i, j, k]
+                                for (i, place) in enumerate(places)
+                                for (k, token_type) in enumerate(token_types)
+                                if (j = findfirst(x -> x == transition, transitions)) !=
+                                   nothing)]
+
+# Compute the effective arc multiplicity based on token availability
+effective_multiplicity = zeros(Int, num_places, num_transitions, num_token_types)
+for i in 1:num_places, j in 1:num_transitions, k in 1:num_token_types
+    effective_multiplicity[i, j, k] = min(token_counts[places[i]][token_types[k]],
+                                          tensor[i, j, k])
+end
+
+# Randomly select the transitions to fire based on their probabilities and effective multiplicity
+selected_transitions = sample(available_transitions,
+                              weights(sum(effective_multiplicity[:, available_transitions,
+                                                                 :], dims = 3)))
+
+# Update the token counts based on the selected transitions
+for transition in selected_transitions
+    for i in 1:num_places
+        for k in 1:num_token_types
+            token_counts[places[i]][token_types[k]] -= effective_multiplicity[i,
+                                                                              findfirst(x -> x ==
+                                                                                             transition,
+                                                                                        transitions),
+                                                                              k]
+        end
+    end
+end
+
+# Print the selected transitions, effective multiplicity, and updated token counts
+println("Selected transitions: ", selected_transitions)
+println("Effective multiplicity: ", effective_multiplicity)
+println("Updated token counts: ", token_counts)
+
+```
+
+
+Discard the muplicity tensor way
