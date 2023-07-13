@@ -17,8 +17,9 @@ function define_agent(base_type, super_type, type, __module, constructor)
             # Here we collect the field names and types from the base type
             # Because the base type already exists, we escape the symbols to obtain it
             base_fieldnames = fieldnames($(esc(base_type)))
-            base_fieldtypes = [t for t in getproperty($(esc(base_type)), :types)]
-            base_fields = map(zip(base_fieldnames, base_fieldtypes)) do (f, T)
+            base_fieldtypes = getproperty($(esc(base_type)), :types)
+            base_fields = map(zip(base_fieldnames, base_fieldtypes)) do x
+                f, T = x # due to https://github.com/Merck/AlgebraicAgents.jl/issues/38
                 if (VERSION < v"1.8") || !(isconst($(esc(base_type)), f))
                     :($f::$T)
                 else
