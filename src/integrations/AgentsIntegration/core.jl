@@ -54,9 +54,9 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
     ## implement constructor
     function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel;
-                      agent_step! = Agents.dummystep, model_step! = Agents.dummystep,
-                      when = true, when_model = when, step_size = 1.0,
-                      tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
+        agent_step! = Agents.dummystep, model_step! = Agents.dummystep,
+        when = true, when_model = when, step_size = 1.0,
+        tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
 
         # initialize wrap
         i = new()
@@ -89,7 +89,7 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 end
 
 function wrap_system(name::AbstractString, abm::Agents.AgentBasedModel, args...;
-                     kwargs...)
+    kwargs...)
     ABMAgent(name, abm, args...; kwargs...)
 end
 
@@ -103,7 +103,7 @@ function _step!(a::ABMAgent)
                     a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
     df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1;
-                                      a.kwargs...)
+        a.kwargs...)
     # append collected data
     ## df_agents
     if collect_agents && ("step" ∈ names(df_agents))
@@ -203,11 +203,11 @@ function print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.abm)
 
     print(io, "\n" * " "^(indent + 3), crayon"italics", "df_agents", ": ", crayon"reset",
-          "\n")
+        "\n")
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.df_model)
 
     print(io, "\n" * " "^(indent + 3), crayon"italics", "df_model", ": ", crayon"reset",
-          "\n")
+        "\n")
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.df_agents)
 end
 

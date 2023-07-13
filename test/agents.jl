@@ -20,7 +20,7 @@ using Test, AlgebraicAgents
 
     @test fieldnames(DerivedAgent) ==
           (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
-           :mutable2, :mutable3, :mutable4)
+        :mutable2, :mutable3, :mutable4)
 
     @test fieldtype(DerivedAgent, :mutable2) == Int
     @test fieldtype(DerivedAgent, :mutable4) == Int
@@ -52,15 +52,15 @@ using Test, AlgebraicAgents
             @test BaseAgent_w_immutables <: AbstractAlgebraicAgent
             @test fieldnames(BaseAgent_w_immutables) ==
                   (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
-                   :mutable2, :immutable1, :immutable2)
+                :mutable2, :immutable1, :immutable2)
             @test isconst(BaseAgent_w_immutables, :immutable1)
             @test !isconst(BaseAgent_w_immutables, :mutable1)
             @test fieldtype(BaseAgent_w_immutables, :mutable2) == Int
 
             @test fieldnames(DerivedAgent_w_immutables) ==
                   (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
-                   :mutable2, :immutable1, :immutable2, :mutable3, :mutable4, :immutable3,
-                   :immutable4)
+                :mutable2, :immutable1, :immutable2, :mutable3, :mutable4, :immutable3,
+                :immutable4)
             @test isconst(DerivedAgent_w_immutables, :immutable1)
             @test !isconst(DerivedAgent_w_immutables, :mutable1)
             @test fieldtype(DerivedAgent_w_immutables, :mutable2) == Int

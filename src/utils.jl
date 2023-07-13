@@ -30,7 +30,7 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
         uuid_ = uuid(getagent(a, path))
 
         push!(naargs,
-              uuid_ => (args = get(aarg, :args, ()), kwargs = get(aarg, :kwargs, ())))
+            uuid_ => (args = get(aarg, :args, ()), kwargs = get(aarg, :kwargs, ())))
     end
 
     naargs
@@ -114,7 +114,9 @@ function extract_agent end
 ### ? write an error msg? the method would need a signature then
 
 # typetree
-rem_module(T::Type, rem) = begin rem ? string((T).name.name) : string(T) end
+rem_module(T::Type, rem) = begin
+    rem ? string((T).name.name) : string(T)
+end
 
 """
     typetree_mmd(T, TT; rem = false)
@@ -135,7 +137,7 @@ print(join(typetree_mmd(Integer), ""))
 ```
 """
 function typetree_mmd(T::Type, TT::S = nothing;
-                      rem = false) where {S <: Union{Type, Nothing}}
+    rem = false) where {S <: Union{Type, Nothing}}
     ret = Vector{String}()
     if isnothing(TT)
         append!(ret, ["classDiagram\n"])

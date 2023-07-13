@@ -65,7 +65,7 @@ end
     @test only(filter2) == agents[2]
 
     transform1 = transform(container, TransformQuery("query", a -> a.name),
-                           TransformQuery("index", a -> a.property))
+        TransformQuery("index", a -> a.property))
     @test all(x -> keys(x) == (:uuid, :query, :index), transform1)
     @test sort(map(x -> x.index, transform1)) == collect(1:10)
 

@@ -25,7 +25,7 @@ mutable struct FreeAgent <: AbstractAlgebraicAgent
     ```
     """
     function FreeAgent(name::AbstractString,
-                       agents::Vector{<:AbstractAlgebraicAgent} = AbstractAlgebraicAgent[])
+        agents::Vector{<:AbstractAlgebraicAgent} = AbstractAlgebraicAgent[])
         m = new()
         m.uuid = uuid4()
         m.name = name
@@ -342,18 +342,18 @@ end
 function print_header(io::IO, a::AbstractAlgebraicAgent)
     indent = get(io, :indent, 0)
     print(io,
-          " "^indent *
-          "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
+        " "^indent *
+        "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
 end
 
 "Pretty-print agent's parent and inners. Optionally specify indent."
 function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
-                         expand_inners = true)
+    expand_inners = true)
     indent = get(io, :indent, 0)
 
     expand_inners && !isnothing(getparent(a)) &&
         print(io, "\n", " "^(indent + 3), crayon"bold", "parent: ", crayon"reset",
-              crayon"green", getname(getparent(a)), crayon"reset")
+            crayon"green", getname(getparent(a)), crayon"reset")
     !isempty(values(inners(a))) &&
         print(io, "\n", " "^(indent + 3), crayon"bold", "inner agents: ", crayon"reset")
 
@@ -365,8 +365,8 @@ function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
             show(iio, m, a, false)
         end
         (length(inners(a)) > max_inners) && print(io,
-              "\n" * " "^(indent + 4) *
-              "$(length(inners(a))-max_inners) more agent(s) not shown ...")
+            "\n" * " "^(indent + 4) *
+            "$(length(inners(a))-max_inners) more agent(s) not shown ...")
     else
         print(io, join([getname(a) for a in values(inners(a))], ", "))
     end
@@ -382,13 +382,13 @@ function print_custom(io::IO, mime::MIME"text/plain", a::AbstractAlgebraicAgent)
     print(io, "\n", " "^(indent + 3), "custom properties:")
     for field in extra_fields
         print(io, "\n", " "^(indent + 3), AlgebraicAgents.crayon"italics", field, ": ",
-              AlgebraicAgents.crayon"reset", getproperty(a, field))
+            AlgebraicAgents.crayon"reset", getproperty(a, field))
     end
 end
 
 # specialize show method
 function Base.show(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
-                   expand_inners = true)
+    expand_inners = true)
     print_header(io, m, a)
     print_custom(io, m, a)
     print_neighbors(io, m, a, expand_inners)

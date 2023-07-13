@@ -28,10 +28,10 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
     observables::Dict{Any, Int}
 
     function DiffEqAgent(name, problem::DiffEqBase.DEProblem,
-                         alg = DifferentialEquations.default_algorithm(problem)[1], args...;
-                         observables = Dict{Any, Int}(), kwargs...)
+        alg = DifferentialEquations.default_algorithm(problem)[1], args...;
+        observables = Dict{Any, Int}(), kwargs...)
         problem = DifferentialEquations.remake(problem;
-                                               p = Params(Val(DummyType), problem.p))
+            p = Params(Val(DummyType), problem.p))
 
         # initialize wrap
         i = new()
@@ -67,8 +67,8 @@ end
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
 function wrap_system(name::AbstractString, problem::DiffEqBase.DEProblem, args...;
-                     alg = DifferentialEquations.default_algorithm(problem)[1],
-                     kwargs...)
+    alg = DifferentialEquations.default_algorithm(problem)[1],
+    kwargs...)
     DiffEqAgent(name, problem, alg, args...; kwargs...)
 end
 

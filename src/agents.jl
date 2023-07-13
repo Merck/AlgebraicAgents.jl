@@ -121,36 +121,36 @@ function aagent(base_type, super_type, type, __module)
     tname_plain = tname isa Symbol ? tname : tname.args[1]
 
     constructor = define_agent(base_type, super_type, type, __module,
-                               quote
-                                   function $(tname)(name::AbstractString,
-                                                     args...) where {
-                                                                     $(param_tnames_constraints...)
-                                                                     }
-                                       uuid = AlgebraicAgents.uuid4()
-                                       inners = Dict{String, AbstractAlgebraicAgent}()
-                                       relpathrefs = Dict{AbstractString,
-                                                          AlgebraicAgents.UUID}()
-                                       opera = AlgebraicAgents.Opera()
+        quote
+            function $(tname)(name::AbstractString,
+                args...) where {
+                $(param_tnames_constraints...),
+            }
+                uuid = AlgebraicAgents.uuid4()
+                inners = Dict{String, AbstractAlgebraicAgent}()
+                relpathrefs = Dict{AbstractString,
+                    AlgebraicAgents.UUID}()
+                opera = AlgebraicAgents.Opera()
 
-                                       # if an extra field is missing, provide better error message
-                                       extra_fields = setdiff(fieldnames($tname_plain),
-                                                              $common_interface_fields)
-                                       if length(args) != length(extra_fields)
-                                           error("""the agent type $tname_plain default constructor `$tname_plain(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
+                # if an extra field is missing, provide better error message
+                extra_fields = setdiff(fieldnames($tname_plain),
+                    $common_interface_fields)
+                if length(args) != length(extra_fields)
+                    error("""the agent type $tname_plain default constructor `$tname_plain(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
 
-                                                 If you intended to call a custom constructor and you passed a string as the first variable, please check that the custom constructor declares the type of the first positional argument to be `AbstractString` (so that dynamic dispatch works).
-                                                 """)
-                                       end
+                          If you intended to call a custom constructor and you passed a string as the first variable, please check that the custom constructor declares the type of the first positional argument to be `AbstractString` (so that dynamic dispatch works).
+                          """)
+                end
 
-                                       # initialize agent
-                                       agent = new(uuid, name, nothing, inners, relpathrefs,
-                                                   opera, args...)
-                                       # push ref to opera
-                                       push!(agent.opera.directory, agent.uuid => agent)
+                # initialize agent
+                agent = new(uuid, name, nothing, inners, relpathrefs,
+                    opera, args...)
+                # push ref to opera
+                push!(agent.opera.directory, agent.uuid => agent)
 
-                                       agent
-                                   end
-                               end)
+                agent
+            end
+        end)
 
     quote
         # check if the base type implements the common interface fields

@@ -3,10 +3,10 @@ import .DifferentialEquations: OrdinaryDiffEq
 
 function _get_problem_type(system::GraphicalModelType)
     if typeof(system) <: Union{AlgebraicDynamics.DWDDynam.ContinuousMachine,
-             AlgebraicDynamics.UWDDynam.ContinuousResourceSharer}
+        AlgebraicDynamics.UWDDynam.ContinuousResourceSharer}
         OrdinaryDiffEq.ODEProblem
     elseif typeof(system) <: Union{AlgebraicDynamics.DWDDynam.DiscreteMachine,
-                 AlgebraicDynamics.UWDDynam.DiscreteResourceSharer}
+        AlgebraicDynamics.UWDDynam.DiscreteResourceSharer}
         OrdinaryDiffEq.DiscreteProblem
     else
         OrdinaryDiffEq.DDEProblem
@@ -26,7 +26,7 @@ DiffEqAgent(system, u0, tspan, params; alg=Tsit5())
 ```
 """
 function DiffEqAgent(agent::GraphicalAgent, args...;
-                     alg = nothing, kwargs...)
+    alg = nothing, kwargs...)
     # get DEProblem
     prob = _get_problem_type(agent.system)(agent.system, args...)
     # get alg
