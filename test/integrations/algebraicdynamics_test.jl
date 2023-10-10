@@ -7,6 +7,9 @@ using Plots
 
 using AlgebraicAgents, DifferentialEquations
 
+using AlgebraicDynamics.DWDDynam: oapply
+using AlgebraicDynamics.UWDDynam: oapply
+
 const UWD = UndirectedWiringDiagram
 
 @testset "AlgebraicDynamics.jl integration: DWD test" begin
