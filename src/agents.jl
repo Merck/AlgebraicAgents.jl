@@ -136,7 +136,7 @@ function aagent(base_type, super_type, type, __module)
                 extra_fields = setdiff(fieldnames($tname_plain),
                     $common_interface_fields)
                 if length(args) != length(extra_fields)
-                    error("""the agent type $tname_plain default constructor `$tname_plain(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
+                    error("""the agent type $($tname_plain) default constructor `$($tname_plain)(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
 
                           If you intended to call a custom constructor and you passed a string as the first variable, please check that the custom constructor declares the type of the first positional argument to be `AbstractString` (so that dynamic dispatch works).
                           """)
