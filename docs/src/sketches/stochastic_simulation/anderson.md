@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/../tutorials/stochastic_simulation/anderson.jl"
+EditURL = "../../../../tutorials/stochastic_simulation/anderson.jl"
 ```
 
 # Simulating Stochastic Reaction Systems
@@ -217,7 +217,7 @@ Let us use parameters $\beta$ to represent the effective contact rate, and
 $\gamma$ to represent the recovery rate.
 
 ````@example anderson
-β = 0.05*10.0
+β = 0.05*10.0/1000
 γ = 0.25
 ````
 
@@ -228,7 +228,7 @@ to the rates given by the anonymous functions passed to `add_clock!`.
 
 ````@example anderson
 rs = make_reactionsystem("SIR", [990, 10, 0])
-add_clock!(rs, "infection", (x) -> β*x[2]/sum(x)*x[1], [-1,1,0])
+add_clock!(rs, "infection", (x) -> β*x[2]*x[1], [-1,1,0])
 add_clock!(rs, "recovery", (x) -> γ*x[2], [0,-1,1])
 ````
 
@@ -247,6 +247,143 @@ After simulation is complete, we can extract the simulated trajectory.
 
 ````@example anderson
 df_out = select(rs.df_output, Not(:clock));
+plot(df_out[!,:time], Matrix(df_out[:,[:X1,:X2,:X3]]), label = ["S" "I" "R"])
+````
+
+## Stochastic Petri Net
+
+Stochastic Petri nets (SPN) are a mathematical language to describe distributed systems which evolve according
+to a stochastic trajectory. There are many ways to define them, and for a comprehensive overview of their modeling
+power, we reccomend [Haas (2002)](https://link.springer.com/book/10.1007/b97265). We will implement
+a very simple SPN to set up a state transition system. Our SPN is nearly identical to the category
+of Petri net proposed by [Kock (2023)](https://arxiv.org/abs/2005.05108), with the addition of a rate
+parameter associated with each transition. When we assume that overall transition rates occur according to the
+mass action law multiplied by the rate constant associated with that transition, we will be able to
+produce a `ReactionSystem` that can be simulated using the code above.
+
+````@example anderson
+@aagent struct StochasticPetriNet
+    P::Vector{Symbol}
+    T::Vector{Symbol}
+    I::Int
+    O::Int
+
+    ip::Vector{Symbol}
+    it::Vector{Symbol}
+    op::Vector{Symbol}
+    ot::Vector{Symbol}
+
+    rate::Dict{Symbol,Float64}
+end
+````
+
+The `StochasticPetriNet` has objects corresponding to (Sets) of places, transitions, input and output arcs. There
+are mappings (Functions) which indicate which place or transition each input (output) arc is connected to. For example
+`ip` is of length `I`, such that each input arc identifies which place is is connected to (likewise for `it`, but for
+transitions). Instead of arc multiplicites, we duplicate arcs, which has the same effect, and simplifies the code.
+
+We write a helper function to construct SPNs. It is only responsible for checking our input makes sense.
+
+````@example anderson
+function make_stochasticpetrinet(name, P, T, I, O, ip, it, op, ot, rate)
+    @assert length(T) == length(rate)
+    @assert all([p ∈ P for p in ip])
+    @assert all([t ∈ T for t in it])
+    @assert all([p ∈ P for p in op])
+    @assert all([t ∈ T for t in ot])
+    @assert I == length(ip)
+    @assert I == length(it)
+    @assert O == length(op)
+    @assert O == length(ot)
+    StochasticPetriNet(name, P, T, I, O, ip, it, op, ot, rate)
+end
+````
+
+The structural components of the SIR model are all in the SPN generated below. Note that there are two output arcs
+from the "infection" transition, to the "I" compartment. This is the same as having a single arc of multiplicity 2,
+we model arcs "individually" here only to make the code cleaner and more readable.
+
+````@example anderson
+sir_spn = make_stochasticpetrinet(
+    "SIR", [:S,:I,:R], [:inf,:rec],
+    3, 3,
+    [:S,:I,:I], [:inf,:inf,:rec],
+    [:I,:I,:R], [:inf,:inf,:rec],
+    Dict((:inf => β), (:rec => γ))
+)
+````
+
+Now we can write a function which generates a `ReactionSystem` from our SPN, assuming the law of mass action.
+The argument `X0` is the initial marking.
+
+Note that in this simple example, we do not check the logical "enabling rules" for each transition, we directly
+compute the current rate/intensity. Because the net assumes the law of mass action, the computed rate will
+equal zero when the transition is not enabled, but this is not true of more general SPNs. A complete implementation
+would compute enabling rules from input arcs, and require the user to specify the rate as a `Function` that computed
+the intensity of that transition if the enabling rule for that transition evaluated to `true`. We would also
+want to apply the "consumption" of input tokens and the "production" of output tokens seperately, rather
+than compute the difference of consumption and production as the overall difference, as done here.
+
+````@example anderson
+function generate_reaction_system(spn::StochasticPetriNet, X0)
+
+    mass_action_rs = make_reactionsystem(getname(spn), X0)
+
+    # for each transition, we must make a stochastic clock in the reaction system
+    for t in spn.T
+        # get the vector of preconditions (number of times each place is an input for this transition)
+        precond = zeros(Int, length(spn.P))
+        # get a vector of input indices
+        precond_ix = Int[]
+        for i in eachindex(spn.it)
+            if spn.it[i] != t
+                continue
+            else
+                push!(precond_ix, findfirst(isequal(spn.ip[i]), spn.P))
+                precond[precond_ix[end]] += 1
+            end
+        end
+        # get the vector of postconditions (number of times each places is an output for this transition)
+        postcond = zeros(Int, length(spn.P))
+        for i in eachindex(spn.ot)
+            if spn.ot[i] != t
+                continue
+            else
+                postcond[findfirst(isequal(spn.op[i]), spn.P)] += 1
+            end
+        end
+        # total change to the marking as a result of transition t
+        change = postcond - precond
+        # add a stochastic clock to the reaction system for transition t
+        add_clock!(
+            mass_action_rs, String(t), (x) -> prod(x[precond_ix])*spn.rate[t], change
+        )
+    end
+
+    return mass_action_rs
+end
+````
+
+Now we can generate the reaction system which implements the stochastic dynamics of the SIR model from
+the Petri net representing the structural constraints of the SIR model. In this way, we seperate specification
+of structure from specification of dynamics. We use the same initial condition as before.
+
+````@example anderson
+x0 = [990, 10, 0]
+sir_rs = generate_reaction_system(sir_spn, x0)
+````
+
+We now run another simulation.
+
+````@example anderson
+simulate(sir_rs, floatmax(Float64))
+````
+
+We can make another plot. Although the parameters are the same, the stochastic trajectory should look a little different,
+due to the randomness in the two driving Poisson processes.
+
+````@example anderson
+df_out = select(sir_rs.df_output, Not(:clock));
 plot(df_out[!,:time], Matrix(df_out[:,[:X1,:X2,:X3]]), label = ["S" "I" "R"])
 ````
 

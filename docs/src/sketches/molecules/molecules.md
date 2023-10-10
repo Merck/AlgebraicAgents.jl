@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/../tutorials/molecules/molecules.jl"
+EditURL = "../../../../tutorials/molecules/molecules.jl"
 ```
 
 # A Toy Pharma Model

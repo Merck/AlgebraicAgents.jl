@@ -36,7 +36,7 @@ const generated_dir = joinpath(@__DIR__, "src", "sketches")
 const skip_dirs = ["traces"]
 
 for (root, dirs, files) in walkdir(literate_dir)
-    if any(occursin.(skip_dirs, root))
+    if any(occursin.(skip_dirs, root)) || startswith(root, "_")
         continue
     end
     out_dir = joinpath(generated_dir, relpath(root, literate_dir))

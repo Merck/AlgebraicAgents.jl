@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/../tutorials/algebraicdynamics/algebraicdynamics.jl"
+EditURL = "../../../../tutorials/algebraicdynamics/algebraicdynamics.jl"
 ```
 
 # Lotka-Voltera Two Ways

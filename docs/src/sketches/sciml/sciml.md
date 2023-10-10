@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/../tutorials/sciml/sciml.jl"
+EditURL = "../../../../tutorials/sciml/sciml.jl"
 ```
 
 # SciML Integration

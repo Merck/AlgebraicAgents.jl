@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/../tutorials/agents/agents.jl"
+EditURL = "../../../../tutorials/agents/agents.jl"
 ```
 
 # Agents.jl Integration
