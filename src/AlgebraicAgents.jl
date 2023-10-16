@@ -7,6 +7,7 @@ using UUIDs
 using MacroTools
 using Crayons
 using Random: randstring
+import JSON
 
 # abstract agent types
 include("abstract.jl")
@@ -55,6 +56,8 @@ export observables, getobservable, gettimeobservable
 export step!, simulate, projected_to
 ## plot
 export draw
+## save and load
+export save, load
 
 # convenient agent subtyping
 include("agents.jl")

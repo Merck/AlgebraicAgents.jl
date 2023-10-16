@@ -32,7 +32,7 @@ using Test, AlgebraicAgents
     alice = MyAgent{Float64}("alice", 0.0, 1.0, 0, Float64[], 0, Float64[])
     bob = MyAgent{Float64}("bob", 0.0, 1.5, 0, Float64[], 0, Float64[])
 
-    joint_system = ⊕(alice, bob, name = "joint")
+    joint_system = ⊕(alice, bob, name = "joint system")
     simulate(joint_system, 9.0)
 
     @test alice.counter1 == 9
