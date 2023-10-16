@@ -7,7 +7,6 @@ using UUIDs
 using MacroTools
 using Crayons
 using Random: randstring
-import JSON
 
 # abstract agent types
 include("abstract.jl")
