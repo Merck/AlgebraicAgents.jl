@@ -107,7 +107,7 @@ mutable struct Opera
             0,
             Vector{Control}(undef, 0),
             Vector{ControlLog}(undef, 0),
-            0,)
+            0)
     end
 end
 
@@ -419,14 +419,15 @@ opera_dump = Dict(
 push!(system_dump, "opera" => opera_dump)
 ```
 """
-function load_opera!(opera::Opera, dump::AbstractDict; eval_scope=@__MODULE__)
+function load_opera!(opera::Opera, dump::AbstractDict; eval_scope = @__MODULE__)
     # instantious interactions
     for interaction in get(dump, "instantious", [])
         add_instantious!(opera,
             get_expr(interaction["call"]),
             get(interaction, "priority", 0),
-            get(interaction, "id", "instantious_" * get_count(opera, :n_instantious_interactions))
-        )
+            get(interaction,
+                "id",
+                "instantious_" * get_count(opera, :n_instantious_interactions)))
     end
 
     # futures
@@ -434,16 +435,14 @@ function load_opera!(opera::Opera, dump::AbstractDict; eval_scope=@__MODULE__)
         add_future!(opera,
             interaction["time"],
             get_expr(interaction["call"]),
-            get(interaction, "id", "future_" * get_count(opera, :n_futures))
-        )
+            get(interaction, "id", "future_" * get_count(opera, :n_futures)))
     end
 
     # controls
     for interaction in get(dump, "controls", [])
         add_control!(opera,
             get_expr(interaction["call"]),
-            get(interaction, "id", "control_" * get_count(opera, :n_controls))
-        )
+            get(interaction, "id", "control_" * get_count(opera, :n_controls)))
     end
 
     return opera

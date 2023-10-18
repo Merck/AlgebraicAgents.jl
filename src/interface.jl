@@ -463,7 +463,8 @@ function _load(type::Type{T},
     foreach(i -> entangle!(agent, load(i; eval_scope)), get(hierarchy, "inners", []))
 
     # load interactions into Opera
-    haskey(hierarchy, "opera") && load_opera!(getopera(agent), hierarchy["opera"]; eval_scope)
+    haskey(hierarchy, "opera") &&
+        load_opera!(getopera(agent), hierarchy["opera"]; eval_scope)
 
     agent
 end
