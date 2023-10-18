@@ -122,4 +122,17 @@ end
     system_reloaded = AlgebraicAgents.load(system_dump; eval_scope = @__MODULE__)
     agent1 = inners(system_reloaded)["agent1"]
     @test agent1 isa MyAgentLoadsave
+
+    opera_dump = Dict(
+        "instantious" => [Dict("call" => () -> println("instantious interaction"))],
+        "futures" => [Dict("time" => 2., "call" => () -> println("future"))],
+        "controls" => [Dict("call" => () -> println("control"))]
+    )
+    push!(system_dump, "opera" => opera_dump)
+    system_reloaded = AlgebraicAgents.load(system_dump; eval_scope = @__MODULE__)
+
+    @test length(getopera(system_reloaded).instantious_interactions) == 1
+    @test length(getopera(system_reloaded).futures) == 1
+    @test length(getopera(system_reloaded).controls) == 1
+
 end

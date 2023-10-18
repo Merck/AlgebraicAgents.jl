@@ -107,7 +107,7 @@ mutable struct Opera
             0,
             Vector{Control}(undef, 0),
             Vector{ControlLog}(undef, 0),
-            0)
+            0,)
     end
 end
 
@@ -124,8 +124,8 @@ function call(opera::Opera, call::Function)
     elseif hasmethod(call, Tuple{Opera})
         call(opera)
     elseif length(opera.directory) > 1 &&
-           hasmethod(call, Tuple{typeof(topmost(first(opera.directory).value))})
-        call(topmost(first(opera.directory).value))
+           hasmethod(call, Tuple{typeof(topmost(first(opera.directory)[2]))})
+        call(topmost(first(opera.directory)[2]))
     else
         @error """interaction $call must have one of the following forms:
             - be parameterless,
@@ -386,4 +386,65 @@ function execute_controls!(opera::Opera, time)
         log_record = (; id = action.id, time, retval = call(opera, action.call))
         push!(opera.controls_log, log_record)
     end
+end
+
+# if `expr` is a string, parse it as an expression
+function get_expr(expr)
+    if expr isa AbstractString
+        Base.eval(eval_scope, Meta.parseall(expr))
+    else
+        expr
+    end
+end
+
+"""
+    load_opera!(opera, dump; eval_scope=@__MODULE__)
+Load interactions from a dictionary that contains the entries `instantious`, `futures`, and `controls`.
+Each of these entries is a vector defining the respective interactions.
+
+- `instantious` ([`InstantiousInteraction`](@ref)): specify `call` and, optionally, `priority=0` and `id`,
+- `futures` ([`Future`](@ref)): specify `time`, `call`, and, optionally, `id`,
+- `controls` ([`Control`](@ref)): specify `call` and, optionally, `id`.
+
+# Example
+```julia
+system_dump = AlgebraicAgents.save(system)
+
+opera_dump = Dict(
+    "instantious" => [Dict("call" => () -> println("instantious interaction"))],
+    "futures" => [Dict("time" => 2., "call" => () -> println("future"))],
+    "controls" => [Dict("call" => () -> println("control"))]
+)
+
+push!(system_dump, "opera" => opera_dump)
+```
+"""
+function load_opera!(opera::Opera, dump::AbstractDict; eval_scope=@__MODULE__)
+    # instantious interactions
+    for interaction in get(dump, "instantious", [])
+        add_instantious!(opera,
+            get_expr(interaction["call"]),
+            get(interaction, "priority", 0),
+            get(interaction, "id", "instantious_" * get_count(opera, :n_instantious_interactions))
+        )
+    end
+
+    # futures
+    for interaction in get(dump, "futures", [])
+        add_future!(opera,
+            interaction["time"],
+            get_expr(interaction["call"]),
+            get(interaction, "id", "future_" * get_count(opera, :n_futures))
+        )
+    end
+
+    # controls
+    for interaction in get(dump, "controls", [])
+        add_control!(opera,
+            get_expr(interaction["call"]),
+            get(interaction, "id", "control_" * get_count(opera, :n_controls))
+        )
+    end
+
+    return opera
 end
