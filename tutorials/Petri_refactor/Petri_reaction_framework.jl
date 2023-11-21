@@ -1,10 +1,13 @@
-# Required Libraries
+## ==============  Load the necessary packages
 using Revise
 using AlgebraicAgents
-using ReactiveDynamics
+# using ReactiveDynamics #! compiling error
 using DifferentialEquations
 using Distributions, Plots, DataFrames, Random
-##
+
+
+
+## ==============  Define the type hierarchy
 # Define the structure of a cell
 struct Cell
     # id::String
@@ -120,7 +123,7 @@ function transition_rate(t::StochasticTransition, gpn::GeneralizedPetriNet)
     else
         return 0
     end
-en
+end
 
 
 

@@ -330,3 +330,4 @@ Transition2.output_arcs = [output_arc2]
 simulate_petri_net!(gpn, 100)
 
 
+
