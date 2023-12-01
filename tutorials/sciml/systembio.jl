@@ -1,3 +1,6 @@
+# Systembio.jl is a Julia script that simulates a Petri net model of cellular dynamics. It uses the AlgebraicAgents and DifferentialEquations packages to model the behavior of different types of cells, including normal and cancer cells, and their interactions.
+
+## 
 using Revise
 using AlgebraicAgents
 using DifferentialEquations
@@ -437,4 +440,6 @@ for t in tspan[1]:tspan[2]
 end
 
 # Visualize the trajectory
-plot_trajectory(traj)
+traj_plt = plot_trajectory(traj)
+# save figure
+savefig(traj_plt, joinpath(dirname(@__FILE__), "CellAutomata_heterogeneous_trajectory.png"))
