@@ -43,7 +43,9 @@ The package is an integral part of the **Dynamics of Value Evolution (DyVE)** co
 As the framework evolves, multiple functionalities have matured enough to become standalone packages.
 
 This includes **[ReactiveDynamics.jl](https://github.com/Merck/ReactiveDynamics.jl)**, a package which implements a category of reaction (transportation) network-type dynamical systems. The central concept of the package is of a stateful, parametric transition; simultaneous action of the transitions then evolves the dynamical system. Moreover, a network's dynamics can be specified using a compact modeling metalanguage.
- 
+
+**[CEEDesigns.jl](https://github.com/Merck/CEEDesigns.jl)** is a decision-making framework for the cost-efficient design of experiments, with direct applications in drug research, healthcare, and various other fields. Typically, a design consists of multiple experiments. Each experiment is regarded as an option to acquire additional experimental evidence and is associated with a monetary cost and an execution time. The framework, then, aims to select experiments that balance the value of acquired information and the incurred costs.
+
 Another package is **[GeneratedExpressions.jl](https://github.com/Merck/GeneratedExpressions.jl)**, which implements a metalanguage to support code-less expression comprehensions. In the context of ReactiveDynamics.jl, expression comprehensions are used to generate complex dynamics from user-specified template transitions.
 
 ## A Single Sketch
