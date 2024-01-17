@@ -123,8 +123,8 @@ function aagent(base_type, super_type, type, __module)
     constructor = define_agent(base_type, super_type, type, __module,
         quote
             function $(tname)(name::AbstractString,
-                args...) where {
-                $(param_tnames_constraints...),
+                    args...) where {
+                    $(param_tnames_constraints...),
             }
                 uuid = AlgebraicAgents.uuid4()
                 inners = Dict{String, AbstractAlgebraicAgent}()

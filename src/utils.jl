@@ -137,7 +137,7 @@ print(join(typetree_mmd(Integer), ""))
 ```
 """
 function typetree_mmd(T::Type, TT::S = nothing;
-    rem = false) where {S <: Union{Type, Nothing}}
+        rem = false) where {S <: Union{Type, Nothing}}
     ret = Vector{String}()
     if isnothing(TT)
         append!(ret, ["classDiagram\n"])

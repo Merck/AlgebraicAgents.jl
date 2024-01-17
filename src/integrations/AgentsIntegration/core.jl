@@ -54,9 +54,9 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
     ## implement constructor
     function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel;
-        agent_step! = Agents.dummystep, model_step! = Agents.dummystep,
-        when = true, when_model = when, step_size = 1.0,
-        tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
+            agent_step! = Agents.dummystep, model_step! = Agents.dummystep,
+            when = true, when_model = when, step_size = 1.0,
+            tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
 
         # initialize wrap
         i = new()
@@ -89,7 +89,7 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 end
 
 function wrap_system(name::AbstractString, abm::Agents.AgentBasedModel, args...;
-    kwargs...)
+        kwargs...)
     ABMAgent(name, abm, args...; kwargs...)
 end
 

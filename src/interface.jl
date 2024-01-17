@@ -25,7 +25,7 @@ mutable struct FreeAgent <: AbstractAlgebraicAgent
     ```
     """
     function FreeAgent(name::AbstractString,
-        agents::Vector{<:AbstractAlgebraicAgent} = AbstractAlgebraicAgent[])
+            agents::Vector{<:AbstractAlgebraicAgent} = AbstractAlgebraicAgent[])
         m = new()
         m.uuid = uuid4()
         m.name = name
@@ -348,7 +348,7 @@ end
 
 "Pretty-print agent's parent and inners. Optionally specify indent."
 function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
-    expand_inners = true)
+        expand_inners = true)
     indent = get(io, :indent, 0)
 
     expand_inners && !isnothing(getparent(a)) &&
@@ -388,7 +388,7 @@ end
 
 # specialize show method
 function Base.show(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
-    expand_inners = true)
+        expand_inners = true)
     print_header(io, m, a)
     print_custom(io, m, a)
     print_neighbors(io, m, a, expand_inners)
@@ -455,8 +455,8 @@ end
 This is a low-level method used for instantiating an agent of the specified `type`. It also instantiates all the inner sub-agents found within the given `hierarchy` dictionary. 
 """
 function _load(type::Type{T},
-    hierarchy::AbstractDict;
-    eval_scope = @__MODULE__) where {T <: AbstractAlgebraicAgent}
+        hierarchy::AbstractDict;
+        eval_scope = @__MODULE__) where {T <: AbstractAlgebraicAgent}
     agent = type(hierarchy["name"],
         get(hierarchy, "arguments", [])...;
         get(hierarchy, "keyword_arguments", [])...)

@@ -26,7 +26,7 @@ DiffEqAgent(system, u0, tspan, params; alg=Tsit5())
 ```
 """
 function DiffEqAgent(agent::GraphicalAgent, args...;
-    alg = nothing, kwargs...)
+        alg = nothing, kwargs...)
     # get DEProblem
     prob = _get_problem_type(agent.system)(agent.system, args...)
     # get alg

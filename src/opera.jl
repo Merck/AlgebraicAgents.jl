@@ -150,8 +150,8 @@ add_instantious!(agent, () -> wake_up(agent))
 ```
 """
 function add_instantious!(opera::Opera, call, priority::Number = 0.0,
-    id = "instantious_" *
-         get_count(opera, :n_instantious_interactions))
+        id = "instantious_" *
+             get_count(opera, :n_instantious_interactions))
     add_instantious!(opera, (; id, call, priority))
 end
 
@@ -191,7 +191,7 @@ poke(agent, 1.) # with priority equal to 1
 ```
 """
 function poke(agent, priority::Number = 0.0,
-    id = "instantious_" * get_count(getopera(agent), :n_instantious_interactions))
+        id = "instantious_" * get_count(getopera(agent), :n_instantious_interactions))
     add_instantious!(getopera(agent),
         (; id, call = () -> _interact!(agent),
             priority = Float64(priority)))
@@ -251,7 +251,7 @@ add_future!(alice, 5.0, () -> interact(alice), "alice_schedule")
 function add_future! end
 
 function add_future!(opera::Opera, time, call,
-    id = "future_" * get_count(opera, :n_futures))
+        id = "future_" * get_count(opera, :n_futures))
     new_action = (; id, call, time)
 
     # sorted insert

@@ -85,7 +85,7 @@ function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{<:FilterQuery})
 end
 
 function Base.filter(a::Vector{<:AbstractAlgebraicAgent},
-    queries::Vararg{<:FilterQuery})
+        queries::Vararg{<:FilterQuery})
     filtered = AbstractAlgebraicAgent[]
     for a in a
         all(q -> _filter(a, q), queries) && push!(filtered, a)
@@ -125,8 +125,8 @@ struct TransformQuery{F <: Function} <: AbstractQuery
     query::F
 
     function TransformQuery(name::T,
-        query::F) where {T <: Union{Symbol, AbstractString},
-        F <: Function}
+            query::F) where {T <: Union{Symbol, AbstractString},
+            F <: Function}
         new{F}(Symbol(name), query)
     end
 end
@@ -170,7 +170,7 @@ function transform(a::AbstractAlgebraicAgent, queries::Vararg{<:TransformQuery})
 end
 
 function transform(a::Vector{<:AbstractAlgebraicAgent},
-    queries::Vararg{<:TransformQuery})
+        queries::Vararg{<:TransformQuery})
     results = []
     for a in a
         try

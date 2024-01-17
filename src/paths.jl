@@ -216,7 +216,7 @@ Return agents in the hierarchy whose names match the given wildcard.
 If `inners_only==true`, consider descendants of `agent` only.
 """
 function by_name(agent::AbstractAlgebraicAgent, name::Union{Glob.FilenameMatch, Regex};
-    inners_only = false)
+        inners_only = false)
     agent = inners_only ? agent : topmost(agent)
     agents = []
     prewalk(a -> (occursin(name, getname(a))) && push!(agents, a), agent)
