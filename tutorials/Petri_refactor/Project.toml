@@ -1,0 +1,7 @@
+[deps]
+AlgebraicAgents = "f6eb0ae3-10fa-40e6-88dd-9006ba45093a"
+Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+ReactiveDynamics = "c7456e7d-545a-4b79-91ea-6e93d96dd4d4"

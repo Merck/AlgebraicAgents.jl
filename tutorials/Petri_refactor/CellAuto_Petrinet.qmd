@@ -1,0 +1,410 @@
+---
+title: "Cellular Automata Simulation Using Petri Nets"
+subtitle: "version 0.1.2"
+format:
+  html:
+    code-fold: false
+jupyter: julia-1.9
+toc: true
+author: Tianchi Chen
+---
+
+
+# Introduction
+
+This document provides a detailed walkthrough of a cellular automata model simulated as a Petri Net. The model represents cells with a dynamical state (active, inactive, dormant) that can change based on the presence of cancer cells. Each cell also has a type (NormalCellA, NormalCellB, CancerCellA, CancerCellB) which is randomly assigned at the start of the simulation. The system evolves over time and the current state of the system is recorded and visualized in a plot.
+
+
+# Biological Systems
+A Petri net framework can be used to model a biological system like cancer, as it represents dynamic processes in which individual items pass through multiple states. Petri nets are composed of places, transitions, and arcs. Places represent the state of an item and transitions represent the operations that affect the item. The arcs link the various places and transitions together to create a flow of information. For example, in the case of a cancer system, the places could represent tumor growth and the transitions could represent treatments that are administered, such as chemotherapy or radiation. The arcs between the places and transitions would then dictate how the treatments affect the tumor growth. The Petri net framework can then be used to analyze the system as a whole and identify potential areas for improvement or areas of focus.
+
+# Theoretical and computational framework
+In this document, we will show how to use the Petri Net framework to simulate a cellular automata model. We will also see how to use the Petri Net framework to analyze the system as a whole.
+The Petri Net framework consists several key elements:
+1. A Petri Net
+   1. Input Arc
+      1. connect Places to a transition
+      2. with arc weight to be the number of tokens required for the transition
+      3. contains 
+   2. Output Arc
+   3. Place
+   4. Transition
+   5. Marking
+2. Tokens
+3. Dynamical state
+
+
+# Simulation examples for heterogeneous hierarchical dynamic cancer networks using the Petri Net framework
+We start by importing the necessary packages:
+
+```{julia}
+using Revise
+using DifferentialEquations, AlgebraicAgents
+using Plots
+using Random, DataFrames
+Random.seed!(0)
+```
+
+## Defining the Cell Types
+We define an abstract type AbstractCellType and four concrete types NormalCellA, NormalCellB, CancerCellA, and CancerCellB that inherit from AbstractCellType.
+
+```{julia}
+abstract type AbstractCellType end
+struct NormalCellA <: AbstractCellType end
+struct NormalCellB <: AbstractCellType end
+struct CancerCellA <: AbstractCellType end
+struct CancerCellB <: AbstractCellType end
+```
+
+## Defining the Cell and Place
+We define a mutable struct Cell with fields for the cell type, an ID, the dynamical state, and the time in active state. We also define a struct Place that represents a location with a name and a vector of cells (tokens).
+
+```{julia}
+mutable struct Cell
+    cell_type::AbstractCellType
+    id::Int
+    dynamical_state::Symbol
+    time_in_active_state::Int
+end
+
+mutable struct Place
+    name::String
+    tokens::Vector{Cell}
+end
+```
+
+## Defining the Transition
+A Transition represents a transformation from input places to output places. It has fields for the name of the transition, the input places, and the output places.
+
+```{julia}
+struct Transition
+    name::String
+    input::Vector{Tuple{Int, Place, DataType}}
+    output::Vector{Tuple{Int, Place, DataType}}
+end
+```
+
+## Adding and Removing Tokens
+We define two helper functions add_token! and remove_token! to add and remove cells from a place.
+
+```{julia}
+function add_token!(place::Place, token::Cell)
+    push!(place.tokens, token)
+end
+
+function remove_token!(place::Place, token::Cell)
+    deleteat!(place.tokens, findfirst(t -> t == token, place.tokens))
+end
+```
+
+## Simulating the Dynamical State
+We define a function simulate_dynamical_state! that updates the dynamical state of a cell based on the presence of cancer cells in the same place.
+
+```{julia}
+function simulate_dynamical_state!(cell::Cell, cancer_cell_present::Bool,
+                                   max_active_time::Int)
+    if cancer_cell_present &&
+       (cell.dynamical_state == :dormant || cell.dynamical_state == :inactive)
+        cell.dynamical_state = :active
+        cell.time_in_active_state = 0
+    elseif cell.dynamical_state == :active
+        cell.time_in_active_state += 1
+        if cell.time_in_active_state >= max_active_time
+            cell.dynamical_state = :dormant
+            cell.time_in_active_state = 0
+        end
+    end
+end
+```
+
+
+## Performing the Transition
+The function perform_transition! checks the feasibility of a transition by confirming if it has the required number of tokens in the input places. If the transition is feasible, it removes the tokens from the input places and adds new tokens to the output places. The function also updates the dynamical state of the tokens based on the presence of cancer cells.
+
+```{julia}
+function perform_transition!(transition::Transition)
+    cancer_cell_exists = false
+    num_tokens = 0
+
+    for (count, place, token_type) in transition.input
+        tokens_to_remove = filter(t -> isa(t.cell_type, token_type), place.tokens)
+
+        if length(tokens_to_remove) < count
+            return false
+        end
+
+        for token in tokens_to_remove
+            if isa(token.cell_type, CancerCellA) || isa(token.cell_type, CancerCellB)
+                cancer_cell_exists = true
+            end
+            num_tokens += 1
+        end
+    end
+
+    if cancer_cell_exists && num_tokens > 30
+        for (count, place, token_type) in transition.input
+            tokens_to_remove = filter(t -> isa(t.cell_type, token_type), place.tokens)
+            for token in tokens_to_remove[1:count]
+                remove_token!(place, token)
+            end
+        end
+
+        for (count, place, token_type) in transition.output
+            for _ in 1:count
+                new_cell = Cell(token_type(), rand(Int),
+                                rand([:active, :inactive, :dormant]), max_active_time)
+                simulate_dynamical_state!(new_cell, cancer_cell_exists, max_active_time)
+                add_token!(place, new_cell)
+            end
+        end
+
+        return true
+    end
+
+    return false
+end
+```
+
+## Defining the Petri Net
+We define a Petri Net using the previously defined Place and Transition structures. The Petri Net also includes InputArc and OutputArc structures that connect Places and Transitions.
+
+```{julia}
+struct InputArc
+    source::Place
+    target::Transition
+    cell_type::DataType
+    weight::Int
+end
+
+struct OutputArc
+    source::Transition
+    target::Place
+    cell_type::DataType
+    weight::Int
+end
+
+struct PetriNet
+    places::Vector{Place}
+    transitions::Vector{Transition}
+    input_arcs::Vector{InputArc}
+    output_arcs::Vector{OutputArc}
+end
+```
+
+
+
+## Simulation of the Petri Net
+We initialize the Petri Net with a certain number of cells and let the system evolve over a predefined number of time steps. At each time step, we update the dynamical state of each cell, check if each transition can fire, and if so, fire the transition. We also record the state of the system at each time step.
+
+
+```{julia}
+function can_fire(transition::Transition, places::Vector{Place})
+    for (count, place, token_type) in transition.input
+        tokens_to_remove = filter(t -> isa(t.cell_type, token_type), place.tokens)
+
+        if length(tokens_to_remove) < count
+            return false
+        end
+    end
+
+    return true
+end
+
+function count_cells(pn::PetriNet)
+    cell_counts = Dict{Tuple{DataType, Symbol}, Int}()
+
+    for place in pn.places
+        for cell in place.tokens
+            cell_key = (typeof(cell.cell_type), cell.dynamical_state)
+            cell_counts[cell_key] = get(cell_counts, cell_key, 0) + 1
+        end
+    end
+
+    return cell_counts
+end
+```
+
+
+## Visualization of the Petri Net Evolution
+the Plots package to visualize the evolution of the system. At each time step, we create a bar plot of the count of each type of cell in each dynamical state.
+
+```{julia}
+function plot_petri_net(pn::PetriNet)
+    cell_counts = count_cells(pn)
+
+    p = bar([string(key) for key in keys(cell_counts)],
+            [value for value in values(cell_counts)],
+            xlabel = "Cell Type and Dynamical State",
+            ylabel = "Count",
+            title = "Petri Net Simulation",
+            legend = false)
+    display(p)
+end
+```
+
+
+## Running the Simulation
+To run the simulation, we initialize the Petri Net and then perform a series of updates in a loop. At each time step, we print out the current state of the Petri Net and generate a plot.
+
+## Initializing the Petri Net
+
+We initialize the Petri net by creating the places (P1 and P2), the transitions (T1), and setting up the input and output arcs.
+
+```{julia}
+function init_petri_net(num_cells::Int, max_active_time::Int)
+    # Define cell types
+    cell_types = [NormalCellA, NormalCellB, CancerCellA, CancerCellB]
+
+    # Define the places
+    P1 = Place("P1",
+               [Cell(rand(cell_types)(), i, rand([:active, :inactive, :dormant]),
+                     max_active_time) for i in 1:round(Int, 0.5 * num_cells)])
+    P2 = Place("P2",
+               [Cell(rand(cell_types)(), i, rand([:active, :inactive, :dormant]),
+                     max_active_time) for i in 1:round(Int, 0.5 * num_cells)])
+    P3 = Place("P3", [])
+
+    # Define the transitions
+    T1 = Transition("T1", [(3, P1, NormalCellA), (1, P2, CancerCellA)],
+                    [(1, P3, CancerCellA)])
+
+    # Define arcs
+    input_arc1 = InputArc(P1, T1, NormalCellA, 30)
+    input_arc2 = InputArc(P2, T1, CancerCellA, 30)
+    output_arc1 = OutputArc(T1, P3, CancerCellA, 50)
+
+    # Define the Petri net
+    pn = PetriNet([P1, P2, P3], [T1], [input_arc1, input_arc2], [output_arc1])
+
+    return pn
+end
+
+```
+## Updating the Petri Net
+We update the Petri net by checking the state of the cells and performing transitions if possible.
+
+```{julia}
+function update_petri_net(pn::PetriNet)
+    # Iterate through places
+    for place in pn.places
+        # Check if cancer cells are present in the place
+        cancer_cell_present = any(cell -> isa(cell.cell_type, CancerCellA) ||
+                                      isa(cell.cell_type, CancerCellB), place.tokens)
+
+        # Update dynamical states of all cells in the place
+        for cell in place.tokens
+            simulate_dynamical_state!(cell, cancer_cell_present, max_active_time)
+        end
+    end
+
+    # Iterate through transitions
+    for transition in pn.transitions
+        # Check if the transition can be fired
+        if can_fire(transition, pn.places)
+            # Fire the transition and update the system's state
+            perform_transition!(transition)
+        end
+    end
+end
+```
+## Cell trajectory visulization
+
+```{julia}
+function plot_trajectory(cell_trajectory::Vector{Dict{Tuple{DataType, Symbol}, Int}})
+    # Initialize empty DataFrame
+    df_traj = DataFrame(cell_type = DataType[], dynamical_state = Symbol[], count = Int[],
+                        time_step = Int[])
+
+    # Iterate over cell_trajectory
+    for (i, dict) in enumerate(cell_trajectory)
+        for (key, value) in dict
+            cell_type, dynamical_state = key
+            push!(df_traj, (cell_type, dynamical_state, value, i))
+        end
+    end
+
+    # Convert cell type to string for plotting
+    df_traj[!, :cell_type] = string.(df_traj[!, :cell_type])
+
+    # Separate data frames based on cell type
+    df_normalA = filter(row -> row[:cell_type] == "NormalCellA", df_traj)
+    df_normalB = filter(row -> row[:cell_type] == "NormalCellB", df_traj)
+    df_cancerA = filter(row -> row[:cell_type] == "CancerCellA", df_traj)
+    df_cancerB = filter(row -> row[:cell_type] == "CancerCellB", df_traj)
+
+    # Initialize plot
+    p = plot()
+
+    # Add lines for each cell type and dynamical state
+    for df_cell in [df_normalA, df_normalB, df_cancerA, df_cancerB]
+        for state in unique(df_cell[!, :dynamical_state])
+            df_state = filter(row -> row[:dynamical_state] == state, df_cell)
+            plot!(p, df_state[!, :time_step], df_state[!, :count],
+                  label = "$(df_state[1, :cell_type]) - $(state)")
+        end
+    end
+
+    # Show plot
+    return p
+end
+```
+
+
+<!-- ```{julia}
+# Initialize Petri Net
+pn = init_petri_net()
+
+# Run simulation for 100 time steps
+for t in 1:100
+    # Update Petri Net
+    update_petri_net(pn)
+
+    # Print current state
+    println("Time: ", t)
+    println("State: ", count_cells(pn))
+
+    # Plot current state
+    plot_petri_net(pn)
+end
+``` -->
+
+
+```{julia}
+function init_trajectory()
+    # Initialize an empty array to store the states of the Petri net at each time step
+    trajectory = Dict{Tuple{DataType, Symbol}, Int}[]
+
+    return trajectory
+end
+
+function append_to_trajectory!(trajectory, pn)
+    # Append the current state of the Petri net to the trajectory
+    push!(trajectory, count_cells(pn))
+end
+
+```
+
+
+run a simulation 
+```{julia}
+# Initialize Petri net
+num_cells = 500
+max_active_time = 5
+pn = init_petri_net(num_cells, max_active_time)
+
+# Define the time range
+tspan = (0.0, 30.0)
+
+# Initialize trajectory
+traj = init_trajectory()
+
+# Run the simulation
+for t in tspan[1]:tspan[2]
+    update_petri_net(pn)
+    append_to_trajectory!(traj, pn)
+end
+
+# Visualize the trajectory
+plot_trajectory(traj)
+
+```

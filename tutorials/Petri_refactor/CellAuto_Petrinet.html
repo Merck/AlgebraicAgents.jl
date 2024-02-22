@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Tianchi Chen">
+
+<title>Cellular Automata Simulation Using Petri Nets</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="CellAuto_Petrinet_files/libs/clipboard/clipboard.min.js"></script>
+<script src="CellAuto_Petrinet_files/libs/quarto-html/quarto.js"></script>
+<script src="CellAuto_Petrinet_files/libs/quarto-html/popper.min.js"></script>
+<script src="CellAuto_Petrinet_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="CellAuto_Petrinet_files/libs/quarto-html/anchor.min.js"></script>
+<link href="CellAuto_Petrinet_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="CellAuto_Petrinet_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="CellAuto_Petrinet_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="CellAuto_Petrinet_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="CellAuto_Petrinet_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#biological-systems" id="toc-biological-systems" class="nav-link" data-scroll-target="#biological-systems">Biological Systems</a></li>
+  <li><a href="#theoretical-and-computational-framework" id="toc-theoretical-and-computational-framework" class="nav-link" data-scroll-target="#theoretical-and-computational-framework">Theoretical and computational framework</a></li>
+  <li><a href="#simulation-examples-for-heterogeneous-hierarchical-dynamic-cancer-networks-using-the-petri-net-framework" id="toc-simulation-examples-for-heterogeneous-hierarchical-dynamic-cancer-networks-using-the-petri-net-framework" class="nav-link" data-scroll-target="#simulation-examples-for-heterogeneous-hierarchical-dynamic-cancer-networks-using-the-petri-net-framework">Simulation examples for heterogeneous hierarchical dynamic cancer networks using the Petri Net framework</a>
+  <ul class="collapse">
+  <li><a href="#defining-the-cell-types" id="toc-defining-the-cell-types" class="nav-link" data-scroll-target="#defining-the-cell-types">Defining the Cell Types</a></li>
+  <li><a href="#defining-the-cell-and-place" id="toc-defining-the-cell-and-place" class="nav-link" data-scroll-target="#defining-the-cell-and-place">Defining the Cell and Place</a></li>
+  <li><a href="#defining-the-transition" id="toc-defining-the-transition" class="nav-link" data-scroll-target="#defining-the-transition">Defining the Transition</a></li>
+  <li><a href="#adding-and-removing-tokens" id="toc-adding-and-removing-tokens" class="nav-link" data-scroll-target="#adding-and-removing-tokens">Adding and Removing Tokens</a></li>
+  <li><a href="#simulating-the-dynamical-state" id="toc-simulating-the-dynamical-state" class="nav-link" data-scroll-target="#simulating-the-dynamical-state">Simulating the Dynamical State</a></li>
+  <li><a href="#performing-the-transition" id="toc-performing-the-transition" class="nav-link" data-scroll-target="#performing-the-transition">Performing the Transition</a></li>
+  <li><a href="#defining-the-petri-net" id="toc-defining-the-petri-net" class="nav-link" data-scroll-target="#defining-the-petri-net">Defining the Petri Net</a></li>
+  <li><a href="#simulation-of-the-petri-net" id="toc-simulation-of-the-petri-net" class="nav-link" data-scroll-target="#simulation-of-the-petri-net">Simulation of the Petri Net</a></li>
+  <li><a href="#visualization-of-the-petri-net-evolution" id="toc-visualization-of-the-petri-net-evolution" class="nav-link" data-scroll-target="#visualization-of-the-petri-net-evolution">Visualization of the Petri Net Evolution</a></li>
+  <li><a href="#running-the-simulation" id="toc-running-the-simulation" class="nav-link" data-scroll-target="#running-the-simulation">Running the Simulation</a></li>
+  <li><a href="#initializing-the-petri-net" id="toc-initializing-the-petri-net" class="nav-link" data-scroll-target="#initializing-the-petri-net">Initializing the Petri Net</a></li>
+  <li><a href="#updating-the-petri-net" id="toc-updating-the-petri-net" class="nav-link" data-scroll-target="#updating-the-petri-net">Updating the Petri Net</a></li>
+  <li><a href="#cell-trajectory-visulization" id="toc-cell-trajectory-visulization" class="nav-link" data-scroll-target="#cell-trajectory-visulization">Cell trajectory visulization</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Cellular Automata Simulation Using Petri Nets</h1>
+<p class="subtitle lead">version 0.1.2</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Tianchi Chen </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>This document provides a detailed walkthrough of a cellular automata model simulated as a Petri Net. The model represents cells with a dynamical state (active, inactive, dormant) that can change based on the presence of cancer cells. Each cell also has a type (NormalCellA, NormalCellB, CancerCellA, CancerCellB) which is randomly assigned at the start of the simulation. The system evolves over time and the current state of the system is recorded and visualized in a plot.</p>
+</section>
+<section id="biological-systems" class="level1">
+<h1>Biological Systems</h1>
+<p>A Petri net framework can be used to model a biological system like cancer, as it represents dynamic processes in which individual items pass through multiple states. Petri nets are composed of places, transitions, and arcs. Places represent the state of an item and transitions represent the operations that affect the item. The arcs link the various places and transitions together to create a flow of information. For example, in the case of a cancer system, the places could represent tumor growth and the transitions could represent treatments that are administered, such as chemotherapy or radiation. The arcs between the places and transitions would then dictate how the treatments affect the tumor growth. The Petri net framework can then be used to analyze the system as a whole and identify potential areas for improvement or areas of focus.</p>
+</section>
+<section id="theoretical-and-computational-framework" class="level1">
+<h1>Theoretical and computational framework</h1>
+<p>In this document, we will show how to use the Petri Net framework to simulate a cellular automata model. We will also see how to use the Petri Net framework to analyze the system as a whole. The Petri Net framework consists several key elements: 1. A Petri Net 1. Input Arc 1. connect Places to a transition 2. with arc weight to be the number of tokens required for the transition 3. contains 2. Output Arc 3. Place 4. Transition 5. Marking 2. Tokens 3. Dynamical state</p>
+</section>
+<section id="simulation-examples-for-heterogeneous-hierarchical-dynamic-cancer-networks-using-the-petri-net-framework" class="level1">
+<h1>Simulation examples for heterogeneous hierarchical dynamic cancer networks using the Petri Net framework</h1>
+<p>We start by importing the necessary packages:</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Revise</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DifferentialEquations</span>, <span class="bu">AlgebraicAgents</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Plots</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Random</span>, <span class="bu">DataFrames</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>TaskLocalRNG()</code></pre>
+</div>
+</div>
+<section id="defining-the-cell-types" class="level2">
+<h2 class="anchored" data-anchor-id="defining-the-cell-types">Defining the Cell Types</h2>
+<p>We define an abstract type AbstractCellType and four concrete types NormalCellA, NormalCellB, CancerCellA, and CancerCellB that inherit from AbstractCellType.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">abstract type</span> AbstractCellType <span class="kw">end</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> NormalCellA <span class="op">&lt;:</span><span class="dt"> AbstractCellType </span><span class="kw">end</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> NormalCellB <span class="op">&lt;:</span><span class="dt"> AbstractCellType </span><span class="kw">end</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CancerCellA <span class="op">&lt;:</span><span class="dt"> AbstractCellType </span><span class="kw">end</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> CancerCellB <span class="op">&lt;:</span><span class="dt"> AbstractCellType </span><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="defining-the-cell-and-place" class="level2">
+<h2 class="anchored" data-anchor-id="defining-the-cell-and-place">Defining the Cell and Place</h2>
+<p>We define a mutable struct Cell with fields for the cell type, an ID, the dynamical state, and the time in active state. We also define a struct Place that represents a location with a name and a vector of cells (tokens).</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">mutable struct</span> Cell</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    cell_type<span class="op">::</span><span class="dt">AbstractCellType</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    id<span class="op">::</span><span class="dt">Int</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    dynamical_state<span class="op">::</span><span class="dt">Symbol</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    time_in_active_state<span class="op">::</span><span class="dt">Int</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">mutable struct</span> Place</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    name<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    tokens<span class="op">::</span><span class="dt">Vector{Cell}</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="defining-the-transition" class="level2">
+<h2 class="anchored" data-anchor-id="defining-the-transition">Defining the Transition</h2>
+<p>A Transition represents a transformation from input places to output places. It has fields for the name of the transition, the input places, and the output places.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Transition</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    name<span class="op">::</span><span class="dt">String</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    input<span class="op">::</span><span class="dt">Vector{Tuple{Int, Place, DataType}}</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    output<span class="op">::</span><span class="dt">Vector{Tuple{Int, Place, DataType}}</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="adding-and-removing-tokens" class="level2">
+<h2 class="anchored" data-anchor-id="adding-and-removing-tokens">Adding and Removing Tokens</h2>
+<p>We define two helper functions add_token! and remove_token! to add and remove cells from a place.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">add_token!</span>(place<span class="op">::</span><span class="dt">Place</span>, token<span class="op">::</span><span class="dt">Cell</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(place.tokens, token)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">remove_token!</span>(place<span class="op">::</span><span class="dt">Place</span>, token<span class="op">::</span><span class="dt">Cell</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">deleteat!</span>(place.tokens, <span class="fu">findfirst</span>(t <span class="op">-&gt;</span> t <span class="op">==</span> token, place.tokens))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>remove_token! (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="simulating-the-dynamical-state" class="level2">
+<h2 class="anchored" data-anchor-id="simulating-the-dynamical-state">Simulating the Dynamical State</h2>
+<p>We define a function simulate_dynamical_state! that updates the dynamical state of a cell based on the presence of cancer cells in the same place.</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">simulate_dynamical_state!</span>(cell<span class="op">::</span><span class="dt">Cell</span>, cancer_cell_present<span class="op">::</span><span class="dt">Bool</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                                   max_active_time<span class="op">::</span><span class="dt">Int</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> cancer_cell_present <span class="op">&amp;&amp;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>       (cell.dynamical_state <span class="op">==</span> <span class="op">:</span>dormant <span class="op">||</span> cell.dynamical_state <span class="op">==</span> <span class="op">:</span>inactive)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        cell.dynamical_state <span class="op">=</span> <span class="op">:</span>active</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        cell.time_in_active_state <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elseif</span> cell.dynamical_state <span class="op">==</span> <span class="op">:</span>active</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        cell.time_in_active_state <span class="op">+=</span> <span class="fl">1</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cell.time_in_active_state <span class="op">&gt;=</span> max_active_time</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>            cell.dynamical_state <span class="op">=</span> <span class="op">:</span>dormant</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>            cell.time_in_active_state <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>simulate_dynamical_state! (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="performing-the-transition" class="level2">
+<h2 class="anchored" data-anchor-id="performing-the-transition">Performing the Transition</h2>
+<p>The function perform_transition! checks the feasibility of a transition by confirming if it has the required number of tokens in the input places. If the transition is feasible, it removes the tokens from the input places and adds new tokens to the output places. The function also updates the dynamical state of the tokens based on the presence of cancer cells.</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">perform_transition!</span>(transition<span class="op">::</span><span class="dt">Transition</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    cancer_cell_exists <span class="op">=</span> <span class="cn">false</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    num_tokens <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (count, place, token_type) <span class="kw">in</span> transition.input</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        tokens_to_remove <span class="op">=</span> <span class="fu">filter</span>(t <span class="op">-&gt;</span> <span class="fu">isa</span>(t.cell_type, token_type), place.tokens)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">length</span>(tokens_to_remove) <span class="op">&lt;</span> count</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="cn">false</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> token <span class="kw">in</span> tokens_to_remove</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="fu">isa</span>(token.cell_type, CancerCellA) <span class="op">||</span> <span class="fu">isa</span>(token.cell_type, CancerCellB)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>                cancer_cell_exists <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">end</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>            num_tokens <span class="op">+=</span> <span class="fl">1</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> cancer_cell_exists <span class="op">&amp;&amp;</span> num_tokens <span class="op">&gt;</span> <span class="fl">30</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (count, place, token_type) <span class="kw">in</span> transition.input</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>            tokens_to_remove <span class="op">=</span> <span class="fu">filter</span>(t <span class="op">-&gt;</span> <span class="fu">isa</span>(t.cell_type, token_type), place.tokens)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> token <span class="kw">in</span> tokens_to_remove[<span class="fl">1</span><span class="op">:</span>count]</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>                <span class="fu">remove_token!</span>(place, token)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>            <span class="cf">end</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (count, place, token_type) <span class="kw">in</span> transition.output</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>count</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>                new_cell <span class="op">=</span> <span class="fu">Cell</span>(<span class="fu">token_type</span>(), <span class="fu">rand</span>(<span class="dt">Int</span>),</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>                                <span class="fu">rand</span>([<span class="op">:</span>active, <span class="op">:</span>inactive, <span class="op">:</span>dormant]), max_active_time)</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>                <span class="fu">simulate_dynamical_state!</span>(new_cell, cancer_cell_exists, max_active_time)</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>                <span class="fu">add_token!</span>(place, new_cell)</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>            <span class="cf">end</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="cn">true</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cn">false</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>perform_transition! (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="defining-the-petri-net" class="level2">
+<h2 class="anchored" data-anchor-id="defining-the-petri-net">Defining the Petri Net</h2>
+<p>We define a Petri Net using the previously defined Place and Transition structures. The Petri Net also includes InputArc and OutputArc structures that connect Places and Transitions.</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> InputArc</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    source<span class="op">::</span><span class="dt">Place</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    target<span class="op">::</span><span class="dt">Transition</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    cell_type<span class="op">::</span><span class="dt">DataType</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    weight<span class="op">::</span><span class="dt">Int</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> OutputArc</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    source<span class="op">::</span><span class="dt">Transition</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    target<span class="op">::</span><span class="dt">Place</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    cell_type<span class="op">::</span><span class="dt">DataType</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    weight<span class="op">::</span><span class="dt">Int</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> PetriNet</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    places<span class="op">::</span><span class="dt">Vector{Place}</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    transitions<span class="op">::</span><span class="dt">Vector{Transition}</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    input_arcs<span class="op">::</span><span class="dt">Vector{InputArc}</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    output_arcs<span class="op">::</span><span class="dt">Vector{OutputArc}</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="simulation-of-the-petri-net" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-of-the-petri-net">Simulation of the Petri Net</h2>
+<p>We initialize the Petri Net with a certain number of cells and let the system evolve over a predefined number of time steps. At each time step, we update the dynamical state of each cell, check if each transition can fire, and if so, fire the transition. We also record the state of the system at each time step.</p>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">can_fire</span>(transition<span class="op">::</span><span class="dt">Transition</span>, places<span class="op">::</span><span class="dt">Vector{Place}</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (count, place, token_type) <span class="kw">in</span> transition.input</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        tokens_to_remove <span class="op">=</span> <span class="fu">filter</span>(t <span class="op">-&gt;</span> <span class="fu">isa</span>(t.cell_type, token_type), place.tokens)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">length</span>(tokens_to_remove) <span class="op">&lt;</span> count</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="cn">false</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cn">true</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">count_cells</span>(pn<span class="op">::</span><span class="dt">PetriNet</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    cell_counts <span class="op">=</span> <span class="fu">Dict</span><span class="dt">{Tuple{DataType, Symbol}, Int}</span>()</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> place <span class="kw">in</span> pn.places</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> cell <span class="kw">in</span> place.tokens</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>            cell_key <span class="op">=</span> (<span class="fu">typeof</span>(cell.cell_type), cell.dynamical_state)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>            cell_counts[cell_key] <span class="op">=</span> <span class="fu">get</span>(cell_counts, cell_key, <span class="fl">0</span>) <span class="op">+</span> <span class="fl">1</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cell_counts</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>count_cells (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="visualization-of-the-petri-net-evolution" class="level2">
+<h2 class="anchored" data-anchor-id="visualization-of-the-petri-net-evolution">Visualization of the Petri Net Evolution</h2>
+<p>the Plots package to visualize the evolution of the system. At each time step, we create a bar plot of the count of each type of cell in each dynamical state.</p>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">plot_petri_net</span>(pn<span class="op">::</span><span class="dt">PetriNet</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    cell_counts <span class="op">=</span> <span class="fu">count_cells</span>(pn)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fu">bar</span>([<span class="fu">string</span>(key) for key <span class="kw">in</span> <span class="fu">keys</span>(cell_counts)],</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>            [value for value <span class="kw">in</span> <span class="fu">values</span>(cell_counts)],</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>            xlabel <span class="op">=</span> <span class="st">"Cell Type and Dynamical State"</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>            ylabel <span class="op">=</span> <span class="st">"Count"</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>            title <span class="op">=</span> <span class="st">"Petri Net Simulation"</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>            legend <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">display</span>(p)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>plot_petri_net (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="running-the-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="running-the-simulation">Running the Simulation</h2>
+<p>To run the simulation, we initialize the Petri Net and then perform a series of updates in a loop. At each time step, we print out the current state of the Petri Net and generate a plot.</p>
+</section>
+<section id="initializing-the-petri-net" class="level2">
+<h2 class="anchored" data-anchor-id="initializing-the-petri-net">Initializing the Petri Net</h2>
+<p>We initialize the Petri net by creating the places (P1 and P2), the transitions (T1), and setting up the input and output arcs.</p>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">init_petri_net</span>(num_cells<span class="op">::</span><span class="dt">Int</span>, max_active_time<span class="op">::</span><span class="dt">Int</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define cell types</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    cell_types <span class="op">=</span> [NormalCellA, NormalCellB, CancerCellA, CancerCellB]</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define the places</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    P1 <span class="op">=</span> <span class="fu">Place</span>(<span class="st">"P1"</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>               [<span class="fu">Cell</span>(<span class="fu">rand</span>(cell_types)(), i, <span class="fu">rand</span>([<span class="op">:</span>active, <span class="op">:</span>inactive, <span class="op">:</span>dormant]),</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                     max_active_time) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu">round</span>(<span class="dt">Int</span>, <span class="fl">0.5</span> <span class="op">*</span> num_cells)])</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    P2 <span class="op">=</span> <span class="fu">Place</span>(<span class="st">"P2"</span>,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>               [<span class="fu">Cell</span>(<span class="fu">rand</span>(cell_types)(), i, <span class="fu">rand</span>([<span class="op">:</span>active, <span class="op">:</span>inactive, <span class="op">:</span>dormant]),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                     max_active_time) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu">round</span>(<span class="dt">Int</span>, <span class="fl">0.5</span> <span class="op">*</span> num_cells)])</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    P3 <span class="op">=</span> <span class="fu">Place</span>(<span class="st">"P3"</span>, [])</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define the transitions</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    T1 <span class="op">=</span> <span class="fu">Transition</span>(<span class="st">"T1"</span>, [(<span class="fl">3</span>, P1, NormalCellA), (<span class="fl">1</span>, P2, CancerCellA)],</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>                    [(<span class="fl">1</span>, P3, CancerCellA)])</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define arcs</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    input_arc1 <span class="op">=</span> <span class="fu">InputArc</span>(P1, T1, NormalCellA, <span class="fl">30</span>)</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    input_arc2 <span class="op">=</span> <span class="fu">InputArc</span>(P2, T1, CancerCellA, <span class="fl">30</span>)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    output_arc1 <span class="op">=</span> <span class="fu">OutputArc</span>(T1, P3, CancerCellA, <span class="fl">50</span>)</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define the Petri net</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    pn <span class="op">=</span> <span class="fu">PetriNet</span>([P1, P2, P3], [T1], [input_arc1, input_arc2], [output_arc1])</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pn</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<pre><code>init_petri_net (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="updating-the-petri-net" class="level2">
+<h2 class="anchored" data-anchor-id="updating-the-petri-net">Updating the Petri Net</h2>
+<p>We update the Petri net by checking the state of the cells and performing transitions if possible.</p>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">update_petri_net</span>(pn<span class="op">::</span><span class="dt">PetriNet</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate through places</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> place <span class="kw">in</span> pn.places</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check if cancer cells are present in the place</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        cancer_cell_present <span class="op">=</span> <span class="fu">any</span>(cell <span class="op">-&gt;</span> <span class="fu">isa</span>(cell.cell_type, CancerCellA) <span class="op">||</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">isa</span>(cell.cell_type, CancerCellB), place.tokens)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Update dynamical states of all cells in the place</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> cell <span class="kw">in</span> place.tokens</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">simulate_dynamical_state!</span>(cell, cancer_cell_present, max_active_time)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate through transitions</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> transition <span class="kw">in</span> pn.transitions</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Check if the transition can be fired</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="fu">can_fire</span>(transition, pn.places)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Fire the transition and update the system's state</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">perform_transition!</span>(transition)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>update_petri_net (generic function with 1 method)</code></pre>
+</div>
+</div>
+</section>
+<section id="cell-trajectory-visulization" class="level2">
+<h2 class="anchored" data-anchor-id="cell-trajectory-visulization">Cell trajectory visulization</h2>
+<div class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">plot_trajectory</span>(cell_trajectory<span class="op">::</span><span class="dt">Vector{Dict{Tuple{DataType, Symbol}, Int}}</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize empty DataFrame</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    df_traj <span class="op">=</span> <span class="fu">DataFrame</span>(cell_type <span class="op">=</span> DataType[], dynamical_state <span class="op">=</span> <span class="dt">Symbol</span>[], count <span class="op">=</span> <span class="dt">Int</span>[],</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                        time_step <span class="op">=</span> <span class="dt">Int</span>[])</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate over cell_trajectory</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i, dict) <span class="kw">in</span> <span class="fu">enumerate</span>(cell_trajectory)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (key, value) <span class="kw">in</span> dict</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>            cell_type, dynamical_state <span class="op">=</span> key</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">push!</span>(df_traj, (cell_type, dynamical_state, value, i))</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert cell type to string for plotting</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    df_traj[!, <span class="op">:</span>cell_type] <span class="op">=</span> <span class="fu">string</span>.(df_traj[!, <span class="op">:</span>cell_type])</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Separate data frames based on cell type</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    df_normalA <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row[<span class="op">:</span>cell_type] <span class="op">==</span> <span class="st">"NormalCellA"</span>, df_traj)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    df_normalB <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row[<span class="op">:</span>cell_type] <span class="op">==</span> <span class="st">"NormalCellB"</span>, df_traj)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    df_cancerA <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row[<span class="op">:</span>cell_type] <span class="op">==</span> <span class="st">"CancerCellA"</span>, df_traj)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    df_cancerB <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row[<span class="op">:</span>cell_type] <span class="op">==</span> <span class="st">"CancerCellB"</span>, df_traj)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize plot</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fu">plot</span>()</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add lines for each cell type and dynamical state</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> df_cell <span class="kw">in</span> [df_normalA, df_normalB, df_cancerA, df_cancerB]</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> state <span class="kw">in</span> <span class="fu">unique</span>(df_cell[!, <span class="op">:</span>dynamical_state])</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>            df_state <span class="op">=</span> <span class="fu">filter</span>(row <span class="op">-&gt;</span> row[<span class="op">:</span>dynamical_state] <span class="op">==</span> state, df_cell)</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>            <span class="fu">plot!</span>(p, df_state[!, <span class="op">:</span>time_step], df_state[!, <span class="op">:</span>count],</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>                  label <span class="op">=</span> <span class="st">"</span><span class="sc">$</span>(df_state[<span class="fl">1</span>, <span class="op">:</span>cell_type])<span class="st"> - </span><span class="sc">$</span>(state)<span class="st">"</span>)</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Show plot</span></span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>plot_trajectory (generic function with 1 method)</code></pre>
+</div>
+</div>
+<!-- ```{julia}
+# Initialize Petri Net
+pn = init_petri_net()
+
+# Run simulation for 100 time steps
+for t in 1:100
+    # Update Petri Net
+    update_petri_net(pn)
+
+    # Print current state
+    println("Time: ", t)
+    println("State: ", count_cells(pn))
+
+    # Plot current state
+    plot_petri_net(pn)
+end
+``` -->
+<div class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">init_trajectory</span>()</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize an empty array to store the states of the Petri net at each time step</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    trajectory <span class="op">=</span> <span class="dt">Dict</span>{<span class="dt">Tuple</span>{DataType, <span class="dt">Symbol</span>}, <span class="dt">Int</span>}[]</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> trajectory</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">append_to_trajectory!</span>(trajectory, pn)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Append the current state of the Petri net to the trajectory</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">push!</span>(trajectory, <span class="fu">count_cells</span>(pn))</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>append_to_trajectory! (generic function with 1 method)</code></pre>
+</div>
+</div>
+<p>run a simulation</p>
+<div class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize Petri net</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>num_cells <span class="op">=</span> <span class="fl">500</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>max_active_time <span class="op">=</span> <span class="fl">5</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>pn <span class="op">=</span> <span class="fu">init_petri_net</span>(num_cells, max_active_time)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the time range</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>tspan <span class="op">=</span> (<span class="fl">0.0</span>, <span class="fl">30.0</span>)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize trajectory</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>traj <span class="op">=</span> <span class="fu">init_trajectory</span>()</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the simulation</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> tspan[<span class="fl">1</span>]<span class="op">:</span>tspan[<span class="fl">2</span>]</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">update_petri_net</span>(pn)</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">append_to_trajectory!</span>(traj, pn)</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the trajectory</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_trajectory</span>(traj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<!--?xml version="1.0" encoding="utf-8"?-->
+<svg xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" width="672" height="480" viewbox="0 0 2688 1920">
+<defs>
+  <clippath id="clip950">
+    <rect x="0" y="0" width="2688" height="1920"></rect>
+  </clippath>
+</defs>
+<path clip-path="url(#clip950)" d="M0 1920 L2688 1920 L2688 0 L0 0  Z" fill="#ffffff" fill-rule="evenodd" fill-opacity="1"></path>
+<defs>
+  <clippath id="clip951">
+    <rect x="537" y="0" width="1883" height="1883"></rect>
+  </clippath>
+</defs>
+<path clip-path="url(#clip950)" d="M170.159 1801.88 L2640.76 1801.88 L2640.76 47.2441 L170.159 47.2441  Z" fill="#ffffff" fill-rule="evenodd" fill-opacity="1"></path>
+<defs>
+  <clippath id="clip952">
+    <rect x="170" y="47" width="2472" height="1756"></rect>
+  </clippath>
+</defs>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="550.849,1801.88 550.849,47.2441 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="939.307,1801.88 939.307,47.2441 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="1327.77,1801.88 1327.77,47.2441 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="1716.22,1801.88 1716.22,47.2441 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="2104.68,1801.88 2104.68,47.2441 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="2493.14,1801.88 2493.14,47.2441 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,1801.88 2640.76,1801.88 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="550.849,1801.88 550.849,1782.98 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="939.307,1801.88 939.307,1782.98 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="1327.77,1801.88 1327.77,1782.98 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="1716.22,1801.88 1716.22,1782.98 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="2104.68,1801.88 2104.68,1782.98 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="2493.14,1801.88 2493.14,1782.98 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 550.849, 1866.03)" x="550.849" y="1866.03">5</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 939.307, 1866.03)" x="939.307" y="1866.03">10</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1327.77, 1866.03)" x="1327.77" y="1866.03">15</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 1716.22, 1866.03)" x="1716.22" y="1866.03">20</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 2104.68, 1866.03)" x="2104.68" y="1866.03">25</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 2493.14, 1866.03)" x="2493.14" y="1866.03">30</text>
+</g>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="170.159,1764.67 2640.76,1764.67 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="170.159,1515.75 2640.76,1515.75 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="170.159,1266.83 2640.76,1266.83 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="170.159,1017.91 2640.76,1017.91 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="170.159,768.987 2640.76,768.987 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="170.159,520.067 2640.76,520.067 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="170.159,271.147 2640.76,271.147 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,1801.88 170.159,47.2441 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,1764.67 189.057,1764.67 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,1515.75 189.057,1515.75 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,1266.83 189.057,1266.83 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,1017.91 189.057,1017.91 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,768.987 189.057,768.987 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,520.067 189.057,520.067 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="170.159,271.147 189.057,271.147 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 116.458, 1782.17)" x="116.458" y="1782.17">0</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 103.077, 1533.25)" x="103.077" y="1533.25">20</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 103.077, 1284.33)" x="103.077" y="1284.33">40</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 103.077, 1035.41)" x="103.077" y="1035.41">60</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 103.077, 786.487)" x="103.077" y="786.487">80</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 89.6956, 537.567)" x="89.6956" y="537.567">100</text>
+</g>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:middle;" transform="rotate(0, 89.6956, 288.647)" x="89.6956" y="288.647">120</text>
+</g>
+<polyline clip-path="url(#clip952)" style="stroke:#009af9; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,1080.14 628.54,993.015 706.232,1192.15 1094.69,1080.14 1172.38,1304.16 1560.84,1229.49 1638.53,1391.29 2026.99,1279.27 2104.68,1403.73 2493.14,1279.27 2570.83,1403.73 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#e26f46; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,893.447 317.773,246.255 395.465,283.593 473.157,320.931 550.849,358.269 628.54,1167.26 706.232,1005.46 783.924,470.283 861.615,507.621 939.307,544.959 1017,582.297 1094.69,1304.16 1172.38,1117.47 1250.07,694.311 1327.77,731.649 1405.46,768.987 1483.15,806.325 1560.84,1378.84 1638.53,1254.38 1716.22,918.339 1793.92,918.339 1871.61,918.339 1949.3,918.339 2026.99,1403.73 2104.68,1279.27 2182.37,918.339 2260.07,918.339 2337.76,918.339 2415.45,918.339 2493.14,1403.73 2570.83,1279.27 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#3da44d; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,1117.47 628.54,744.095 706.232,1117.47 1094.69,744.095 1172.38,1117.47 1560.84,744.095 1638.53,1117.47 2026.99,744.095 2104.68,1117.47 2493.14,744.095 2570.83,1117.47 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#c271d2; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,744.095 317.773,96.9036 395.465,96.9036 473.157,96.9036 550.849,96.9036 628.54,1117.47 706.232,744.095 783.924,96.9036 861.615,96.9036 939.307,96.9036 1017,96.9036 1094.69,1117.47 1172.38,744.095 1250.07,96.9036 1327.77,96.9036 1405.46,96.9036 1483.15,96.9036 1560.84,1117.47 1638.53,744.095 1716.22,96.9036 1793.92,96.9036 1871.61,96.9036 1949.3,96.9036 2026.99,1117.47 2104.68,744.095 2182.37,96.9036 2260.07,96.9036 2337.76,96.9036 2415.45,96.9036 2493.14,1117.47 2570.83,744.095 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#ac8d18; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,1142.37 395.465,1752.22 550.849,1752.22 628.54,893.447 706.232,1142.37 861.615,1739.77 939.307,1752.22 1017,1739.77 1094.69,918.339 1172.38,1167.26 1250.07,1752.22 1327.77,1727.33 1405.46,1739.77 1483.15,1727.33 1560.84,968.123 1638.53,1167.26 1716.22,1739.77 1793.92,1714.88 1871.61,1727.33 1949.3,1714.88 2026.99,968.123 2104.68,1179.7 2182.37,1739.77 2260.07,1714.88 2337.76,1727.33 2415.45,1714.88 2493.14,968.123 2570.83,1179.7 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#00a9ad; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,843.663 317.773,221.363 395.465,233.809 473.157,221.363 550.849,233.809 628.54,1092.58 706.232,843.663 783.924,221.363 861.615,246.255 939.307,233.809 1017,246.255 1094.69,1067.69 1172.38,818.771 1250.07,233.809 1327.77,258.701 1405.46,246.255 1483.15,258.701 1560.84,1017.91 1638.53,818.771 1716.22,246.255 1793.92,271.147 1871.61,258.701 1949.3,271.147 2026.99,1017.91 2104.68,806.325 2182.37,246.255 2260.07,271.147 2337.76,258.701 2415.45,271.147 2493.14,1017.91 2570.83,806.325 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#ed5d92; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,1291.72 628.54,818.771 706.232,1291.72 1094.69,818.771 1172.38,1291.72 1560.84,818.771 1638.53,1291.72 2026.99,818.771 2104.68,1291.72 2493.14,818.771 2570.83,1291.72 "></polyline>
+<polyline clip-path="url(#clip952)" style="stroke:#c68125; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="240.082,818.771 317.773,345.823 395.465,345.823 473.157,345.823 550.849,345.823 628.54,1291.72 706.232,818.771 783.924,345.823 861.615,345.823 939.307,345.823 1017,345.823 1094.69,1291.72 1172.38,818.771 1250.07,345.823 1327.77,345.823 1405.46,345.823 1483.15,345.823 1560.84,1291.72 1638.53,818.771 1716.22,345.823 1793.92,345.823 1871.61,345.823 1949.3,345.823 2026.99,1291.72 2104.68,818.771 2182.37,345.823 2260.07,345.823 2337.76,345.823 2415.45,345.823 2493.14,1291.72 2570.83,818.771 "></polyline>
+<path clip-path="url(#clip950)" d="M252.512 1743.39 L1001.13 1743.39 L1001.13 1290.69 L252.512 1290.69  Z" fill="#ffffff" fill-rule="evenodd" fill-opacity="1"></path>
+<polyline clip-path="url(#clip950)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="252.512,1743.39 1001.13,1743.39 1001.13,1290.69 252.512,1290.69 252.512,1743.39 "></polyline>
+<polyline clip-path="url(#clip950)" style="stroke:#009af9; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1340.99 444.67,1340.99 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1358.49)" x="472.121" y="1358.49">NormalCellA - dormant</text>
+</g>
+<polyline clip-path="url(#clip950)" style="stroke:#e26f46; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1391.29 444.67,1391.29 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1408.79)" x="472.121" y="1408.79">NormalCellA - active</text>
+</g>
+<polyline clip-path="url(#clip950)" style="stroke:#3da44d; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1441.59 444.67,1441.59 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1459.09)" x="472.121" y="1459.09">NormalCellB - dormant</text>
+</g>
+<polyline clip-path="url(#clip950)" style="stroke:#c271d2; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1491.89 444.67,1491.89 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1509.39)" x="472.121" y="1509.39">NormalCellB - active</text>
+</g>
+<polyline clip-path="url(#clip950)" style="stroke:#ac8d18; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1542.19 444.67,1542.19 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1559.69)" x="472.121" y="1559.69">CancerCellA - dormant</text>
+</g>
+<polyline clip-path="url(#clip950)" style="stroke:#00a9ad; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1592.49 444.67,1592.49 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1609.99)" x="472.121" y="1609.99">CancerCellA - active</text>
+</g>
+<polyline clip-path="url(#clip950)" style="stroke:#ed5d92; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1642.79 444.67,1642.79 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1660.29)" x="472.121" y="1660.29">CancerCellB - dormant</text>
+</g>
+<polyline clip-path="url(#clip950)" style="stroke:#c68125; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="279.963,1693.09 444.67,1693.09 "></polyline>
+<g clip-path="url(#clip950)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:48px; text-anchor:start;" transform="rotate(0, 472.121, 1710.59)" x="472.121" y="1710.59">CancerCellB - active</text>
+</g>
+</svg>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
