@@ -80,12 +80,12 @@ Run filter query on agents in a hierarchy.
 filter(agent, f"_.age > 21 && _.name ∈ ['a', 'b']") # filter query
 ```
 """
-function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{<:FilterQuery})
+function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{FilterQuery})
     filter(collect(values(flatten(a))), queries...)
 end
 
 function Base.filter(a::Vector{<:AbstractAlgebraicAgent},
-        queries::Vararg{<:FilterQuery})
+        queries::Vararg{FilterQuery})
     filtered = AbstractAlgebraicAgent[]
     for a in a
         all(q -> _filter(a, q), queries) && push!(filtered, a)
@@ -139,8 +139,10 @@ Accepts both anonymous queries (`_.name`) and named queries (`name=_.name`). By 
 """
 macro transform(exs...)
     n_noname::Int = 0
-    queries = map(ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) :
-                        (n_noname += 1; ("query_$n_noname", ex)), exs)
+    queries = map(
+        ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) :
+              (n_noname += 1; ("query_$n_noname", ex)),
+        exs)
     names, queries = map(x -> x[1], queries), map(x -> x[2], queries)
     quote
         queries = TransformQuery.($(names),
@@ -165,12 +167,12 @@ agent |> @transform(name=_.name)
 agent |> @transform(name=_.name, _.age)
 ```
 """
-function transform(a::AbstractAlgebraicAgent, queries::Vararg{<:TransformQuery})
+function transform(a::AbstractAlgebraicAgent, queries::Vararg{TransformQuery})
     transform(collect(values(flatten(a))), queries...)
 end
 
 function transform(a::Vector{<:AbstractAlgebraicAgent},
-        queries::Vararg{<:TransformQuery})
+        queries::Vararg{TransformQuery})
     results = []
     for a in a
         try

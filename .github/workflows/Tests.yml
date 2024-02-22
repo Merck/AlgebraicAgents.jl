@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        julia_version: ['1.8']
+        julia_version: ['1.9', '1.10']
         os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3

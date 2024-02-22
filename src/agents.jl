@@ -44,11 +44,12 @@ function define_agent(base_type, super_type, type, __module, constructor)
                     $$(QuoteNode(constructor))
                 end
             end
+
             # it is important to evaluate the macro in the module of the toplevel eval
             Base.eval($__module, expr)
         end
 
-        Core.@__doc__($(esc(Docs.namify(new_name))))
+        Core.@__doc__($__module.$(Docs.namify(new_name)))
         nothing
     end
 end
