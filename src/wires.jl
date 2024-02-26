@@ -55,7 +55,8 @@ function add_wire!(a::AbstractAlgebraicAgent;
         from::T,
         to::T,
         from_var_name = nothing,
-        to_var_name = nothing) where {T <: Union{AbstractAlgebraicAgent, AbstractString, UUID}}
+        to_var_name = nothing) where {T <:
+                                      Union{AbstractAlgebraicAgent, AbstractString, UUID}}
     from, to = to_agent(a, from), to_agent(a, to)
     from_var_name = something(from_var_name, to_var_name)
     to_var_name = something(to_var_name, from_var_name)
@@ -81,7 +82,8 @@ function delete_wires!(a::AbstractAlgebraicAgent;
         from::T,
         to::T,
         from_var_name = nothing,
-        to_var_name = nothing) where {T <: Union{AbstractAlgebraicAgent, AbstractString, UUID}}
+        to_var_name = nothing) where {T <:
+                                      Union{AbstractAlgebraicAgent, AbstractString, UUID}}
     from, to = to_agent(a, from), to_agent(a, to)
 
     ixs = findall(x -> x.from == from && x.to == to, getopera(a).wires)

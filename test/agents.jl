@@ -100,7 +100,8 @@ end
     system_dump = AlgebraicAgents.save(system)
 
     @test system_dump == Dict{String, Any}("name" => "diagram",
-        "inners" => Dict{String, Any}[Dict("name" => "agent1",
+        "inners" => Dict{String, Any}[
+            Dict("name" => "agent1",
                 "arguments" => [1],
                 "type" => MyAgentLoadsave),
             Dict("name" => "agent2", "arguments" => [2], "type" => MyAgentLoadsave)],
@@ -123,8 +124,9 @@ end
     agent1 = inners(system_reloaded)["agent1"]
     @test agent1 isa MyAgentLoadsave
 
-    opera_dump = Dict("instantious" => [
-            Dict("call" => () -> println("instantious interaction")),
+    opera_dump = Dict(
+        "instantious" => [
+            Dict("call" => () -> println("instantious interaction"))
         ],
         "futures" => [Dict("time" => 2.0, "call" => () -> println("future"))],
         "controls" => [Dict("call" => () -> println("control"))])
