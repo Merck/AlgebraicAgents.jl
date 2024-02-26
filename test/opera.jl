@@ -203,11 +203,27 @@ end
     joint_system = ⊕(alice, bob, name = "joint system")
 
     # Add wires.
-    add_wire!(joint_system; from=alice, to=bob, from_var_name="alice_x", to_var_name="bob_x")
-    add_wire!(joint_system; from=bob, to=alice, from_var_name="bob_y", to_var_name="alice_y")
+    add_wire!(joint_system;
+        from = alice,
+        to = bob,
+        from_var_name = "alice_x",
+        to_var_name = "bob_x")
+    add_wire!(joint_system;
+        from = bob,
+        to = alice,
+        from_var_name = "bob_y",
+        to_var_name = "alice_y")
 
-    add_wire!(joint_system; from=alice, to=alice1, from_var_name="alice_x", to_var_name="alice1_x")
-    add_wire!(joint_system; from=bob, to=bob1, from_var_name="bob_x", to_var_name="bob1_x")
+    add_wire!(joint_system;
+        from = alice,
+        to = alice1,
+        from_var_name = "alice_x",
+        to_var_name = "alice1_x")
+    add_wire!(joint_system;
+        from = bob,
+        to = bob1,
+        from_var_name = "bob_x",
+        to_var_name = "bob1_x")
 
     # Show wires.
     @test length(get_wires_from(alice)) == 2
@@ -219,5 +235,5 @@ end
     @test retrieve_input_vars(alice1) == Dict("alice1_x" => "alice")
 
     # Delete wires.
-    @test length(delete_wires!(joint_system; from=alice, to=alice1)) == 3
+    @test length(delete_wires!(joint_system; from = alice, to = alice1)) == 3
 end

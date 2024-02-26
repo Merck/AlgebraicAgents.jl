@@ -396,7 +396,7 @@ function execute_controls!(opera::Opera, time)
 end
 
 # if `expr` is a string, parse it as an expression
-function get_expr(expr; eval_scope=@__MODULE__)
+function get_expr(expr; eval_scope = @__MODULE__)
     if expr isa AbstractString
         Base.eval(eval_scope, Meta.parseall(expr))
     else

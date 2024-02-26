@@ -139,9 +139,8 @@ Accepts both anonymous queries (`_.name`) and named queries (`name=_.name`). By 
 """
 macro transform(exs...)
     n_noname::Int = 0
-    queries = map(
-        ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) :
-              (n_noname += 1; ("query_$n_noname", ex)),
+    queries = map(ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) :
+                        (n_noname += 1; ("query_$n_noname", ex)),
         exs)
     names, queries = map(x -> x[1], queries), map(x -> x[2], queries)
     quote
