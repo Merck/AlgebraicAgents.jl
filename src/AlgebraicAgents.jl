@@ -58,6 +58,14 @@ export draw
 ## save and load
 export save, load
 
+# Annotate and display the "input" and "output" of each agent in a hierarchy,
+# similar to how "wires" connect the agents.
+include("wires.jl")
+export get_wires_from, get_wires_to
+export add_wire!, delete_wires!
+export retrieve_input_vars
+export wiring_diagram
+
 # convenient agent subtyping
 include("agents.jl")
 export @aagent

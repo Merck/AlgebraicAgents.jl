@@ -188,3 +188,36 @@ end
     @test opera.controls_log[1].retval == "alice"
     @test opera.controls_log[2].retval == 1.0
 end
+
+@testset "wires" begin
+    @aagent struct MyAgent4 end
+
+    alice = MyAgent4("alice")
+    alice1 = MyAgent4("alice1")
+    entangle!(alice, alice1)
+
+    bob = MyAgent4("bob")
+    bob1 = MyAgent4("bob1")
+    entangle!(bob, bob1)
+
+    joint_system = ⊕(alice, bob, name = "joint system")
+
+    # Add wires.
+    add_wire!(joint_system; from=alice, to=bob, from_var_name="alice_x", to_var_name="bob_x")
+    add_wire!(joint_system; from=bob, to=alice, from_var_name="bob_y", to_var_name="alice_y")
+
+    add_wire!(joint_system; from=alice, to=alice1, from_var_name="alice_x", to_var_name="alice1_x")
+    add_wire!(joint_system; from=bob, to=bob1, from_var_name="bob_x", to_var_name="bob1_x")
+
+    # Show wires.
+    @test length(get_wires_from(alice)) == 2
+    @test length(get_wires_to(alice1)) == 1
+
+    # Retrieve variables along input wires.
+    AlgebraicAgents.getobservable(a::MyAgent4, args...) = getname(a)
+
+    @test retrieve_input_vars(alice1) == Dict("alice1_x" => "alice")
+
+    # Delete wires.
+    @test length(delete_wires!(joint_system; from=alice, to=alice1)) == 3
+end
