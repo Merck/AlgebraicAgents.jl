@@ -33,7 +33,7 @@ end
 # Literate for tutorials
 const literate_dir = joinpath(@__DIR__, "..", "tutorials")
 const generated_dir = joinpath(@__DIR__, "src", "sketches")
-const skip_dirs = ["traces"]
+const skip_dirs = ["traces", "wires"]
 
 for (root, dirs, files) in walkdir(literate_dir)
     if any(occursin.(skip_dirs, root)) || startswith(root, "_")

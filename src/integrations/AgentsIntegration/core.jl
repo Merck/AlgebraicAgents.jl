@@ -75,12 +75,12 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
         i.df_agents = DataFrames.DataFrame()
         i.df_model = DataFrames.DataFrame()
 
-        i.abm.properties[:__aagent__] = i
+        Agents.abmproperties(i.abm)[:__aagent__] = i
         i.abm0 = deepcopy(i.abm)
         i.t0 = i.t
 
         # initialize contained agents
-        for (id, _) in abm.agents
+        for id in Agents.allids(abm)
             entangle!(i, AAgent(string(id)))
         end
 
@@ -102,8 +102,7 @@ function _step!(a::ABMAgent)
     collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) :
                     a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
-    df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1;
-        a.kwargs...)
+    df_agents, df_model = Agents.run!(a.abm, 1.0; a.kwargs...)
     # append collected data
     ## df_agents
     if collect_agents && ("step" ∈ names(df_agents))
@@ -145,7 +144,7 @@ end
 _projected_to(a::ABMAgent) = a.tspan[2] <= a.t ? true : a.t
 
 function getobservable(a::ABMAgent, obs)
-    getproperty(a.abm.properties, Symbol(obs))
+    getproperty(abmproperties(a.abm), Symbol(obs))
 end
 
 function gettimeobservable(a::ABMAgent, t::Float64, obs)
@@ -174,7 +173,7 @@ Base.propertynames(::AAgent) = fieldnames(AAgent) ∪ [:agent]
 
 function Base.getproperty(a::AAgent, prop::Symbol)
     if prop == :agent
-        getparent(a).abm.agents[parse(Int, getname(a))]
+        (getparent(a).abm)[parse(Int, getname(a))]
     else
         getfield(a, prop)
     end
@@ -220,7 +219,7 @@ end
 
 # retrieve algebraic agent as a property of the core dynamical system
 function extract_agent(model::Agents.ABM, agent::Agents.AbstractAgent)
-    model.properties[:__aagent__].inners[string(agent.id)]
+    abmproperties(model)[:__aagent__].inners[string(agent.id)]
 end
 
 """
@@ -233,7 +232,7 @@ algebraic_model = @get_model abm_model
 ```
 """
 macro get_model(model)
-    :($(esc(model)).properties[:__aagent__])
+    :(abmproperties($(esc(model)))[:__aagent__])
 end
 
 # macros to add, kill agents
@@ -263,7 +262,7 @@ macro a(call)
     if call.args[1] == :add_agent!
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
+            omodel = model isa ABMAgent ? model : abmproperties(model)[:__aagent__]
             agent = $(esc(call))
 
             entangle!(omodel, ABAModel(string(agent.id), a))
@@ -272,7 +271,7 @@ macro a(call)
         agent = model_call.args[2]
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
+            omodel = model isa ABMAgent ? model : abmproperties(model)[:__aagent__]
 
             agent = $(esc(agent))
             agent = agent isa Number ? string(agent) : string(agent.id)

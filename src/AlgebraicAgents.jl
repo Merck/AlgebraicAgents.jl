@@ -64,7 +64,7 @@ include("wires.jl")
 export get_wires_from, get_wires_to
 export add_wire!, delete_wires!
 export retrieve_input_vars
-export wiring_diagram
+export wiring_diagram, run_graphviz
 
 # convenient agent subtyping
 include("agents.jl")
@@ -86,6 +86,6 @@ export @f_str, @filter, filter
 export TransformQuery
 export @transform, transform
 
-include("integrations/requires.jl")
+include("requires.jl")
 
 end

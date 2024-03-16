@@ -31,15 +31,19 @@ AlgebraicAgents.getobservable(a::MyAgent, args...) = getname(a)
 retrieve_input_vars(alice1)
 
 # Plot wires.
-wiring_diagram(joint_system)
+graph1 = wiring_diagram(joint_system)
 
-wiring_diagram(joint_system; parentship_edges=false)
+graph2 = wiring_diagram(joint_system; parentship_edges=false)
 
-wiring_diagram([alice, alice1, bob, bob1])
+graph3 = wiring_diagram([alice, alice1, bob, bob1])
 
-wiring_diagram([[alice, alice1], [bob, bob1]])
+graph4 = wiring_diagram([[alice, alice1], [bob, bob1]])
 
-wiring_diagram([[alice, alice1], [bob, bob1]]; group_labels=["alice", "bob"], parentship_edges=false)
+graph5 = wiring_diagram([[alice, alice1], [bob, bob1]]; group_labels=["alice", "bob"], parentship_edges=false)
+
+# using Graphviz_jll
+
+run_graphviz("graph5.svg", graph5)
 
 # Delete wires.
 delete_wires!(joint_system; from=alice, to=alice1)

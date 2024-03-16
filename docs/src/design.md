@@ -158,3 +158,110 @@ poke(agent, 1.) # call `_interact!(agent)`; this call is added to the instantiou
 bob_agent = only(getagent(agent, r"bob"))
 @call agent wake_up(bob_agent) # translates into `() -> wake_up(bob_agent)` with priority 0
 ```
+
+### Wires
+
+It is possible to explicitly establish oriented "wires" along which information flows between different agents in a hierarchy. Note that it is possible to retrieve and modify the state of any other agent from within any agent, in any way. However, in some cases, it may be desirable to explicitly specify that certain agents observe a particular state variable of another agent.
+
+Consider the following example. First, we set up the hierarchy.
+
+```@setup wires
+using AlgebraicAgents
+@aagent struct MyAgentType end
+```
+
+```@example wires
+alice = MyAgentType("alice")
+alice1 = MyAgentType("alice1")
+entangle!(alice, alice1)
+
+bob = MyAgentType("bob")
+bob1 = MyAgentType("bob1")
+entangle!(bob, bob1)
+
+joint_system = ⊕(alice, bob, name = "joint system")
+```
+
+We then add the wires. Note that the agents connected by a wire can be specified using the respective agent objects, relative paths, or their UUIDs.
+
+Additionally, you can assign names to the edges of a wire (which are `nothing` by default). These names can subsequently be used to fetch the information incoming along an edge, a process that we will describe below.
+
+```@example wires
+add_wire!(joint_system; from=alice, to=bob, from_var_name="alice_x", to_var_name="bob_x")
+add_wire!(joint_system; from=bob, to=alice, from_var_name="bob_y", to_var_name="alice_y")
+
+add_wire!(joint_system; from=alice, to=alice1, from_var_name="alice_x", to_var_name="alice1_x")
+add_wire!(joint_system; from=bob, to=bob1, from_var_name="bob_x", to_var_name="bob1_x")
+```
+
+We list the wires going from and to `alice` and `alice1`, respectively.
+
+```@example wires
+get_wires_from(alice)
+```
+
+```@example wires
+get_wires_to(alice1)
+```
+
+All the wires within an hierarchy can be retrieved as follows:
+
+```@example wires
+getopera(joint_system).wires
+```
+Given an agent, if [`getobservable`](@ref) is implemented for all agents that feed information into the specific agent, we can fetch the values incoming to it.
+
+```@example wires
+AlgebraicAgents.getobservable(a::MyAgentType, args...) = getname(a)
+
+retrieve_input_vars(alice1)
+```
+Additionally, we can plot the agents in the hierarchy, displaying the links between parents and children, along with the wires. The output can be adjusted as needed. Note that it is also possible to export an agent hierarchy as a Mermaid diagram. See [`typetree_mmd`](@ref) and [`agent_hierarchy_mmd`](@ref).
+
+In what follows, [`wiring_diagram`](@ref) generates a visually appealing Graphviz diagram.
+
+```@example wires
+graph1 = wiring_diagram(joint_system)
+
+run_graphviz("gv1.svg", graph1)
+```
+
+![](gv1.svg)
+
+```@example wires
+# Do not show edges between parents and children.
+graph2 = wiring_diagram(joint_system; parentship_edges=false)
+
+run_graphviz("gv2.svg", graph2)
+```
+
+![](gv2.svg)
+
+
+```@example wires
+# Only show listed agents.
+graph3 = wiring_diagram([alice, alice1, bob, bob1])
+
+run_graphviz("gv3.svg", graph3)
+```
+
+![](gv3.svg)
+
+```@example wires
+# Group agents into two clusters.
+graph4 = wiring_diagram([[alice, alice1], [bob, bob1]])
+
+run_graphviz("gv4.svg", graph4)
+```
+
+![](gv4.svg)
+
+```@example wires
+# Provide labels for clusters.
+graph5 = wiring_diagram([[alice, alice1], [bob, bob1]]; group_labels=["alice", "bob"], parentship_edges=false)
+
+run_graphviz("gv5.svg", graph5)
+```
+
+![](gv5.svg)
+
