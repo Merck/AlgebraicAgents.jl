@@ -13,8 +13,7 @@ Initialize `ABMAgent`, incl. hierarchy of ABM's agents.
 Configure the evolutionary step, logging, and step size by keyword arguments below.
 
 # Arguments
-    - `agent_step!`, `model_step!`: same meaning as in `Agents.step!`
-    - in general, any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
+    - any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
     - `when`, `when_model`: when to collect agents data, model data
     true by default, and performs data collection at every step
     if an `AbstractVector`, checks if `t ∈ when`; otherwise a function (model, t) -> ::Bool
@@ -34,8 +33,6 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
     abm::Agents.AgentBasedModel
 
-    agent_step!::Any
-    model_step!::Any # evolutionary functions
     kwargs::Any # kwargs propagated to `run!` (incl. `adata`, `mdata`)
     when::Any
     when_model::Any # when to collect agents data, model data
@@ -54,7 +51,6 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
     ## implement constructor
     function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel;
-            agent_step! = Agents.dummystep, model_step! = Agents.dummystep,
             when = true, when_model = when, step_size = 1.0,
             tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
 
@@ -63,8 +59,6 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
         setup_agent!(i, name)
 
         i.abm = abm
-        i.agent_step! = agent_step!
-        i.model_step! = model_step!
         i.kwargs = kwargs
         i.when = when
         i.when_model = when_model
@@ -103,32 +97,23 @@ function _step!(a::ABMAgent)
                     a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
     df_agents, df_model = Agents.run!(a.abm, 1.0; a.kwargs...)
+
     # append collected data
     ## df_agents
-    if collect_agents && ("step" ∈ names(df_agents))
+    if collect_agents && ("time" ∈ names(df_agents))
         if a.t == a.tspan[1]
-            df_agents_0 = df_agents[df_agents.step .== 0.0, :]
-            df_agents_0[!, :step] = convert.(Float64, df_agents_0[!, :step])
-            df_agents_0[!, :step] .+= a.t
-            append!(a.df_agents, df_agents_0)
+            append!(a.df_agents, df_agents)
+        else
+            push!(a.df_agents, df_agents[end, :])
         end
-        df_agents = df_agents[df_agents.step .== 1.0, :]
-        append!(a.df_agents, df_agents)
-        a.df_agents[(end - DataFrames.nrow(df_agents) + 1):end, :step] .+= a.t +
-                                                                           step_size - 1
     end
     ## df_model
-    if collect_model && ("step" ∈ names(df_model))
+    if collect_model && ("time" ∈ names(df_model))
         if a.t == a.tspan[1]
-            df_model_0 = df_model[df_model.step .== 0.0, :]
-            df_model_0[!, :step] = convert.(Float64, df_model_0[!, :step])
-            df_model_0[!, :step] .+= a.t
-            append!(a.df_model, df_model_0)
+            append!(a.df_model, df_model)
+        else
+            push!(a.df_model, df_model[end, :])
         end
-        df_model = df_model[df_model.step .== 1.0, :]
-        append!(a.df_model, df_model)
-        a.df_model[(end - DataFrames.nrow(df_model) + 1):end, :step] .+= a.t +
-                                                                         step_size - 1
     end
 
     a.t += step_size
@@ -136,8 +121,8 @@ end
 
 # if step is a float, need to retype the dataframe
 function fix_float!(df, val)
-    if eltype(df[!, :step]) <: Int && !isa(val, Int)
-        df[!, :step] = convert.(Float64, df[!, :step])
+    if eltype(df[!, :time]) <: Int && !isa(val, Int)
+        df[!, :time] = convert.(Float64, df[!, :time])
     end
 end
 
@@ -149,10 +134,10 @@ end
 
 function gettimeobservable(a::ABMAgent, t::Float64, obs)
     df = a.df_model
-    @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
+    @assert ("time" ∈ names(df)) && (string(obs) ∈ names(df))
 
     # query dataframe
-    df[df.step .== Int(t), obs] |> first
+    df[df.time .== Int(t), obs] |> first
 end
 
 function _reinit!(a::ABMAgent)
@@ -189,10 +174,10 @@ end
 
 function gettimeobservable(a::AAgent, t::Float64, obs)
     df = getparent(a).df_agents
-    @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
+    @assert ("time" ∈ names(df)) && (string(obs) ∈ names(df))
 
     # query df
-    df[(df.step .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
+    df[(df.time .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
 end
 
 function print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)

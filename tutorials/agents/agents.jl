@@ -193,7 +193,7 @@ to_collect = [(:status, f) for f in (infected, recovered, length)]
 
 # We wrap the model as an agent:
 
-m = ABMAgent("sir_model", abm; agent_step!, tspan=(0., 100.), adata=to_collect)
+m = ABMAgent("sir_model", abm; tspan=(0., 100.), adata=to_collect)
 
 # And we simulate the dynamics:
 
