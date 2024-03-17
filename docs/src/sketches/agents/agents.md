@@ -20,7 +20,7 @@ using Distributions: Poisson, DiscreteNonParametric
 using DrWatson: @dict
 using Plots
 
-@agent PoorSoul GraphAgent begin
+@agent struct PoorSoul(GraphAgent)
     days_infected::Int  ## number of days since is infected
     status::Symbol  ## 1: S, 2: I, 3:R
 end
@@ -68,7 +68,7 @@ function model_initiation(;
                        C,
                        death_rate)
     space = GraphSpace(complete_digraph(C))
-    model = ABM(PoorSoul, space; properties, rng)
+    model = ABM(PoorSoul, space; properties, rng, model_step! = identity)
 
     # Add initial individuals
     for city in 1:C, n in 1:Ns[city]

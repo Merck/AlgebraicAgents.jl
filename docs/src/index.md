@@ -177,6 +177,17 @@ flatten
 @draw_df
 ```
 
+### Wires and wiring diagrams
+
+```@docs
+get_wires_from
+get_wires_to
+add_wire!
+delete_wires!
+retrieve_input_vars
+wiring_diagram
+```
+
 ### Helper functions for Mermaid diagrams
 
 ```@docs

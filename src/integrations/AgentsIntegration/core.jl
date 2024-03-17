@@ -13,8 +13,7 @@ Initialize `ABMAgent`, incl. hierarchy of ABM's agents.
 Configure the evolutionary step, logging, and step size by keyword arguments below.
 
 # Arguments
-    - `agent_step!`, `model_step!`: same meaning as in `Agents.step!`
-    - in general, any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
+    - any kwarg accepted by `Agents.run!`, incl. `adata`, `mdata`
     - `when`, `when_model`: when to collect agents data, model data
     true by default, and performs data collection at every step
     if an `AbstractVector`, checks if `t ∈ when`; otherwise a function (model, t) -> ::Bool
@@ -34,8 +33,6 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
     abm::Agents.AgentBasedModel
 
-    agent_step!::Any
-    model_step!::Any # evolutionary functions
     kwargs::Any # kwargs propagated to `run!` (incl. `adata`, `mdata`)
     when::Any
     when_model::Any # when to collect agents data, model data
@@ -54,7 +51,6 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
 
     ## implement constructor
     function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel;
-            agent_step! = Agents.dummystep, model_step! = Agents.dummystep,
             when = true, when_model = when, step_size = 1.0,
             tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
 
@@ -63,8 +59,6 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
         setup_agent!(i, name)
 
         i.abm = abm
-        i.agent_step! = agent_step!
-        i.model_step! = model_step!
         i.kwargs = kwargs
         i.when = when
         i.when_model = when_model
@@ -75,12 +69,12 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
         i.df_agents = DataFrames.DataFrame()
         i.df_model = DataFrames.DataFrame()
 
-        i.abm.properties[:__aagent__] = i
+        Agents.abmproperties(i.abm)[:__aagent__] = i
         i.abm0 = deepcopy(i.abm)
         i.t0 = i.t
 
         # initialize contained agents
-        for (id, _) in abm.agents
+        for id in Agents.allids(abm)
             entangle!(i, AAgent(string(id)))
         end
 
@@ -102,34 +96,24 @@ function _step!(a::ABMAgent)
     collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) :
                     a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
-    df_agents, df_model = Agents.run!(a.abm, a.agent_step!, a.model_step!, 1;
-        a.kwargs...)
+    df_agents, df_model = Agents.run!(a.abm, 1.0; a.kwargs...)
+
     # append collected data
     ## df_agents
-    if collect_agents && ("step" ∈ names(df_agents))
+    if collect_agents && ("time" ∈ names(df_agents))
         if a.t == a.tspan[1]
-            df_agents_0 = df_agents[df_agents.step .== 0.0, :]
-            df_agents_0[!, :step] = convert.(Float64, df_agents_0[!, :step])
-            df_agents_0[!, :step] .+= a.t
-            append!(a.df_agents, df_agents_0)
+            append!(a.df_agents, df_agents)
+        else
+            push!(a.df_agents, df_agents[end, :])
         end
-        df_agents = df_agents[df_agents.step .== 1.0, :]
-        append!(a.df_agents, df_agents)
-        a.df_agents[(end - DataFrames.nrow(df_agents) + 1):end, :step] .+= a.t +
-                                                                           step_size - 1
     end
     ## df_model
-    if collect_model && ("step" ∈ names(df_model))
+    if collect_model && ("time" ∈ names(df_model))
         if a.t == a.tspan[1]
-            df_model_0 = df_model[df_model.step .== 0.0, :]
-            df_model_0[!, :step] = convert.(Float64, df_model_0[!, :step])
-            df_model_0[!, :step] .+= a.t
-            append!(a.df_model, df_model_0)
+            append!(a.df_model, df_model)
+        else
+            push!(a.df_model, df_model[end, :])
         end
-        df_model = df_model[df_model.step .== 1.0, :]
-        append!(a.df_model, df_model)
-        a.df_model[(end - DataFrames.nrow(df_model) + 1):end, :step] .+= a.t +
-                                                                         step_size - 1
     end
 
     a.t += step_size
@@ -137,23 +121,23 @@ end
 
 # if step is a float, need to retype the dataframe
 function fix_float!(df, val)
-    if eltype(df[!, :step]) <: Int && !isa(val, Int)
-        df[!, :step] = convert.(Float64, df[!, :step])
+    if eltype(df[!, :time]) <: Int && !isa(val, Int)
+        df[!, :time] = convert.(Float64, df[!, :time])
     end
 end
 
 _projected_to(a::ABMAgent) = a.tspan[2] <= a.t ? true : a.t
 
 function getobservable(a::ABMAgent, obs)
-    getproperty(a.abm.properties, Symbol(obs))
+    getproperty(abmproperties(a.abm), Symbol(obs))
 end
 
 function gettimeobservable(a::ABMAgent, t::Float64, obs)
     df = a.df_model
-    @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
+    @assert ("time" ∈ names(df)) && (string(obs) ∈ names(df))
 
     # query dataframe
-    df[df.step .== Int(t), obs] |> first
+    df[df.time .== Int(t), obs] |> first
 end
 
 function _reinit!(a::ABMAgent)
@@ -174,7 +158,7 @@ Base.propertynames(::AAgent) = fieldnames(AAgent) ∪ [:agent]
 
 function Base.getproperty(a::AAgent, prop::Symbol)
     if prop == :agent
-        getparent(a).abm.agents[parse(Int, getname(a))]
+        (getparent(a).abm)[parse(Int, getname(a))]
     else
         getfield(a, prop)
     end
@@ -190,10 +174,10 @@ end
 
 function gettimeobservable(a::AAgent, t::Float64, obs)
     df = getparent(a).df_agents
-    @assert ("step" ∈ names(df)) && (string(obs) ∈ names(df))
+    @assert ("time" ∈ names(df)) && (string(obs) ∈ names(df))
 
     # query df
-    df[(df.step .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
+    df[(df.time .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
 end
 
 function print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)
@@ -220,7 +204,7 @@ end
 
 # retrieve algebraic agent as a property of the core dynamical system
 function extract_agent(model::Agents.ABM, agent::Agents.AbstractAgent)
-    model.properties[:__aagent__].inners[string(agent.id)]
+    abmproperties(model)[:__aagent__].inners[string(agent.id)]
 end
 
 """
@@ -233,7 +217,7 @@ algebraic_model = @get_model abm_model
 ```
 """
 macro get_model(model)
-    :($(esc(model)).properties[:__aagent__])
+    :(abmproperties($(esc(model)))[:__aagent__])
 end
 
 # macros to add, kill agents
@@ -263,7 +247,7 @@ macro a(call)
     if call.args[1] == :add_agent!
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
+            omodel = model isa ABMAgent ? model : abmproperties(model)[:__aagent__]
             agent = $(esc(call))
 
             entangle!(omodel, ABAModel(string(agent.id), a))
@@ -272,7 +256,7 @@ macro a(call)
         agent = model_call.args[2]
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : model.properties[:__aagent__]
+            omodel = model isa ABMAgent ? model : abmproperties(model)[:__aagent__]
 
             agent = $(esc(agent))
             agent = agent isa Number ? string(agent) : string(agent.id)

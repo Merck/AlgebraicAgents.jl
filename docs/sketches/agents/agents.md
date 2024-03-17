@@ -1,13 +1,18 @@
-# # Agents.jl Integration
-#
-# We instantiate an agent-based SIR model based on [Agents.jl: SIR model for the spread of COVID-19](https://juliadynamics.github.io/Agents.jl/stable/examples/sir/) make use of a SIR model constructor from an Agents.jl' [SIR model for the spread of COVID-19](https://juliadynamics.github.io/Agents.jl/stable/examples/sir/), and then we simulate the model using AlgebraicAgents.jl
-#
-# ## SIR Model in Agents.jl
-#
-# To begin with, we define the Agents.jl model:
+```@meta
+EditURL = "../../../../tutorials/agents/agents.jl"
+```
 
-## SIR model for the spread of COVID-19
-## taken from https://juliadynamics.github.io/Agents.jl/stable/examples/sir/
+# Agents.jl Integration
+
+We instantiate an agent-based SIR model based on [Agents.jl: SIR model for the spread of COVID-19](https://juliadynamics.github.io/Agents.jl/stable/examples/sir/) make use of a SIR model constructor from an Agents.jl' [SIR model for the spread of COVID-19](https://juliadynamics.github.io/Agents.jl/stable/examples/sir/), and then we simulate the model using AlgebraicAgents.jl
+
+## SIR Model in Agents.jl
+
+To begin with, we define the Agents.jl model:
+
+````@example agents
+# SIR model for the spread of COVID-19
+# taken from https://juliadynamics.github.io/Agents.jl/stable/examples/sir/
 using AlgebraicAgents
 using Agents, Random
 using Agents.DataFrames, Agents.Graphs
@@ -15,13 +20,15 @@ using Distributions: Poisson, DiscreteNonParametric
 using DrWatson: @dict
 using Plots
 
-@agent struct PoorSoul(GraphAgent)
+@agent PoorSoul GraphAgent begin
     days_infected::Int  ## number of days since is infected
     status::Symbol  ## 1: S, 2: I, 3:R
 end
+````
 
-# Let's provide the constructors:
+Let's provide the constructors:
 
+````@example agents
 function model_initiation(;
                           Ns,
                           migration_rates,
@@ -42,7 +49,7 @@ function model_initiation(;
     @assert size(migration_rates, 1)==size(migration_rates, 2) "migration_rates rates should be a square matrix"
 
     C = length(Ns)
-    ## normalize migration_rates
+    # normalize migration_rates
     migration_rates_sum = sum(migration_rates, dims = 2)
     for c in 1:C
         migration_rates[c, :] ./= migration_rates_sum[c]
@@ -61,13 +68,13 @@ function model_initiation(;
                        C,
                        death_rate)
     space = GraphSpace(complete_digraph(C))
-    model = ABM(PoorSoul, space; properties, rng, model_step! = identity)
+    model = ABM(PoorSoul, space; properties, rng)
 
-    ## Add initial individuals
+    # Add initial individuals
     for city in 1:C, n in 1:Ns[city]
         ind = add_agent!(city, model, 0, :S) ## Susceptible
     end
-    ## add infected individuals
+    # add infected individuals
     for city in 1:C
         inds = ids_in_position(city, model)
         for n in 1:Is[city]
@@ -118,9 +125,11 @@ function create_params(;
 
     return params
 end
+````
 
-# It remains to provide the SIR stepping functions:
+It remains to provide the SIR stepping functions:
 
+````@example agents
 function agent_step!(agent, model)
     @get_model model
     extract_agent(model, agent)
@@ -174,31 +183,41 @@ function recover_or_die!(agent, model)
         end
     end
 end
+````
 
-# That's it!
-#
-# ## Simulation Using AlgebraicAgents.jl
-# 
-# We instantiate a sample `ABM` model:
+That's it!
 
-## create a sample agent based model
+## Simulation Using AlgebraicAgents.jl
+
+We instantiate a sample `ABM` model:
+
+````@example agents
+# create a sample agent based model
 params = create_params(C = 8, max_travel_rate = 0.01)
 abm = model_initiation(; params...)
+````
 
-# Let's specify what data to collect:
+Let's specify what data to collect:
 
+````@example agents
 infected(x) = count(i == :I for i in x)
 recovered(x) = count(i == :R for i in x)
 to_collect = [(:status, f) for f in (infected, recovered, length)]
+````
 
-# We wrap the model as an agent:
+We wrap the model as an agent:
 
-m = ABMAgent("sir_model", abm; tspan=(0., 100.), adata=to_collect)
+````@example agents
+m = ABMAgent("sir_model", abm; agent_step!, tspan=(0., 100.), adata=to_collect)
+````
 
-# And we simulate the dynamics:
+And we simulate the dynamics:
 
+````@example agents
 simulate(m)
+````
 
-# 
-
+````@example agents
 draw(m)
+````
+

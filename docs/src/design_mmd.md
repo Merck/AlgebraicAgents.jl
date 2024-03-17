@@ -10,6 +10,12 @@
   mermaid.initialize({ startOnLoad: true });
 </script>
 ```
+```@raw html
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
+```
 # Framework design
 
 Here we describe the design principles of the AlgebraicAgents. It should be of most use to advanced users and persons interested in contributing to the software. New users are encouraged to start by reading one of the tutorials ("sketches").

@@ -12,6 +12,10 @@ const FutureLog = NamedTuple{(:id, :time, :retval),
 const Control = NamedTuple{(:id, :call), <:Tuple{AbstractString, Function}}
 const ControlLog = NamedTuple{(:id, :time, :retval), <:Tuple{AbstractString, Any, Any}}
 
+## wire type
+const Wire = NamedTuple{(:from, :from_var_name, :to, :to_var_name),
+    <:Tuple{AbstractAlgebraicAgent, Any, AbstractAlgebraicAgent, Any}}
+
 """
     Opera(uuid2agent_pairs...)
 A dynamic structure that 
@@ -96,6 +100,8 @@ mutable struct Opera
     controls::Vector{Control}
     controls_log::Vector{ControlLog}
     n_controls::Ref{UInt}
+    # wires
+    wires::Vector{Wire}
 
     function Opera(uuid2agent_pairs...)
         new(Dict{UUID, AbstractAlgebraicAgent}(uuid2agent_pairs...),
@@ -107,7 +113,8 @@ mutable struct Opera
             0,
             Vector{Control}(undef, 0),
             Vector{ControlLog}(undef, 0),
-            0)
+            0,
+            Vector{Wire}(undef, 0))
     end
 end
 
@@ -389,7 +396,7 @@ function execute_controls!(opera::Opera, time)
 end
 
 # if `expr` is a string, parse it as an expression
-function get_expr(expr)
+function get_expr(expr; eval_scope = @__MODULE__)
     if expr isa AbstractString
         Base.eval(eval_scope, Meta.parseall(expr))
     else
@@ -423,7 +430,7 @@ function load_opera!(opera::Opera, dump::AbstractDict; eval_scope = @__MODULE__)
     # instantious interactions
     for interaction in get(dump, "instantious", [])
         add_instantious!(opera,
-            get_expr(interaction["call"]),
+            get_expr(interaction["call"]; eval_scope),
             get(interaction, "priority", 0),
             get(interaction,
                 "id",
@@ -434,14 +441,14 @@ function load_opera!(opera::Opera, dump::AbstractDict; eval_scope = @__MODULE__)
     for interaction in get(dump, "futures", [])
         add_future!(opera,
             interaction["time"],
-            get_expr(interaction["call"]),
+            get_expr(interaction["call"]; eval_scope),
             get(interaction, "id", "future_" * get_count(opera, :n_futures)))
     end
 
     # controls
     for interaction in get(dump, "controls", [])
         add_control!(opera,
-            get_expr(interaction["call"]),
+            get_expr(interaction["call"]; eval_scope),
             get(interaction, "id", "control_" * get_count(opera, :n_controls)))
     end
 
