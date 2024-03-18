@@ -11,7 +11,7 @@ dotf(u,p,t) = -p.δ*u
 
 rabbit_growth = wrap_system(&quot;rabbit_growth&quot;, ContinuousResourceSharer{Float64}(1, dotr))
 rabbitfox_predation = wrap_system(&quot;rabbitfox_predation&quot;, ContinuousResourceSharer{Float64}(2, dotrf))
-fox_decline = wrap_system(&quot;fox_decline&quot;, ContinuousResourceSharer{Float64}(1, dotf))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">6b56658f </span>of type <span class="sgr32">GraphicalAgent </span>
+fox_decline = wrap_system(&quot;fox_decline&quot;, ContinuousResourceSharer{Float64}(1, dotf))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">0e043798 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rf = @relation (rabbits,foxes) begin
@@ -110,26 +110,26 @@ end</code></pre><div class="c-set">
   </tbody>
 </table>
 </div>
-<p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit_growth, rabbitfox_predation, fox_decline, diagram=rf, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">fba8707c </span>of type <span class="sgr32">GraphicalAgent </span>
+<p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit_growth, rabbitfox_predation, fox_decline, diagram=rf, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">b516e768 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;rabbits&quot;, &quot;foxes&quot;]
    <span class="sgr1">inner agents: </span></span>
-    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">6b56658f </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">0e043798 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">2b1f05a0 </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">597417ea </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;, &quot;2&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">0400937e </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">a4fa36d9 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
 params = LVector(α=.3, β=0.015, γ=0.015, δ=0.7)
 tspan = (0.0, 100.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, 100.0)</code></pre><pre><code class="language-julia hljs">import DifferentialEquations
-prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">f531c41f </span>of type <span class="sgr32">DiffEqAgent </span>
+prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">d2ac23a2 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 0.0
@@ -137,18 +137,18 @@ u: 2-element Vector{Float64}:
   10.0
  100.0
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">6b56658f </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">0e043798 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">2b1f05a0 </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">597417ea </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;, &quot;2&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">0400937e </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">a4fa36d9 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
-       <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><pre><code class="language-julia hljs">sol = simulate(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">f531c41f </span>of type <span class="sgr32">DiffEqAgent </span>
+       <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><pre><code class="language-julia hljs">sol = simulate(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">d2ac23a2 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 100.0
@@ -156,15 +156,15 @@ u: 2-element Vector{Float64}:
  119.83184713731032
    0.5146458055479697
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">6b56658f </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">0e043798 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">2b1f05a0 </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">597417ea </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;, &quot;2&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">0400937e </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">a4fa36d9 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><pre><code class="language-julia hljs">draw(sol; label=[&quot;rabbits&quot; &quot;foxes&quot;])</code></pre><?xml version="1.0" encoding="utf-8"?>
@@ -224,7 +224,7 @@ using Plots</code></pre><pre><code class="language-julia hljs">using AlgebraicAg
 dotf(u, x, p, t) = [p.γ*u[1]*x[1] - p.δ*u[1]]
 
 rabbit = wrap_system(&quot;rabbit&quot;, ContinuousMachine{Float64}(1,1,1, dotr, (u, p, t) -&gt; u))
-fox    = wrap_system(&quot;fox&quot;, ContinuousMachine{Float64}(1,1,1, dotf, (u, p, t) -&gt; u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox </span></span>with uuid <span class="sgr32">652503fb </span>of type <span class="sgr32">GraphicalAgent </span>
+fox    = wrap_system(&quot;fox&quot;, ContinuousMachine{Float64}(1,1,1, dotf, (u, p, t) -&gt; u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox </span></span>with uuid <span class="sgr32">d1c5ffd3 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rabbitfox_pattern = WiringDiagram([], [:rabbits, :foxes])
@@ -236,22 +236,22 @@ add_wires!(rabbitfox_pattern, Pair[
     (fox_box, 1)    =&gt; (rabbit_box, 1),
     (rabbit_box, 1) =&gt; (output_id(rabbitfox_pattern), 1),
     (fox_box, 1)    =&gt; (output_id(rabbitfox_pattern), 2)
-])</code></pre><p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">91dbfb51 </span>of type <span class="sgr32">GraphicalAgent </span>
+])</code></pre><p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">c52b3bf5 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;rabbits&quot;, &quot;foxes&quot;]
    <span class="sgr1">inner agents: </span></span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">9c82abfe </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">146869b2 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">652503fb </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d1c5ffd3 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
 params = LVector(α=.3, β=0.015, γ=0.015, δ=0.7)
 tspan = (0.0, 100.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, 100.0)</code></pre><pre><code class="language-julia hljs"># convert the system to a problem
-prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">c334e390 </span>of type <span class="sgr32">DiffEqAgent </span>
+prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">965d6c16 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 0.0
@@ -259,15 +259,15 @@ u: 2-element Vector{Float64}:
   10.0
  100.0
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">9c82abfe </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">146869b2 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">652503fb </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d1c5ffd3 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><pre><code class="language-julia hljs"># solve the problem
-simulate(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">c334e390 </span>of type <span class="sgr32">DiffEqAgent </span>
+simulate(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">965d6c16 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 100.0
@@ -275,11 +275,11 @@ u: 2-element Vector{Float64}:
  119.83184713730492
    0.5146458055478338
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">9c82abfe </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">146869b2 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">652503fb </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d1c5ffd3 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><pre><code class="language-julia hljs"># plot
@@ -336,22 +336,22 @@ draw(prob; label=[&quot;rabbits&quot; &quot;foxes&quot;])</code></pre><?xml vers
 <h2 id="Open-CPG"><a class="docs-heading-anchor" href="#Open-CPG">Open CPG</a><a id="Open-CPG-1"></a><a class="docs-heading-anchor-permalink" href="#Open-CPG" title="Permalink"></a></h2><pre><code class="language-julia hljs">using AlgebraicDynamics.CPortGraphDynam
 using AlgebraicDynamics.CPortGraphDynam: barbell</code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rabbitfox_pattern = barbell(1)
 
-rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">a2470c04 </span>of type <span class="sgr32">GraphicalAgent </span>
+rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">c168328e </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: String[]
    <span class="sgr1">inner agents: </span></span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">9c82abfe </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">146869b2 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">652503fb </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d1c5ffd3 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
 params = LVector(α=.3, β=0.015, γ=0.015, δ=0.7)
 tspan = (0.0, 100.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, 100.0)</code></pre><pre><code class="language-julia hljs"># convert the system to a problem
-prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">b3fbbfdf </span>of type <span class="sgr32">DiffEqAgent </span>
+prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">0939e1b5 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 0.0
@@ -359,15 +359,15 @@ u: 2-element Vector{Float64}:
   10.0
  100.0
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">9c82abfe </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">146869b2 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">652503fb </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d1c5ffd3 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><pre><code class="language-julia hljs"># solve the problem
-simulate(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">b3fbbfdf </span>of type <span class="sgr32">DiffEqAgent </span>
+simulate(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">0939e1b5 </span>of type <span class="sgr32">DiffEqAgent </span>
    custom properties:
    <span class="sgr3">integrator: </span>
 t: 100.0
@@ -375,11 +375,11 @@ u: 2-element Vector{Float64}:
  119.83184713730492
    0.5146458055478338
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">9c82abfe </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">146869b2 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">652503fb </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d1c5ffd3 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><pre><code class="language-julia hljs"># plot
@@ -433,4 +433,4 @@ draw(prob; label=[&quot;rabbits&quot; &quot;foxes&quot;])</code></pre><?xml vers
 <polyline clip-path="url(#clip450)" style="stroke:#009af9; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="1927.52,144.949 2072.98,144.949 "/>
 <path clip-path="url(#clip450)" d="M2112.4 140.284 Q2111.69 139.868 2110.83 139.682 Q2110 139.474 2108.98 139.474 Q2105.37 139.474 2103.42 141.835 Q2101.5 144.173 2101.5 148.571 L2101.5 162.229 L2097.22 162.229 L2097.22 136.303 L2101.5 136.303 L2101.5 140.331 Q2102.84 137.969 2105 136.835 Q2107.15 135.678 2110.23 135.678 Q2110.67 135.678 2111.2 135.747 Q2111.73 135.794 2112.38 135.909 L2112.4 140.284 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2128.65 149.196 Q2123.49 149.196 2121.5 150.377 Q2119.51 151.557 2119.51 154.405 Q2119.51 156.673 2120.99 158.016 Q2122.5 159.335 2125.07 159.335 Q2128.61 159.335 2130.74 156.835 Q2132.89 154.312 2132.89 150.145 L2132.89 149.196 L2128.65 149.196 M2137.15 147.437 L2137.15 162.229 L2132.89 162.229 L2132.89 158.293 Q2131.43 160.655 2129.26 161.789 Q2127.08 162.9 2123.93 162.9 Q2119.95 162.9 2117.59 160.678 Q2115.25 158.432 2115.25 154.682 Q2115.25 150.307 2118.17 148.085 Q2121.11 145.863 2126.92 145.863 L2132.89 145.863 L2132.89 145.446 Q2132.89 142.507 2130.95 140.909 Q2129.02 139.289 2125.53 139.289 Q2123.31 139.289 2121.2 139.821 Q2119.09 140.354 2117.15 141.419 L2117.15 137.483 Q2119.49 136.581 2121.69 136.141 Q2123.89 135.678 2125.97 135.678 Q2131.59 135.678 2134.37 138.594 Q2137.15 141.511 2137.15 147.437 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2164.53 149.289 Q2164.53 144.59 2162.59 141.928 Q2160.67 139.243 2157.29 139.243 Q2153.91 139.243 2151.96 141.928 Q2150.04 144.59 2150.04 149.289 Q2150.04 153.988 2151.96 156.673 Q2153.91 159.335 2157.29 159.335 Q2160.67 159.335 2162.59 156.673 Q2164.53 153.988 2164.53 149.289 M2150.04 140.238 Q2151.39 137.923 2153.42 136.812 Q2155.48 135.678 2158.33 135.678 Q2163.05 135.678 2165.99 139.428 Q2168.95 143.178 2168.95 149.289 Q2168.95 155.4 2165.99 159.15 Q2163.05 162.9 2158.33 162.9 Q2155.48 162.9 2153.42 161.789 Q2151.39 160.655 2150.04 158.34 L2150.04 162.229 L2145.76 162.229 L2145.76 126.21 L2150.04 126.21 L2150.04 140.238 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2194.63 149.289 Q2194.63 144.59 2192.68 141.928 Q2190.76 139.243 2187.38 139.243 Q2184 139.243 2182.06 141.928 Q2180.13 144.59 2180.13 149.289 Q2180.13 153.988 2182.06 156.673 Q2184 159.335 2187.38 159.335 Q2190.76 159.335 2192.68 156.673 Q2194.63 153.988 2194.63 149.289 M2180.13 140.238 Q2181.48 137.923 2183.51 136.812 Q2185.57 135.678 2188.42 135.678 Q2193.14 135.678 2196.08 139.428 Q2199.05 143.178 2199.05 149.289 Q2199.05 155.4 2196.08 159.15 Q2193.14 162.9 2188.42 162.9 Q2185.57 162.9 2183.51 161.789 Q2181.48 160.655 2180.13 158.34 L2180.13 162.229 L2175.85 162.229 L2175.85 126.21 L2180.13 126.21 L2180.13 140.238 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2206.11 136.303 L2210.37 136.303 L2210.37 162.229 L2206.11 162.229 L2206.11 136.303 M2206.11 126.21 L2210.37 126.21 L2210.37 131.604 L2206.11 131.604 L2206.11 126.21 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2223.49 128.942 L2223.49 136.303 L2232.26 136.303 L2232.26 139.613 L2223.49 139.613 L2223.49 153.687 Q2223.49 156.858 2224.35 157.761 Q2225.23 158.664 2227.89 158.664 L2232.26 158.664 L2232.26 162.229 L2227.89 162.229 Q2222.96 162.229 2221.08 160.4 Q2219.21 158.548 2219.21 153.687 L2219.21 139.613 L2216.08 139.613 L2216.08 136.303 L2219.21 136.303 L2219.21 128.942 L2223.49 128.942 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2254.39 137.067 L2254.39 141.094 Q2252.59 140.169 2250.64 139.706 Q2248.7 139.243 2246.62 139.243 Q2243.44 139.243 2241.85 140.215 Q2240.27 141.187 2240.27 143.131 Q2240.27 144.613 2241.41 145.469 Q2242.54 146.303 2245.97 147.067 L2247.43 147.391 Q2251.96 148.363 2253.86 150.145 Q2255.78 151.905 2255.78 155.076 Q2255.78 158.687 2252.91 160.793 Q2250.07 162.9 2245.07 162.9 Q2242.98 162.9 2240.71 162.483 Q2238.47 162.09 2235.97 161.28 L2235.97 156.881 Q2238.33 158.108 2240.62 158.733 Q2242.91 159.335 2245.16 159.335 Q2248.17 159.335 2249.79 158.317 Q2251.41 157.275 2251.41 155.4 Q2251.41 153.664 2250.23 152.738 Q2249.07 151.812 2245.11 150.956 L2243.63 150.608 Q2239.67 149.775 2237.91 148.062 Q2236.15 146.326 2236.15 143.317 Q2236.15 139.659 2238.75 137.669 Q2241.34 135.678 2246.11 135.678 Q2248.47 135.678 2250.55 136.025 Q2252.63 136.372 2254.39 137.067 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><polyline clip-path="url(#clip450)" style="stroke:#e26f46; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="1927.52,196.789 2072.98,196.789 "/>
 <path clip-path="url(#clip450)" d="M2113.72 178.05 L2113.72 181.592 L2109.65 181.592 Q2107.36 181.592 2106.45 182.518 Q2105.58 183.444 2105.58 185.851 L2105.58 188.143 L2112.59 188.143 L2112.59 191.453 L2105.58 191.453 L2105.58 214.069 L2101.29 214.069 L2101.29 191.453 L2097.22 191.453 L2097.22 188.143 L2101.29 188.143 L2101.29 186.337 Q2101.29 182.009 2103.31 180.041 Q2105.32 178.05 2109.7 178.05 L2113.72 178.05 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2127.33 191.129 Q2123.91 191.129 2121.92 193.814 Q2119.93 196.476 2119.93 201.129 Q2119.93 205.782 2121.89 208.467 Q2123.89 211.129 2127.33 211.129 Q2130.74 211.129 2132.73 208.444 Q2134.72 205.758 2134.72 201.129 Q2134.72 196.522 2132.73 193.837 Q2130.74 191.129 2127.33 191.129 M2127.33 187.518 Q2132.89 187.518 2136.06 191.129 Q2139.23 194.74 2139.23 201.129 Q2139.23 207.495 2136.06 211.129 Q2132.89 214.74 2127.33 214.74 Q2121.76 214.74 2118.58 211.129 Q2115.44 207.495 2115.44 201.129 Q2115.44 194.74 2118.58 191.129 Q2121.76 187.518 2127.33 187.518 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2166.38 188.143 L2157.01 200.759 L2166.87 214.069 L2161.85 214.069 L2154.3 203.883 L2146.76 214.069 L2141.73 214.069 L2151.8 200.504 L2142.59 188.143 L2147.61 188.143 L2154.49 197.379 L2161.36 188.143 L2166.38 188.143 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2193.61 200.041 L2193.61 202.124 L2174.02 202.124 Q2174.3 206.522 2176.66 208.837 Q2179.05 211.129 2183.28 211.129 Q2185.74 211.129 2188.03 210.527 Q2190.34 209.925 2192.61 208.721 L2192.61 212.749 Q2190.32 213.721 2187.91 214.231 Q2185.51 214.74 2183.03 214.74 Q2176.82 214.74 2173.19 211.129 Q2169.58 207.518 2169.58 201.36 Q2169.58 194.995 2173.01 191.268 Q2176.45 187.518 2182.29 187.518 Q2187.52 187.518 2190.55 190.897 Q2193.61 194.254 2193.61 200.041 M2189.35 198.791 Q2189.3 195.296 2187.38 193.212 Q2185.48 191.129 2182.33 191.129 Q2178.77 191.129 2176.62 193.143 Q2174.49 195.157 2174.16 198.814 L2189.35 198.791 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2217.13 188.907 L2217.13 192.934 Q2215.32 192.009 2213.38 191.546 Q2211.43 191.083 2209.35 191.083 Q2206.18 191.083 2204.58 192.055 Q2203.01 193.027 2203.01 194.971 Q2203.01 196.453 2204.14 197.309 Q2205.27 198.143 2208.7 198.907 L2210.16 199.231 Q2214.69 200.203 2216.59 201.985 Q2218.51 203.745 2218.51 206.916 Q2218.51 210.527 2215.64 212.633 Q2212.8 214.74 2207.8 214.74 Q2205.71 214.74 2203.44 214.323 Q2201.2 213.93 2198.7 213.12 L2198.7 208.721 Q2201.06 209.948 2203.35 210.573 Q2205.64 211.175 2207.89 211.175 Q2210.9 211.175 2212.52 210.157 Q2214.14 209.115 2214.14 207.24 Q2214.14 205.504 2212.96 204.578 Q2211.8 203.652 2207.84 202.796 L2206.36 202.448 Q2202.4 201.615 2200.64 199.902 Q2198.88 198.166 2198.88 195.157 Q2198.88 191.499 2201.48 189.509 Q2204.07 187.518 2208.84 187.518 Q2211.2 187.518 2213.28 187.865 Q2215.37 188.212 2217.13 188.907 Z" fill="#000000" fill-rule="nonzero" fill-opacity="1" /></svg>
-</article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../sciml/sciml.html">« SciML Integration</a><a class="docs-footer-nextpage" href="../stochastic_simulation/anderson.html">Simulating Stochastic Reaction Systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 22 February 2024 15:22">Thursday 22 February 2024</span>. Using Julia version 1.10.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../sciml/sciml.html">« SciML Integration</a><a class="docs-footer-nextpage" href="../stochastic_simulation/anderson.html">Simulating Stochastic Reaction Systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 18 March 2024 14:13">Monday 18 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
