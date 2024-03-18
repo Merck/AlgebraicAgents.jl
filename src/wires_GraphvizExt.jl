@@ -2,8 +2,6 @@
 
 using .Graphviz_jll
 
-println("running")
-
 function gv_backend(::Type{Val{:graphviz_jll}}, prog)
     getfield(Graphviz_jll, Symbol(prog))(identity)
 end
