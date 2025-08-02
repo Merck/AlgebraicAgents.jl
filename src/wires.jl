@@ -220,6 +220,7 @@ function build_edges(all_agents)
 
     edges_wires = []
     for a in all_agents, b in all_agents
+
         ix1, ix2 = findfirst(==(a), all_agents), findfirst(==(b), all_agents)
 
         oriented_wires_between = get_wires_from(a) ∩ get_wires_to(b)

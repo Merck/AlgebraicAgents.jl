@@ -244,7 +244,7 @@ end
     server = FreeAgent("server")
 
     # Create a system (the “universe” in which they interact)
-    network_system = ⊕(client, server, name="System")
+    network_system = ⊕(client, server, name = "System")
 
     # ----- Communication wires -----
 
@@ -283,33 +283,12 @@ end
     # ----- Set up Agent–Concept relations -----
 
     # Client produces requests and consumes responses
-    add_relation!(client, c_request,  :produces)
+    add_relation!(client, c_request, :produces)
     add_relation!(client, c_response, :consumes)
 
     # Server consumes requests and produces responses
-    add_relation!(server, c_request,  :consumes)
+    add_relation!(server, c_request, :consumes)
     add_relation!(server, c_response, :produces)
-
-    # Print out the concepts.
-    for r in server.opera.concepts
-        println(r)
-    end
-
-    # Print out the the relations.
-    for r in server.opera.relations
-        println(r)
-    end
-
-    # Query related concepts/agents
-    println("Entities related to Data:")
-    for r in get_relations(c_data)
-        println(r)
-    end
-
-    println("Entites that Client produces:")
-    for r in get_relations(client, :produces)
-        println(r)
-    end
 
     @test length(server.opera.concepts) == 3
     @test length(server.opera.relations) == 6

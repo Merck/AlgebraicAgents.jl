@@ -136,6 +136,22 @@ struct Opera
             Vector{Concept}(undef, 0),
             Vector{ConceptRelation}(undef, 0))
     end
+
+    function Opera(opera::Opera)
+        new(Dict{UUID, AbstractAlgebraicAgent}(),
+            deepcopy(opera.instantious_interactions),
+            deepcopy(opera.instantious_interactions_log),
+            opera.n_instantious_interactions[],
+            deepcopy(opera.futures),
+            deepcopy(opera.futures_log),
+            opera.n_futures[],
+            deepcopy(opera.controls),
+            deepcopy(opera.controls_log),
+            opera.n_controls[],
+            deepcopy(opera.wires),
+            deepcopy(opera.concepts),
+            deepcopy(opera.relations))
+    end
 end
 
 # increase the count the number of anonymous interactions of the given count,

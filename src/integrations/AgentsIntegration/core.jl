@@ -266,7 +266,3 @@ macro a(call)
         end
     end
 end
-
-function _draw(a::ABMAgent, args...; kwargs...)
-    @warn "`ABMAgent` requires package `Plots` to be loaded for plotting"
-end

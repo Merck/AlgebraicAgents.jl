@@ -15,7 +15,7 @@ jobs:
       - uses: ts-graphviz/setup-graphviz@v2
       - uses: julia-actions/setup-julia@latest
         with:
-          version: '1.10'
+          version: '1.11'
       - uses: actions/cache@v3
         env:
           cache-name: cache-artifacts

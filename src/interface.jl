@@ -188,7 +188,8 @@ function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
     end
 
     # local step implementation
-    if (p = _projected_to(a); !isa(p, Bool) && (p == t))
+    p = _projected_to(a)
+    if !isa(p, Bool) && (p == t)
         _step!(a)
     end
     @ret ret _projected_to(a)
@@ -404,7 +405,7 @@ end
 
 "Return plot of an agent's state. Defaults to `nothing`."
 function _draw(a::AbstractAlgebraicAgent)
-    @warn "`_draw` for agent type $(typeof(a)) not implemented"
+    @warn "`_draw` for agent type $(typeof(a)) not implemented. For plotting an `ABMAgent`, as a part of `Agents.jl` integration, kindly load package `Plots`"
 end
 
 """
@@ -452,7 +453,7 @@ function _load(type::Type{T},
         hierarchy::AbstractDict;
         eval_scope = @__MODULE__) where {T <: AbstractAlgebraicAgent}
     agent = type(hierarchy["name"],
-        get(hierarchy, "arguments", [])...;
+        values(get(hierarchy, "parameters", Dict()))...;
         get(hierarchy, "keyword_arguments", [])...)
     foreach(i -> entangle!(agent, load(i; eval_scope)), get(hierarchy, "inners", []))
 
@@ -464,11 +465,12 @@ function _load(type::Type{T},
 end
 
 """
-    get_extra_fields(a::AbstractAlgebraicAgent)
+    get_parameters(a::AbstractAlgebraicAgent)
 Return a dictionary with extra fields of an agent, excluding common interface properties.
 """
-function get_extra_fields(a::AbstractAlgebraicAgent)
-    Dict{String, Any}([k => getproperty(a, k) for k in setdiff(propertynames(a), common_fields_agent)])
+function get_parameters(a::AbstractAlgebraicAgent)
+    Dict{String, Any}([string(k) => getproperty(a, k)
+                       for k in setdiff(propertynames(a), common_fields_agent)])
 end
 
 """
@@ -499,8 +501,8 @@ Dict(
 """
 function save(agent::AbstractAlgebraicAgent)
     # Collect agent's properties
-    agent_args = merge!(Dict("type" => typeof(agent), "name" => getname(agent)), get_extra_fields(agent))
-        
+    agent_args = Dict("type" => typeof(agent), "name" => getname(agent), "parameters" => get_parameters(agent))
+
     if isempty(inners(agent))
         return agent_args
     else
