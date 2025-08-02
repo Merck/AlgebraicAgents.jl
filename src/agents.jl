@@ -114,7 +114,7 @@ macro aagent(base_type, super_type, type)
     aagent(base_type, super_type, type, __module__)
 end
 
-const common_interface_fields = (:uuid, :name, :parent, :inners, :relpathrefs, :opera)
+const common_fields_agent = (:uuid, :name, :parent, :inners, :relpathrefs, :opera)
 
 # implements `@aagent` macro; the base type should contain the common interface fields
 function aagent(base_type, super_type, type, __module)
@@ -135,7 +135,7 @@ function aagent(base_type, super_type, type, __module)
 
                 # if an extra field is missing, provide better error message
                 extra_fields = setdiff(fieldnames($tname_plain),
-                    $common_interface_fields)
+                    $common_fields_agent)
                 if length(args) != length(extra_fields)
                     error("""the agent type $($tname_plain) default constructor `$($tname_plain)(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
 
@@ -156,8 +156,8 @@ function aagent(base_type, super_type, type, __module)
     quote
         # check if the base type implements the common interface fields
         check = quote
-            if !all(f -> f ∈ fieldnames($$(esc(base_type))), $$(common_interface_fields))
-                error("type $($$(esc(base_type))) does not implement common interface fields $($$(common_interface_fields))")
+            if !all(f -> f ∈ fieldnames($$(esc(base_type))), $$(common_fields_agent))
+                error("type $($$(esc(base_type))) does not implement common interface fields $($$(common_fields_agent))")
             end
         end
         Base.eval($__module, check)

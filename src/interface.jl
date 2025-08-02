@@ -310,20 +310,14 @@ function observables(a::AbstractAlgebraicAgent)
     @error "agent $(typeof(a)) doesn't implement `observables`"
 end
 
-"Get agent's [`Opera`](@ref)."
-getopera(a::AbstractAlgebraicAgent) = a.opera
+"Get the [`Opera`](@ref) attached to an agent or a concept."
+getopera(a::Union{AbstractAlgebraicAgent, AbstractConcept}) = a.opera
 
 "Get agent's directory. See also [`Opera`](@ref)."
 getdirectory(a::AbstractAlgebraicAgent) = getopera(a).directory
 
 "Let `a`'s Opera refer to `o`."
-function sync_opera!(a::AbstractAlgebraicAgent, o::Opera)
-    for k in propertynames(o)
-        setproperty!(getopera(a), k, getproperty(o, k))
-    end
-
-    a
-end
+sync_opera!(a::AbstractAlgebraicAgent, o::Opera) = a.opera = o
 
 "Return relative path to uuid map."
 relpathrefs(a::AbstractAlgebraicAgent) = a.relpathrefs
@@ -373,7 +367,7 @@ function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
 end
 
 "Pretty-print custom fields of an agent."
-function print_custom(io::IO, mime::MIME"text/plain", a::AbstractAlgebraicAgent)
+function print_custom(io::IO, ::MIME"text/plain", a::AbstractAlgebraicAgent)
     extra_fields = setdiff(propertynames(a), fieldnames(FreeAgent))
     indent = get(io, :indent, 0)
 
@@ -470,6 +464,14 @@ function _load(type::Type{T},
 end
 
 """
+    get_extra_fields(a::AbstractAlgebraicAgent)
+Return a dictionary with extra fields of an agent, excluding common interface properties.
+"""
+function get_extra_fields(a::AbstractAlgebraicAgent)
+    Dict{String, Any}([k => getproperty(a, k) for k in setdiff(propertynames(a), common_fields_agent)])
+end
+
+"""
     save(agent)
 Save an agent hierarchy into a dictionary.
 
@@ -496,17 +498,9 @@ Dict(
 ```
 """
 function save(agent::AbstractAlgebraicAgent)
-    extra_fields = [getproperty(agent, p)
-                    for p in setdiff(propertynames(agent), common_interface_fields)]
-
-    if isempty(extra_fields)
-        agent_args = Dict("type" => typeof(agent), "name" => getname(agent))
-    else
-        agent_args = Dict("type" => typeof(agent),
-            "name" => getname(agent),
-            "arguments" => extra_fields)
-    end
-
+    # Collect agent's properties
+    agent_args = merge!(Dict("type" => typeof(agent), "name" => getname(agent)), get_extra_fields(agent))
+        
     if isempty(inners(agent))
         return agent_args
     else

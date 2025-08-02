@@ -12,9 +12,24 @@ const FutureLog = NamedTuple{(:id, :time, :retval),
 const Control = NamedTuple{(:id, :call), <:Tuple{AbstractString, Function}}
 const ControlLog = NamedTuple{(:id, :time, :retval), <:Tuple{AbstractString, Any, Any}}
 
-## wire type
+## Wire type
 const Wire = NamedTuple{(:from, :from_var_name, :to, :to_var_name),
     <:Tuple{AbstractAlgebraicAgent, Any, AbstractAlgebraicAgent, Any}}
+
+## Relation between concepts
+struct ConceptRelation
+    from::RelatableType
+    to::RelatableType
+    relation::Symbol
+
+    function ConceptRelation(from::RelatableType, to::RelatableType, relation::Symbol)
+        if !isa(relation, Symbol)
+            @error "Relation must be a Symbol, got $(typeof(relation))"
+        end
+
+        new(from, to, relation)
+    end
+end
 
 """
     Opera(uuid2agent_pairs...)
@@ -85,7 +100,7 @@ bob_agent = only(getagent(agent, r"bob"))
 @call agent wake_up(bob_agent) # translates into `() -> wake_up(bob_agent)` with priority 0
 ```
 """
-mutable struct Opera
+struct Opera
     # dictionary of `uuid => agent` pairs
     directory::Dict{UUID, AbstractAlgebraicAgent}
     # intantious interactions
@@ -102,6 +117,9 @@ mutable struct Opera
     n_controls::Ref{UInt}
     # wires
     wires::Vector{Wire}
+    # concepts and relations
+    concepts::Vector{AbstractConcept}
+    relations::Vector{ConceptRelation}
 
     function Opera(uuid2agent_pairs...)
         new(Dict{UUID, AbstractAlgebraicAgent}(uuid2agent_pairs...),
@@ -114,7 +132,9 @@ mutable struct Opera
             Vector{Control}(undef, 0),
             Vector{ControlLog}(undef, 0),
             0,
-            Vector{Wire}(undef, 0))
+            Vector{Wire}(undef, 0),
+            Vector{Concept}(undef, 0),
+            Vector{ConceptRelation}(undef, 0))
     end
 end
 

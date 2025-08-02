@@ -32,7 +32,7 @@ include("utils.jl")
 ## declare derived sequence
 export @derived
 ## flat representation of agent hierarchy
-export flatten
+export flatten_hierarchy
 ## instantiate an integration and add it to Julia's load path
 export add_integration_to_path, @integration
 ## return a function which maps params to simulation results
@@ -64,7 +64,12 @@ include("wires.jl")
 export get_wires_from, get_wires_to
 export add_wire!, delete_wires!
 export retrieve_input_vars
-export wiring_diagram, run_graphviz
+export wiring_diagram
+
+# concepts and relations
+include("relations.jl")
+export Concept, add_concept!, add_relation!, remove_concept!, remove_relation!
+export get_relations, isrelated, concept_graph, get_relation_closure
 
 # convenient agent subtyping
 include("agents.jl")
@@ -85,6 +90,10 @@ export FilterQuery
 export @f_str, @filter, filter
 export TransformQuery
 export @transform, transform
+
+# Graphviz rendering
+include("graphviz.jl")
+export run_graphviz
 
 include("requires.jl")
 

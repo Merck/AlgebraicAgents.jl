@@ -81,7 +81,7 @@ filter(agent, f"_.age > 21 && _.name ∈ ['a', 'b']") # filter query
 ```
 """
 function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{FilterQuery})
-    filter(collect(values(flatten(a))), queries...)
+    filter(collect(values(flatten_hierarchy(a))), queries...)
 end
 
 function Base.filter(a::Vector{<:AbstractAlgebraicAgent},
@@ -168,7 +168,7 @@ agent |> @transform(name=_.name, _.age)
 ```
 """
 function transform(a::AbstractAlgebraicAgent, queries::Vararg{TransformQuery})
-    transform(collect(values(flatten(a))), queries...)
+    transform(collect(values(flatten_hierarchy(a))), queries...)
 end
 
 function transform(a::Vector{<:AbstractAlgebraicAgent},
