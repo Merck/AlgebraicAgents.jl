@@ -2,6 +2,8 @@
 EditURL = "../../../../tutorials/relations/relations.jl"
 ```
 
+# Relations and Concepts
+
 ````@example relations
 using AlgebraicAgents
 ````
@@ -10,7 +12,7 @@ This example demonstrates how to define and manipulate relations between agents 
 in the AlgebraicAgents framework, and how to visualize these relations.
 We also demonstrate the concept of wires. Consider `wires.jl` for a more comprehensive example.
 
------ Define a simple hierarchy -----
+## Define a simple hierarchy
 
 Instantiate two agents
 
@@ -25,7 +27,7 @@ Create a system (the “universe” in which they interact)
 system = ⊕(client, server, name="System")
 ````
 
------ Communication wires -----
+## Communication wires
 
 Client sends a request to Server
 
@@ -49,7 +51,7 @@ add_wire!(system;
 )
 ````
 
------ Define generic Concepts -----
+## Define generic Concepts
 
 ````@example relations
 c_data = Concept("Data", Dict(:format => "binary")) # abstract container
@@ -63,7 +65,7 @@ Bind all Concepts into our system
 add_concept!.(Ref(system), [c_data, c_request, c_response])
 ````
 
------ Concept hierarchy -----
+## Concept hierarchy
 
 Request ⊂ Data
 
@@ -77,7 +79,7 @@ Response ⊂ Data
 add_relation!(c_response, c_data, :is_a)
 ````
 
------ Set up Agent–Concept relations -----
+## Set up Agent–Concept relations
 
 Client produces requests and consumes responses
 
@@ -125,9 +127,9 @@ end
 isrelated(client, c_request, :produces) == true
 ````
 
------ Visualize the wires and relations -----
+## Visualize the wires and relations
 
-Visualize the wiring diagram of the system
+Visualize the wiring diagram of the system (you can run `run_graphviz` on the resulting DOT string, see that function's documentation for more details)
 
 ````@example relations
 wiring_diagram(system)
@@ -139,7 +141,7 @@ Visualize the concept graph of the system
 concept_graph(get_relation_closure(server))
 ````
 
------ Manipulate relations and concepts -----
+## Manipulate relations and concepts
 
 Remove the concept-to-concept relation
 

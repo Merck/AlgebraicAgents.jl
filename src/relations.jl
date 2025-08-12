@@ -11,7 +11,7 @@ mutable struct Concept <: AbstractConcept
     opera::Union{Opera, Nothing}
 
     @doc """
-        Concept(name, properties
+        Concept(name, properties)
     Create a new concept with the given `name` and `properties`.
     Use [`add_concept!`](@ref) to attach the concept to a hierarchy of agents.    
     """

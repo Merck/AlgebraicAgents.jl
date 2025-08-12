@@ -216,7 +216,7 @@ add_relation!(server, c_request,  :consumes)
 add_relation!(server, c_response, :produces)
 ```
 
-Now we can query the relations and visualize the concept graph.
+Now we can query the relations.
 
 ```@example concepts
 # Query related concepts/agents
@@ -224,12 +224,16 @@ println("Entities related to Data:")
 for r in get_relations(c_data)
     println(r)
 end
+```
 
+```@example concepts
 println("Entites that Client produces:")
 for r in get_relations(client, :produces)
     println(r)
 end
+```
 
+```@example concepts
 isrelated(client, c_request, :produces) == true
 ```
 
@@ -239,11 +243,17 @@ We can also visualize the concept graph, which shows the relations between conce
 # ----- Visualize the wires and relations -----
 
 # Visualize the wiring diagram of the system
-wiring_diagram(system)
-
-# Visualize the concept graph of the system
-concept_graph(get_relation_closure(server))
+run_graphviz("gv1.svg" ,wiring_diagram(system))
 ```
+
+![](gv1.svg)
+
+```@example concepts
+# Visualize the concept graph of the system
+run_graphviz("gv2.svg", concept_graph(get_relation_closure(server)))
+```
+
+![](gv2.svg)
 
 Finally, we show how to remove concepts and relations. This can be useful for cleaning up the model or when concepts are no longer relevant.
 
@@ -320,29 +330,29 @@ In what follows, [`wiring_diagram`](@ref) generates a visually appealing Graphvi
 ```@example wires
 graph1 = wiring_diagram(joint_system)
 
-run_graphviz("gv1.svg", graph1)
+run_graphviz("gv3.svg", graph1)
 ```
 
-![](gv1.svg)
+![](gv3.svg)
 
 ```@example wires
 # Do not show edges between parents and children.
 graph2 = wiring_diagram(joint_system; parentship_edges=false)
 
-run_graphviz("gv2.svg", graph2)
+run_graphviz("gv4.svg", graph2)
 ```
 
-![](gv2.svg)
+![](gv4.svg)
 
 
 ```@example wires
 # Only show listed agents.
 graph3 = wiring_diagram([alice, alice1, bob, bob1])
 
-run_graphviz("gv3.svg", graph3)
+run_graphviz("gv5.svg", graph3)
 ```
 
-![](gv3.svg)
+![](gv5.svg)
 
 ```@example wires
 # Group agents into two clusters.

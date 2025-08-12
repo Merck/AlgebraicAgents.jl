@@ -59,6 +59,7 @@ pages = [
         "sketches/sciml/sciml.md",
         "sketches/algebraicdynamics/algebraicdynamics.md",
         "sketches/stochastic_simulation/anderson.md",
+        "sketches/relations/relations.md",
     ],
 ]
 
