@@ -301,7 +301,6 @@ add_relation!(alice, c_apple, :owns)
 println(concept_graph([alice, bob], name="demo"))
 ```
 """
-
 function concept_graph(entity::RelatableType)
     all_entities = union(collect(values(getopera(entity).directory)), getopera(entity).concepts)
     return concept_graph(all_entities...)
@@ -312,7 +311,6 @@ end
     get_relation_closure(entities::Vector{RelatableType})
 Get the closure of relations for a vector of entities.
 """
-
 function get_relation_closure(entity::RelatableType)
     # For a single entity, find all related entities, until no new entities are found.
     return get_relation_closure(RelatableType[entity])

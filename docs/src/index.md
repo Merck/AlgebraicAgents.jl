@@ -180,6 +180,7 @@ flatten_hierarchy
 ### Concepts and Relations
 
 ```@docs
+AbstractConcept
 Concept
 add_concept!
 remove_concept!

@@ -10,7 +10,7 @@ using Random: randstring
 
 # abstract agent types
 include("abstract.jl")
-export AbstractAlgebraicAgent
+export AbstractAlgebraicAgent, AbstractConcept
 
 # path-like structure of agents
 include("paths.jl")
