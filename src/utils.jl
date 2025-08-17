@@ -37,10 +37,10 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
 end
 
 """
-    flatten(root_agent)
+    flatten_hierarchy(root_agent)
 Return flat representation of agents' hierarchy.
 """
-function flatten(a::AbstractAlgebraicAgent)
+function flatten_hierarchy(a::AbstractAlgebraicAgent)
     dir = getdirectory(a)
     flat_repr = Dict{String, AbstractAlgebraicAgent}()
     for (p, v) in get_relpathrefs!(a)

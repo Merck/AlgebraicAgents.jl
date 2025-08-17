@@ -25,7 +25,7 @@ end
 "
     @sum models...
 
-Perform an algebraic sum of algebraic models (flatten arguments to ⊕).
+Perform an algebraic sum of algebraic models (flatten_hierarchy arguments to ⊕).
 
 # Examples
 ```julia

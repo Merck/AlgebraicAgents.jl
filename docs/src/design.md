@@ -159,9 +159,116 @@ bob_agent = only(getagent(agent, r"bob"))
 @call agent wake_up(bob_agent) # translates into `() -> wake_up(bob_agent)` with priority 0
 ```
 
+## Concepts, Relations, and Wires
+
+AlgebraicAgents.jl is designed to enable semantic modeling of complex systems by representing key elements as concepts, the relations between them, and agents connected via wires that explicitly define information flow. While leveraging these features is entirely optional and not required for the core functionality of the library, they offer powerful tools for model comprehension, visualization, querying, and debugging.
+
+### Concepts and Relations
+
+A concept is a subtype of [`AbstractConcept`](@ref) and represents an entity characterized by a name and an internal parameter space. Both concepts and agents belong to the union type `RelatableType`, allowing flexible relationships to be established between any two relatable entities—for example, between agents and concepts or between agents themselves.
+
+Relations are oriented, meaning each relation has a designated source, target, and a relation type, represented as a Symbol. These complex relationships can be effectively visualized using the [`concept_graph`](@ref) function, providing insights into the structure and interconnections within the model.
+
+Consider the following example. First, we set up the hierarchy.
+
+```@setup concepts
+using AlgebraicAgents
+
+# Instantiate two agents
+client = FreeAgent("client")
+server = FreeAgent("server")
+
+# Create a system (the “universe” in which they interact)
+system = ⊕(client, server, name="System")
+```
+
+Next we define generic concepts and their relations. Concepts are defined using the [`Concept`](@ref) type, which can be used to create abstract containers for data, requests, responses, etc. Relations between concepts and agents are established using the [`add_relation!`](@ref) function.
+
+```@example concepts
+c_data = Concept("Data", Dict(:format => "binary")) # abstract container
+c_request = Concept("Request", Dict(:purpose => "query")) # a kind of Data
+c_response = Concept("Response", Dict(:purpose => "reply")) # a kind of Data
+
+# Bind all Concepts into our system
+add_concept!(system, c_data)
+# Multiple concepts can be added at once.
+add_concept!.(Ref(system), [c_request, c_response])
+```
+
+Next, we can establish relations between agents and concepts, as well as between concepts themselves. This allows us to define the roles of agents in the system and how they interact with the concepts.
+
+```@example concepts
+# ----- Set up Concept–Concept relations -----
+
+# Request ⊂ Data
+add_relation!(c_request, c_data, :is_a)
+# Response ⊂ Data
+add_relation!(c_response, c_data, :is_a)
+
+# ----- Set up Agent–Concept relations -----
+
+# Client produces requests and consumes responses
+add_relation!(client, c_request,  :produces)
+add_relation!(client, c_response, :consumes)
+
+# Server consumes requests and produces responses
+add_relation!(server, c_request,  :consumes)
+add_relation!(server, c_response, :produces)
+```
+
+Now we can query the relations.
+
+```@example concepts
+# Query related concepts/agents
+println("Entities related to Data:")
+for r in get_relations(c_data)
+    println(r)
+end
+```
+
+```@example concepts
+println("Entites that Client produces:")
+for r in get_relations(client, :produces)
+    println(r)
+end
+```
+
+```@example concepts
+isrelated(client, c_request, :produces) == true
+```
+
+We can also visualize the concept graph, which shows the relations between concepts and agents in the system.
+
+```@example concepts
+# ----- Visualize the wires and relations -----
+
+# Visualize the wiring diagram of the system
+run_graphviz("gv1.svg" ,wiring_diagram(system))
+```
+
+![](gv1.svg)
+
+```@example concepts
+# Visualize the concept graph of the system
+run_graphviz("gv2.svg", concept_graph(get_relation_closure(server)))
+```
+
+![](gv2.svg)
+
+Finally, we show how to remove concepts and relations. This can be useful for cleaning up the model or when concepts are no longer relevant.
+
+```@example concepts
+
+# Remove the concept-to-concept relation
+remove_relation!(c_data, c_request, :is_a)
+
+# Remove the Fruit concept entirely
+remove_concept!(server, c_request)
+```
+
 ### Wires
 
-It is possible to explicitly establish oriented "wires" along which information flows between different agents in a hierarchy. Note that it is possible to retrieve and modify the state of any other agent from within any agent, in any way. However, in some cases, it may be desirable to explicitly specify that certain agents observe a particular state variable of another agent.
+It is possible to explicitly establish oriented "wires" along which information flows between different agents in a hierarchy. Note that it is optional to define these wires and in general, it is possible to retrieve and modify the state of any other agent from within any agent, in any way. However, in some cases, it may be desirable to explicitly specify that certain agents observe a particular state variable of another agent, for example, to visualize the information flow in a model, or to query the state of the system in a more structured way.
 
 Consider the following example. First, we set up the hierarchy.
 
@@ -223,29 +330,29 @@ In what follows, [`wiring_diagram`](@ref) generates a visually appealing Graphvi
 ```@example wires
 graph1 = wiring_diagram(joint_system)
 
-run_graphviz("gv1.svg", graph1)
+run_graphviz("gv3.svg", graph1)
 ```
 
-![](gv1.svg)
+![](gv3.svg)
 
 ```@example wires
 # Do not show edges between parents and children.
 graph2 = wiring_diagram(joint_system; parentship_edges=false)
 
-run_graphviz("gv2.svg", graph2)
+run_graphviz("gv4.svg", graph2)
 ```
 
-![](gv2.svg)
+![](gv4.svg)
 
 
 ```@example wires
 # Only show listed agents.
 graph3 = wiring_diagram([alice, alice1, bob, bob1])
 
-run_graphviz("gv3.svg", graph3)
+run_graphviz("gv5.svg", graph3)
 ```
 
-![](gv3.svg)
+![](gv5.svg)
 
 ```@example wires
 # Group agents into two clusters.

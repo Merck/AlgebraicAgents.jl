@@ -102,9 +102,10 @@ end
     @test system_dump == Dict{String, Any}("name" => "diagram",
         "inners" => Dict{String, Any}[
             Dict("name" => "agent1",
-                "arguments" => [1],
+                "parameters" => Dict("field" => 1),
                 "type" => MyAgentLoadsave),
-            Dict("name" => "agent2", "arguments" => [2], "type" => MyAgentLoadsave)],
+            Dict("name" => "agent2", "parameters" => Dict("field" => 2), "type" => MyAgentLoadsave)],
+        "parameters" => Dict(),
         "type" => FreeAgent)
 
     system_reloaded = AlgebraicAgents.load(system_dump; eval_scope = @__MODULE__)

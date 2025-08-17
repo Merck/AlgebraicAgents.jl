@@ -168,13 +168,28 @@ extract_agent
 ### Flat representation
 
 ```@docs
-flatten
+flatten_hierarchy
 ```
 
 ### Default plots for custom agent types
 
 ```@docs
 @draw_df
+```
+
+### Concepts and Relations
+
+```@docs
+AbstractConcept
+Concept
+add_concept!
+remove_concept!
+add_relation!
+remove_relation!
+get_relations
+isrelated
+get_related_entities
+concept_graph
 ```
 
 ### Wires and wiring diagrams

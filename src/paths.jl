@@ -135,11 +135,8 @@ disentangle!(agent)
 function disentangle!(agent::AbstractAlgebraicAgent; remove_relpathrefs = true)
     isnothing(getparent(agent)) && return agent
 
-    opera_inners = Opera()
-    # copy interactions
-    foreach(setdiff(fieldnames(Opera), (:directory,))) do f
-        setproperty!(opera_inners, f, getproperty(getopera(agent), f) |> deepcopy)
-    end
+    # Create a new opera by copying the current one.
+    opera_inners = Opera(getopera(agent))
 
     inners_uuid = UUID[]
     prewalk(agent) do a

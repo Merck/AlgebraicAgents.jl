@@ -42,10 +42,10 @@ function sir(;
 )
     rng = Xoshiro(seed)
     migration_rates = zeros(C, C)
-    @assert length(Ns)==
-            length(Is)==
-            length(β_und)==
-            length(β_det)==
+    @assert length(Ns) ==
+            length(Is) ==
+            length(β_und) ==
+            length(β_det) ==
             size(migration_rates, 1) "length of Ns, Is, and B, and number of rows/columns in migration_rates should be the same "
     @assert size(migration_rates, 1)==size(migration_rates, 2) "migration_rates rates should be a square matrix"
 
@@ -83,6 +83,7 @@ function sir(;
 
     ## Add initial individuals
     for city in 1:C, n in 1:Ns[city]
+
         ind = add_agent!(city, model, 0, :S) # Susceptible
     end
     ## add infected individuals
