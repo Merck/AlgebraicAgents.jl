@@ -227,7 +227,8 @@ end
 
     # Test mixed types of agents.
     free_agent = FreeAgent("free_agent")
-    entangle!(free_agent, alice)
+    entangle!(joint_system, free_agent)
+
     add_wire!(joint_system;
         from = free_agent,
         to = alice,
@@ -237,6 +238,7 @@ end
     # Show wires.
     @test length(get_wires_from(alice)) == 2
     @test length(get_wires_to(alice1)) == 1
+    @test length(get_wires_from(free_agent)) == 1
 
     # Retrieve variables along input wires.
     AlgebraicAgents.getobservable(a::MyAgent4, args...) = getname(a)
@@ -244,7 +246,7 @@ end
     @test retrieve_input_vars(alice1) == Dict("alice1_x" => "alice")
 
     # Delete wires.
-    @test length(delete_wires!(joint_system; from = alice, to = alice1)) == 3
+    @test length(delete_wires!(joint_system; from = alice, to = alice1)) == 4
 end
 
 @testset "concepts and relations" begin
