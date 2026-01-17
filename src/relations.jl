@@ -303,7 +303,7 @@ println(concept_graph([alice, bob], name="demo"))
 """
 function concept_graph(entity::RelatableType)
     all_entities = union(collect(values(getopera(entity).directory)), getopera(entity).concepts)
-    return concept_graph(all_entities...)
+    return concept_graph(RelatableType[all_entities...])
 end
 
 """

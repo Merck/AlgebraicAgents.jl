@@ -225,6 +225,15 @@ end
         from_var_name = "bob_x",
         to_var_name = "bob1_x")
 
+    # Test mixed types of agents.
+    free_agent = FreeAgent("free_agent")
+    entangle!(free_agent, alice)
+    add_wire!(joint_system;
+        from = free_agent,
+        to = alice,
+        from_var_name = "free_agent_z",
+        to_var_name = "alice_z")
+
     # Show wires.
     @test length(get_wires_from(alice)) == 2
     @test length(get_wires_to(alice1)) == 1
