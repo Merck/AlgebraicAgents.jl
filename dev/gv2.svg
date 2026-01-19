@@ -9,77 +9,77 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 132.26)">
 <title>algagents_relations</title>
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-132.26 250.54,-132.26 250.54,4 -4,4"/>
-<!-- 76031ccc -->
+<!-- 86331dbd -->
 <g id="node1" class="node">
-<title>76031ccc</title>
+<title>86331dbd</title>
 <ellipse fill="lightblue" stroke="transparent" cx="133.56" cy="-99.23" rx="29.05" ry="29.05"/>
 <text text-anchor="middle" x="133.56" y="-97.63" font-family="Times,serif" font-size="7.00">Response</text>
 </g>
-<!-- 4c302a7e -->
+<!-- b73ffd7f -->
 <g id="node3" class="node">
-<title>4c302a7e</title>
+<title>b73ffd7f</title>
 <ellipse fill="lightblue" stroke="transparent" cx="227.56" cy="-62.23" rx="18.95" ry="18.95"/>
 <text text-anchor="middle" x="227.56" y="-60.63" font-family="Times,serif" font-size="7.00">Data</text>
 </g>
-<!-- 76031ccc&#45;&gt;4c302a7e -->
+<!-- 86331dbd&#45;&gt;b73ffd7f -->
 <g id="edge2" class="edge">
-<title>76031ccc&#45;&gt;4c302a7e</title>
+<title>86331dbd&#45;&gt;b73ffd7f</title>
 <path fill="none" stroke="black" stroke-width="0.5" d="M160.68,-88.73C174.93,-83 192.33,-76 205.67,-70.63"/>
 <polygon fill="black" stroke="black" stroke-width="0.5" points="206.49,-71.82 209.67,-69.03 205.44,-69.22 206.49,-71.82"/>
 <text text-anchor="middle" x="185.58" y="-81.23" font-family="Times,serif" font-size="5.00">is_a</text>
 </g>
-<!-- cdcae5c1 -->
+<!-- be4a5d06 -->
 <g id="node2" class="node">
-<title>cdcae5c1</title>
+<title>be4a5d06</title>
 <ellipse fill="lightblue" stroke="transparent" cx="133.56" cy="-26.23" rx="26.47" ry="26.47"/>
 <text text-anchor="middle" x="133.56" y="-24.63" font-family="Times,serif" font-size="7.00">Request</text>
 </g>
-<!-- cdcae5c1&#45;&gt;4c302a7e -->
+<!-- be4a5d06&#45;&gt;b73ffd7f -->
 <g id="edge1" class="edge">
-<title>cdcae5c1&#45;&gt;4c302a7e</title>
+<title>be4a5d06&#45;&gt;b73ffd7f</title>
 <path fill="none" stroke="black" stroke-width="0.5" d="M158.25,-35.5C172.95,-41.26 191.66,-48.57 205.78,-54.1"/>
 <polygon fill="black" stroke="black" stroke-width="0.5" points="205.39,-55.45 209.63,-55.61 206.41,-52.85 205.39,-55.45"/>
 <text text-anchor="middle" x="185.58" y="-49.23" font-family="Times,serif" font-size="5.00">is_a</text>
 </g>
-<!-- e9b40ed9 -->
+<!-- b6075992 -->
 <g id="node4" class="node">
-<title>e9b40ed9</title>
-<ellipse fill="none" stroke="Teal" cx="21.77" cy="-99.23" rx="21.54" ry="21.54"/>
-<text text-anchor="middle" x="21.77" y="-97.63" font-family="Times,serif" font-size="7.00">server</text>
+<title>b6075992</title>
+<ellipse fill="none" stroke="Teal" cx="21.77" cy="-99.23" rx="20.8" ry="20.8"/>
+<text text-anchor="middle" x="21.77" y="-97.63" font-family="Times,serif" font-size="7.00">client</text>
 </g>
-<!-- e9b40ed9&#45;&gt;76031ccc -->
-<g id="edge6" class="edge">
-<title>e9b40ed9&#45;&gt;76031ccc</title>
-<path fill="none" stroke="black" stroke-width="0.5" d="M43.68,-99.23C59.64,-99.23 81.93,-99.23 100.19,-99.23"/>
-<polygon fill="black" stroke="black" stroke-width="0.5" points="100.26,-100.63 104.26,-99.23 100.26,-97.83 100.26,-100.63"/>
-<text text-anchor="middle" x="74.04" y="-101.23" font-family="Times,serif" font-size="5.00">produces</text>
-</g>
-<!-- e9b40ed9&#45;&gt;cdcae5c1 -->
-<g id="edge5" class="edge">
-<title>e9b40ed9&#45;&gt;cdcae5c1</title>
-<path fill="none" stroke="black" stroke-width="0.5" d="M40.41,-87.5C58.63,-75.39 87.22,-56.38 107.72,-42.75"/>
-<polygon fill="black" stroke="black" stroke-width="0.5" points="108.64,-43.82 111.2,-40.44 107.09,-41.49 108.64,-43.82"/>
-<text text-anchor="middle" x="74.04" y="-73.23" font-family="Times,serif" font-size="5.00">consumes</text>
-</g>
-<!-- 0e190e3d -->
-<g id="node5" class="node">
-<title>0e190e3d</title>
-<ellipse fill="none" stroke="Teal" cx="21.77" cy="-32.23" rx="20.8" ry="20.8"/>
-<text text-anchor="middle" x="21.77" y="-30.63" font-family="Times,serif" font-size="7.00">client</text>
-</g>
-<!-- 0e190e3d&#45;&gt;76031ccc -->
+<!-- b6075992&#45;&gt;86331dbd -->
 <g id="edge4" class="edge">
-<title>0e190e3d&#45;&gt;76031ccc</title>
-<path fill="none" stroke="black" stroke-width="0.5" d="M42.22,-35.73C55.42,-38.71 72.89,-43.87 86.54,-52.23 95.74,-57.87 104.42,-65.75 111.71,-73.45"/>
-<polygon fill="black" stroke="black" stroke-width="0.5" points="111,-74.75 114.74,-76.73 113.05,-72.85 111,-74.75"/>
-<text text-anchor="middle" x="74.04" y="-54.23" font-family="Times,serif" font-size="5.00">consumes</text>
+<title>b6075992&#45;&gt;86331dbd</title>
+<path fill="none" stroke="black" stroke-width="0.5" d="M42.65,-99.23C58.62,-99.23 81.38,-99.23 100,-99.23"/>
+<polygon fill="black" stroke="black" stroke-width="0.5" points="100.15,-100.63 104.15,-99.23 100.15,-97.83 100.15,-100.63"/>
+<text text-anchor="middle" x="74.04" y="-101.23" font-family="Times,serif" font-size="5.00">consumes</text>
 </g>
-<!-- 0e190e3d&#45;&gt;cdcae5c1 -->
+<!-- b6075992&#45;&gt;be4a5d06 -->
 <g id="edge3" class="edge">
-<title>0e190e3d&#45;&gt;cdcae5c1</title>
-<path fill="none" stroke="black" stroke-width="0.5" d="M41.94,-26.87C48.14,-25.38 55.08,-23.97 61.54,-23.23 75.09,-21.68 90.17,-22.03 102.94,-22.92"/>
+<title>b6075992&#45;&gt;be4a5d06</title>
+<path fill="none" stroke="black" stroke-width="0.5" d="M39.44,-88.15C57.59,-76.08 86.8,-56.66 107.66,-42.79"/>
+<polygon fill="black" stroke="black" stroke-width="0.5" points="108.64,-43.82 111.2,-40.44 107.09,-41.49 108.64,-43.82"/>
+<text text-anchor="middle" x="74.04" y="-73.23" font-family="Times,serif" font-size="5.00">produces</text>
+</g>
+<!-- ab0470e3 -->
+<g id="node5" class="node">
+<title>ab0470e3</title>
+<ellipse fill="none" stroke="Teal" cx="21.77" cy="-32.23" rx="21.54" ry="21.54"/>
+<text text-anchor="middle" x="21.77" y="-30.63" font-family="Times,serif" font-size="7.00">server</text>
+</g>
+<!-- ab0470e3&#45;&gt;86331dbd -->
+<g id="edge6" class="edge">
+<title>ab0470e3&#45;&gt;86331dbd</title>
+<path fill="none" stroke="black" stroke-width="0.5" d="M43.38,-35.99C56.43,-39.01 73.28,-44.11 86.54,-52.23 95.74,-57.87 104.42,-65.75 111.71,-73.45"/>
+<polygon fill="black" stroke="black" stroke-width="0.5" points="111,-74.75 114.74,-76.73 113.05,-72.85 111,-74.75"/>
+<text text-anchor="middle" x="74.04" y="-54.23" font-family="Times,serif" font-size="5.00">produces</text>
+</g>
+<!-- ab0470e3&#45;&gt;be4a5d06 -->
+<g id="edge5" class="edge">
+<title>ab0470e3&#45;&gt;be4a5d06</title>
+<path fill="none" stroke="black" stroke-width="0.5" d="M43.14,-26.59C49.03,-25.21 55.5,-23.93 61.54,-23.23 75.09,-21.68 90.17,-22.03 102.94,-22.92"/>
 <polygon fill="black" stroke="black" stroke-width="0.5" points="103.09,-24.34 107.18,-23.25 103.3,-21.55 103.09,-24.34"/>
-<text text-anchor="middle" x="74.04" y="-25.23" font-family="Times,serif" font-size="5.00">produces</text>
+<text text-anchor="middle" x="74.04" y="-25.23" font-family="Times,serif" font-size="5.00">consumes</text>
 </g>
 </g>
 </svg>
