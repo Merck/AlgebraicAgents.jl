@@ -43,7 +43,7 @@ Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @Different
 
 AlgebraicAgents.jl relaxes formalism and shifts focus towards compositional flexibility. Any agent can access any other agent's state, and synchronization is temporal rather than type-enforced. This design prioritizes iteration speed and introspection over type-enforced interface contracts, a trade-off suited to exploratory modeling, where specifications evolve alongside understanding.
 
-# Framework Design
+# Software Design
 
 The central abstraction of the framework is the *agent*, which serves a dual role. First, an agent implements a dynamical system with a custom evolution rule, exposing its internal clock and state variables as observable quantities to other agents. Second, an agent acts as a node in a rooted tree hierarchy, serving as a container for nested child agents, each of which is itself an agent with this   dual character.
 
@@ -130,8 +130,12 @@ AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecos
 
 AlgebraicAgents.jl is registered in Julia's General registry. [API documentation](https://merck.github.io/AlgebraicAgents.jl/stable/) and a [comprehensive example](https://merck.github.io/AlgebraicAgents.jl/stable/sketches/molecules/molecules.html)—a synthetic pharmaceutical company model—are available online. Contributions welcome via [GitHub](https://github.com/Merck/AlgebraicAgents.jl/). The framework is licensed as MIT license.
 
-# Applications and Value Modeling Ecosystem
+# Research Impact Statement
 
-The framework has been applied to develop proprietary pharmaceutical value chain models. Two companion packages by the authors extend this foundation: [ReactiveDynamics.jl](https://github.com/Merck/ReactiveDynamics.jl), providing chemical reaction network–inspired syntax for business process modeling, and [CEEDesigns.jl](https://github.com/Merck/CEEDesigns.jl), implementing Bayesian cost-efficient experimental design for drug discovery.
+The framework has been applied to develop proprietary pharmaceutical value chain models. Two companion packages by the authors extend this foundation: [ReactiveDynamics.jl](https://github.com/Merck/ReactiveDynamics.jl), providing chemical reaction network–inspired syntax for business process modeling natively compatible with AlgebraicAgents.jl, and [CEEDesigns.jl](https://github.com/Merck/CEEDesigns.jl), implementing Bayesian cost-efficient experimental design for drug discovery.
+
+# AI Usage Disclosure
+
+The authors used Claude Opus 4.5 (Anthropic) for editorial refinement and proofreading of the manuscript. The authors reviewed and validated all suggested edits and bear full responsibility for the accuracy of the final manuscript.
 
 # References
