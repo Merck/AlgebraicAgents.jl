@@ -37,6 +37,8 @@ This challenge decomposes into three sub-problems:
 - **Hierarchical modularity.** Subsystems should support independent development, validation, and reuse as building blocks within larger models.
 - **Semantic transparency.** Visualizing and querying information flows across models should support both validation and explainability.
 
+# State of the Field
+
 Prior work addresses aspects of this challenge. The Functional Mock-up Interface [@Blochwitz2011] standardizes co-simulation of black-box models but imposes protocol overhead suited to industrial interoperability rather than rapid prototyping. Meta-modeling frameworks like the Generic Modeling Environment [@Ledeczi2001] operate at a higher abstraction, enabling construction of domain-specific formalisms. The Ptolemy project [@Ptolemy] and Lingua Franca [@Menard2023] provide principled foundations for heterogeneous component interaction across concurrent, real-time, and distributed settings.
 
 Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @DifferentialEquations2017], and its commercial extension, JuliaHub's Dyad, excel at symbolic-numeric modeling and equation-based composition but do not naturally accommodate discrete or agent-based dynamics. AlgebraicDynamics.jl [@Brown2022; @Baez2023] brings categorical semantics to dynamical systems yet enforces strict interface typing that constrains exploratory work.
@@ -56,7 +58,7 @@ Agents are implemented as Julia structures that subtype `AbstractAlgebraicAgent`
 end
 ```
 
-# Synchronized Evolution
+## Synchronized Evolution
 
 Each agent implements `_step!`, which advances its state and returns the time on its internal clock, that is, the furthest point for which its trajectory has been computed. The simulation loop coordinates agents by identifying the minimum projected time across the hierarchy and stepping only those agents at that frontier.
 
@@ -97,7 +99,7 @@ Beyond evolutionary stepping, the framework supports three callback types:
 | **Controls** | Every solver step | Invariant enforcement, monitoring |
 | **Instantaneous** | Within current step | Intra-step coordination, priority-ordered effects |
 
-# Topology, Wires, and Relations
+## Topology, Wires, and Relations
 
 Each agent occupies a node in a tree topology. Path-based references enable navigation: `getagent(a, "../sibling/child")`. Container agents with trivial evolution organize subsystems into logical compartments, enabling modular development and hierarchical visualization.
 
@@ -122,20 +124,22 @@ add_relation!(factory_a, c_finished_good, :produces)
 
 These semantic annotations support Graphviz visualization and structured queries over model architecture.
 
-# Integrations
+# Research Impact Statement
+
+## Integrations
 
 AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps `DEProblem` instances from DifferentialEquations.jl, enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns. Visualization functions generate Graphviz DOT and Mermaid diagram output for documentation.
 
-# Availability and Documentation
+## Availability and Documentation
 
 AlgebraicAgents.jl is registered in Julia's General registry. [API documentation](https://merck.github.io/AlgebraicAgents.jl/stable/) and a [comprehensive example](https://merck.github.io/AlgebraicAgents.jl/stable/sketches/molecules/molecules.html)—a synthetic pharmaceutical company model—are available online. Contributions welcome via [GitHub](https://github.com/Merck/AlgebraicAgents.jl/). The framework is licensed as MIT license.
 
-# Research Impact Statement
+## Applications and Value Modeling Ecosystem
 
 The framework has been applied to develop proprietary pharmaceutical value chain models. Two companion packages by the authors extend this foundation: [ReactiveDynamics.jl](https://github.com/Merck/ReactiveDynamics.jl), providing chemical reaction network–inspired syntax for business process modeling natively compatible with AlgebraicAgents.jl, and [CEEDesigns.jl](https://github.com/Merck/CEEDesigns.jl), implementing Bayesian cost-efficient experimental design for drug discovery.
 
 # AI Usage Disclosure
 
-The authors used Claude Opus 4.5 (Anthropic) for editorial refinement and proofreading of the manuscript. The authors reviewed and validated all suggested edits and bear full responsibility for the accuracy of the final manuscript.
+The authors used GitHub Copilot for inline code suggestions and Claude Opus 4.5 (Anthropic) for editorial refinement of the manuscript. The authors reviewed and validated all AI-suggested edits and bear full responsibility for the final work.
 
 # References
