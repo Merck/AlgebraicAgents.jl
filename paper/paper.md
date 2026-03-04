@@ -128,7 +128,7 @@ These semantic annotations support Graphviz visualization and structured queries
 
 ## Integrations
 
-AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps `DEProblem` instances from DifferentialEquations.jl, enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns. Visualization functions generate Graphviz DOT and Mermaid diagram output for documentation.
+AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps `DEProblem` instances from DifferentialEquations.jl, enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns. Visualization functions generate Graphviz DOT and Mermaid diagram output for documentation. The framework is designed to be extensible: contributors can wrap third-party simulation objects as agents within AlgebraicAgents.jl and expose simulation state through the interface methods, see [Contributing](https://github.com/Merck/AlgebraicAgents.jl#contributing-ov-file).
 
 ## Availability and Documentation
 
