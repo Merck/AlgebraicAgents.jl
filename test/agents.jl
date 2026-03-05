@@ -1,5 +1,7 @@
 using Test, AlgebraicAgents
 
+abstract type SuperAgent end
+
 @testset "@aagent macro" begin
     "docstring"
     @aagent struct BaseAgent
@@ -25,7 +27,6 @@ using Test, AlgebraicAgents
     @test fieldtype(DerivedAgent, :mutable2) == Int
     @test fieldtype(DerivedAgent, :mutable4) == Int
 
-    abstract type SuperAgent end
     @aagent BaseAgent SuperAgent struct DerivedAgent2 end
     @test DerivedAgent2 <: SuperAgent
 
@@ -104,7 +105,8 @@ end
             Dict("name" => "agent1",
                 "parameters" => Dict("field" => 1),
                 "type" => MyAgentLoadsave),
-            Dict("name" => "agent2", "parameters" => Dict("field" => 2), "type" => MyAgentLoadsave)],
+            Dict("name" => "agent2", "parameters" => Dict("field" => 2),
+                "type" => MyAgentLoadsave)],
         "parameters" => Dict(),
         "type" => FreeAgent)
 

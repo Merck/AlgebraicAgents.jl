@@ -81,17 +81,19 @@ filter(agent, f"_.age > 21 && _.name ∈ ['a', 'b']") # filter query
 ```
 """
 function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{FilterQuery})
-    filter(collect(values(flatten_hierarchy(a))), queries...)
+    return filter(collect(values(flatten_hierarchy(a))), queries...)
 end
 
-function Base.filter(a::Vector{<:AbstractAlgebraicAgent},
+function Base.filter(agents::Vector{<:AbstractAlgebraicAgent},
         queries::Vararg{FilterQuery})
     filtered = AbstractAlgebraicAgent[]
-    for a in a
-        all(q -> _filter(a, q), queries) && push!(filtered, a)
+    for a in agents
+        if all(q -> _filter(a, q), queries)
+            push!(filtered, a)
+        end
     end
 
-    filtered
+    return filtered
 end
 
 # low-level function to check an agent against filter query
@@ -100,12 +102,13 @@ end
     _filter(agent, query)
 Check if an agent satisfies filter condition.
 """
-_filter(a::AbstractAlgebraicAgent, query::FilterQuery) =
+function _filter(a::AbstractAlgebraicAgent, query::FilterQuery)
     try
-        query.query(a)
+        return Base.invokelatest(query.query, a)
     catch
-        false
+        return false
     end
+end
 
 ## transform queries
 """

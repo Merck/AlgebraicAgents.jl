@@ -13,10 +13,16 @@ using SafeTestsets, BenchmarkTools
     @time @safetestset "integrations test: SciML" begin
         include("integrations/sciml_test.jl")
     end
+
     @time @safetestset "integrations test: Agents.jl" begin
         include("integrations/agents_test.jl")
     end
-    @time @safetestset "integrations test: AlgebraicDynamics.jl" begin
-        include("integrations/algebraicdynamics_test.jl")
-    end
+    @warn """
+    Skipping AlgebraicDynamics.jl integration tests for now, 
+    as the integration between AlgebraicDynamics.jl and OrdinaryDiffEq. 
+    See Issue #153 https://github.com/AlgebraicJulia/AlgebraicDynamics.jl/issues/153.
+    """
+    # @time @safetestset "integrations test: AlgebraicDynamics.jl" begin
+    #     include("integrations/algebraicdynamics_test.jl")
+    # end
 end

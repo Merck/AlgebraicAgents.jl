@@ -23,16 +23,16 @@ end
 # Let's provide the constructors:
 
 function model_initiation(;
-                          Ns,
-                          migration_rates,
-                          β_und,
-                          β_det,
-                          infection_period = 30,
-                          reinfection_probability = 0.05,
-                          detection_time = 14,
-                          death_rate = 0.02,
-                          Is = [zeros(Int, length(Ns) - 1)..., 1],
-                          seed = 0)
+        Ns,
+        migration_rates,
+        β_und,
+        β_det,
+        infection_period = 30,
+        reinfection_probability = 0.05,
+        detection_time = 14,
+        death_rate = 0.02,
+        Is = [zeros(Int, length(Ns) - 1)..., 1],
+        seed = 0)
     rng = MersenneTwister(seed)
     @assert length(Ns)==
             length(Is)==
@@ -49,19 +49,19 @@ function model_initiation(;
     end
 
     properties = @dict(Ns,
-                       Is,
-                       β_und,
-                       β_det,
-                       β_det,
-                       migration_rates,
-                       infection_period,
-                       infection_period,
-                       reinfection_probability,
-                       detection_time,
-                       C,
-                       death_rate)
+        Is,
+        β_und,
+        β_det,
+        β_det,
+        migration_rates,
+        infection_period,
+        infection_period,
+        reinfection_probability,
+        detection_time,
+        C,
+        death_rate)
     space = GraphSpace(complete_digraph(C))
-    model = ABM(PoorSoul, space; properties, rng, model_step! = identity)
+    model = StandardABM(PoorSoul, space; properties, rng, model_step! = identity)
 
     ## Add initial individuals
     for city in 1:C, n in 1:Ns[city]
@@ -82,14 +82,14 @@ end
 using LinearAlgebra: diagind
 
 function create_params(;
-                       C,
-                       max_travel_rate,
-                       infection_period = 30,
-                       reinfection_probability = 0.05,
-                       detection_time = 14,
-                       death_rate = 0.02,
-                       Is = [zeros(Int, C - 1)..., 1],
-                       seed = 19)
+        C,
+        max_travel_rate,
+        infection_period = 30,
+        reinfection_probability = 0.05,
+        detection_time = 14,
+        death_rate = 0.02,
+        Is = [zeros(Int, C - 1)..., 1],
+        seed = 19)
     Random.seed!(seed)
     Ns = rand(50:5000, C)
     β_und = rand(0.3:0.02:0.6, C)
@@ -107,14 +107,14 @@ function create_params(;
     migration_rates[diagind(migration_rates)] .= 1.0
 
     params = @dict(Ns,
-                   β_und,
-                   β_det,
-                   migration_rates,
-                   infection_period,
-                   reinfection_probability,
-                   detection_time,
-                   death_rate,
-                   Is)
+        β_und,
+        β_det,
+        migration_rates,
+        infection_period,
+        reinfection_probability,
+        detection_time,
+        death_rate,
+        Is)
 
     return params
 end
@@ -193,7 +193,7 @@ to_collect = [(:status, f) for f in (infected, recovered, length)]
 
 # We wrap the model as an agent:
 
-m = ABMAgent("sir_model", abm; tspan=(0., 100.), adata=to_collect)
+m = ABMAgent("sir_model", abm; tspan = (0.0, 100.0), adata = to_collect)
 
 # And we simulate the dynamics:
 

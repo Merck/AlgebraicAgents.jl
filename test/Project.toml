@@ -1,6 +1,5 @@
 [deps]
 Agents = "46ada45e-f475-11e8-01d0-f70cc89e6671"
-AlgebraicDynamics = "5fd6ff03-a254-427e-8840-ba658f502e32"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Catlab = "134e5e36-593f-5add-ad60-77f754baafbe"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"

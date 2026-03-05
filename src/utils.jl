@@ -95,7 +95,7 @@ For instance, you may define a method `wrap_system(name, prob::DiffEqBase.DEProb
 # Examples
 ```julia
 wrap_system("ode_agent", ODEProblem(f, u0, tspan))
-wrap_system("abm_agent", ABM(agent, space; properties))
+wrap_system("abm_agent", StandardABM(agent, space; properties))
 ```
 """
 function wrap_system end

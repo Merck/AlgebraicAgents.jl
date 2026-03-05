@@ -9,47 +9,48 @@ function define_agent(base_type, super_type, type, __module, constructor)
     # https://discourse.julialang.org/t/
     # metaprogramming-obtain-actual-type-from-symbol-for-field-inheritance/84912
 
-    # We start with a quote. All macros return a quote to be evaluated
     extra_fields = MacroTools.striplines(type.args[3])
     new_name = type.args[2]
-    quote
-        let
-            # Here we collect the field names and types from the base type
-            # Because the base type already exists, we escape the symbols to obtain it
-            base_fieldnames = fieldnames($(esc(base_type)))
-            base_fieldtypes = getproperty($(esc(base_type)), :types)
-            base_fields = map(zip(base_fieldnames, base_fieldtypes)) do x
-                f, T = x # due to https://github.com/Merck/AlgebraicAgents.jl/issues/38
-                if (VERSION < v"1.8") || !(isconst($(esc(base_type)), f))
-                    :($f::$T)
-                else
-                    Expr(:const, :($f::$T))
-                end
-            end
-            # Then, we prime the additional name and fields into QuoteNodes
-            # We have to do this to be able to interpolate them into an inner quote.
-            name = $(QuoteNode(new_name))
-            additional_fields = $(QuoteNode(extra_fields.args))
+    namified = Docs.namify(new_name)
 
-            # Now we start an inner quote. This is because our macro needs to call `eval`
-            # However, this should never happen inside the main body of a macro
-            # There are several reasons for that, see the cited discussion at the top
-            expr = quote
-                # Also notice that we escape supertype and interpolate it twice
-                # because this is expected to already be defined in the calling module
-                mutable struct $name <: $$(esc(super_type))
-                    $(base_fields...)
-                    $(additional_fields...)
+    # Resolve base type at macro expansion time and check common fields.
+    resolved_base = Core.eval(__module, base_type)
+    if !all(f -> f ∈ fieldnames(resolved_base), common_fields_agent)
+        error("type $resolved_base does not implement common interface fields $common_fields_agent")
+    end
 
-                    $$(QuoteNode(constructor))
-                end
-            end
-
-            # it is important to evaluate the macro in the module of the toplevel eval
-            Base.eval($__module, expr)
+    # Collect field names and types from the base type at macro expansion time.
+    base_fnames = fieldnames(resolved_base)
+    base_ftypes = getproperty(resolved_base, :types)
+    base_fields = map(zip(base_fnames, base_ftypes)) do x
+        f, T = x # due to https://github.com/Merck/AlgebraicAgents.jl/issues/38
+        if (VERSION < v"1.8") || !(isconst(resolved_base, f))
+            :($f::$T)
+        else
+            Expr(:const, :($f::$T))
         end
+    end
 
-        Core.@__doc__($__module.$(Docs.namify(new_name)))
+    # Resolve super type at macro expansion time.
+    resolved_super = Core.eval(__module, super_type)
+
+    # Build and evaluate the struct definition during macro expansion.
+    # This ensures the type binding exists in an earlier world age so that
+    # Core.@__doc__ (and any subsequent code) can access it without
+    # triggering Julia 1.12+ world-age errors.
+    struct_expr = quote
+        mutable struct $new_name <: $resolved_super
+            $(base_fields...)
+            $(extra_fields.args...)
+            $constructor
+        end
+    end
+    Base.eval(__module, struct_expr)
+
+    # The struct is already defined. Return @__doc__ for documentation support.
+    # No world-age issue: the binding was created during macro expansion (earlier world).
+    quote
+        Core.@__doc__ $(esc(namified))
         nothing
     end
 end
@@ -121,7 +122,7 @@ function aagent(base_type, super_type, type, __module)
     tname, param_tnames_constraints = get_param_tnames(type)
     tname_plain = tname isa Symbol ? tname : tname.args[1]
 
-    constructor = define_agent(base_type, super_type, type, __module,
+    define_agent(base_type, super_type, type, __module,
         quote
             function $(tname)(name::AbstractString,
                     args...) where {
@@ -152,19 +153,6 @@ function aagent(base_type, super_type, type, __module)
                 agent
             end
         end)
-
-    quote
-        # check if the base type implements the common interface fields
-        check = quote
-            if !all(f -> f ∈ fieldnames($$(esc(base_type))), $$(common_fields_agent))
-                error("type $($$(esc(base_type))) does not implement common interface fields $($$(common_fields_agent))")
-            end
-        end
-        Base.eval($__module, check)
-
-        # type constructor
-        $constructor
-    end
 end
 
 # by @slwu89, issue #3

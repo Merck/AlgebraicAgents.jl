@@ -68,7 +68,7 @@ function model_initiation(;
                        C,
                        death_rate)
     space = GraphSpace(complete_digraph(C))
-    model = ABM(PoorSoul, space; properties, rng)
+    model = StandardABM(PoorSoul, space; properties, rng)
 
     # Add initial individuals
     for city in 1:C, n in 1:Ns[city]
