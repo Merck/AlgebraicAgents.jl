@@ -47,7 +47,7 @@ AlgebraicAgents.jl relaxes formalism and shifts focus towards compositional flex
 
 # Software Design
 
-The central abstraction of the framework is the *agent*, which serves a dual role. First, an agent implements a dynamical system with a custom evolution rule, exposing its internal clock and state variables as observable quantities to other agents. Second, an agent acts as a node in a rooted tree hierarchy, serving as a container for nested child agents, each of which is itself an agent with this   dual character.
+The central abstraction of the framework is the *agent*, which serves a dual role. First, an agent implements a dynamical system with a custom evolution rule, exposing its internal clock and state variables as observable quantities to other agents. Second, an agent acts as a node in a rooted tree hierarchy, serving as a container for nested child agents, each of which is itself an agent with this dual character.
 
 Agents are implemented as Julia structures that subtype `AbstractAlgebraicAgent`. The `@aagent` macro provides a lightweight inheritance mechanism, automatically including common interface fields while permitting user-defined fields:
 
@@ -124,19 +124,25 @@ add_relation!(factory_a, c_finished_good, :produces)
 
 These semantic annotations support Graphviz visualization and structured queries over model architecture.
 
+## Community Influences
+
+The composability patterns of the framework build on ideas from the AlgebraicJulia ecosystem [@Brown2022; @Baez2023], which applies concepts from applied category theory to scalable dynamical systems modeling through packages such as [AlgebraicPetri.jl](https://github.com/AlgebraicJulia/AlgebraicPetri.jl) and [AlgebraicDynamics.jl](https://github.com/AlgebraicJulia/AlgebraicDynamics.jl). AlgebraicAgents.jl complements this foundation by extending the compositional perspective to settings where subsystems span multiple modeling formalisms and where interface contracts may not be fully specified during early-stage modeling.
+
 # Research Impact Statement
 
-## Integrations
+## Applications and Value Modeling Ecosystem
 
-AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps `DEProblem` instances from DifferentialEquations.jl, enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns. Visualization functions generate Graphviz DOT and Mermaid diagram output for documentation. The framework is designed to be extensible: contributors can wrap third-party simulation objects as agents within AlgebraicAgents.jl and expose simulation state through the interface methods, see [Contributing](https://github.com/Merck/AlgebraicAgents.jl#contributing-ov-file).
+The framework was presented at JuliaCon 2023 [@Bima2023JuliaCon] and has since been applied to develop proprietary pharmaceutical value chain models. Two companion packages by the authors extend this foundation: [ReactiveDynamics.jl](https://github.com/Merck/ReactiveDynamics.jl), providing chemical reaction network–inspired syntax for business process modeling natively compatible with AlgebraicAgents.jl, and [CEEDesigns.jl](https://github.com/Merck/CEEDesigns.jl), implementing Bayesian cost-efficient experimental design for drug discovery. 
+
+## Third-Party Package Integrations
+
+AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps `DEProblem` instances from DifferentialEquations.jl, enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns.
+
+The integration contract is minimal: in general, any third-party dynamical system framework that provides an integrator with a clock and an incremental step can be wrapped as an agent within AlgebraicAgents.jl. These correspond to the two required interface methods, `_step!` and `_projected_to`. Contributors can expose simulation state through these methods to integrate new solver backends; see [Contributing](https://github.com/Merck/AlgebraicAgents.jl#contributing-ov-file).
 
 ## Availability and Documentation
 
 AlgebraicAgents.jl is registered in Julia's General registry. [API documentation](https://merck.github.io/AlgebraicAgents.jl/stable/) and a [comprehensive example](https://merck.github.io/AlgebraicAgents.jl/stable/sketches/molecules/molecules.html)—a synthetic pharmaceutical company model—are available online. Contributions welcome via [GitHub](https://github.com/Merck/AlgebraicAgents.jl/). The framework is licensed as MIT license.
-
-## Applications and Value Modeling Ecosystem
-
-The framework has been applied to develop proprietary pharmaceutical value chain models. Two companion packages by the authors extend this foundation: [ReactiveDynamics.jl](https://github.com/Merck/ReactiveDynamics.jl), providing chemical reaction network–inspired syntax for business process modeling natively compatible with AlgebraicAgents.jl, and [CEEDesigns.jl](https://github.com/Merck/CEEDesigns.jl), implementing Bayesian cost-efficient experimental design for drug discovery.
 
 # AI Usage Disclosure
 
