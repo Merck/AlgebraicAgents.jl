@@ -11,7 +11,7 @@ dotf(u,p,t) = -p.δ*u
 
 rabbit_growth = wrap_system(&quot;rabbit_growth&quot;, ContinuousResourceSharer{Float64}(1, dotr))
 rabbitfox_predation = wrap_system(&quot;rabbitfox_predation&quot;, ContinuousResourceSharer{Float64}(2, dotrf))
-fox_decline = wrap_system(&quot;fox_decline&quot;, ContinuousResourceSharer{Float64}(1, dotf))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">c5fda3ae </span>of type <span class="sgr32">GraphicalAgent </span>
+fox_decline = wrap_system(&quot;fox_decline&quot;, ContinuousResourceSharer{Float64}(1, dotf))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">87cb2de8 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rf = @relation (rabbits,foxes) begin
@@ -110,20 +110,20 @@ end</code></pre><div class="c-set">
   </tbody>
 </table>
 </div>
-<p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit_growth, rabbitfox_predation, fox_decline, diagram=rf, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">2e8da0c2 </span>of type <span class="sgr32">GraphicalAgent </span>
+<p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit_growth, rabbitfox_predation, fox_decline, diagram=rf, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">245ea97c </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;rabbits&quot;, &quot;foxes&quot;]
    <span class="sgr1">inner agents: </span></span>
-    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">c5fda3ae </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">87cb2de8 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">08ff710e </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">4b1a9c34 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;, &quot;2&quot;]
-    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">2da63a2f </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">54dca521 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
@@ -136,7 +136,7 @@ using Plots</code></pre><pre><code class="language-julia hljs">using AlgebraicAg
 dotf(u, x, p, t) = [p.γ*u[1]*x[1] - p.δ*u[1]]
 
 rabbit = wrap_system(&quot;rabbit&quot;, ContinuousMachine{Float64}(1,1,1, dotr, (u, p, t) -&gt; u))
-fox    = wrap_system(&quot;fox&quot;, ContinuousMachine{Float64}(1,1,1, dotf, (u, p, t) -&gt; u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox </span></span>with uuid <span class="sgr32">d0eb5110 </span>of type <span class="sgr32">GraphicalAgent </span>
+fox    = wrap_system(&quot;fox&quot;, ContinuousMachine{Float64}(1,1,1, dotf, (u, p, t) -&gt; u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox </span></span>with uuid <span class="sgr32">920e90f6 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rabbitfox_pattern = WiringDiagram([], [:rabbits, :foxes])
@@ -148,16 +148,16 @@ add_wires!(rabbitfox_pattern, Pair[
     (fox_box, 1)    =&gt; (rabbit_box, 1),
     (rabbit_box, 1) =&gt; (output_id(rabbitfox_pattern), 1),
     (fox_box, 1)    =&gt; (output_id(rabbitfox_pattern), 2)
-])</code></pre><p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">a91ae67b </span>of type <span class="sgr32">GraphicalAgent </span>
+])</code></pre><p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">005c6007 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: [&quot;rabbits&quot;, &quot;foxes&quot;]
    <span class="sgr1">inner agents: </span></span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">0cdd11be </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">5cae4179 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d0eb5110 </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">920e90f6 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
@@ -168,16 +168,16 @@ simulate(prob)</code></pre><pre><code class="language- hljs"># plot
 draw(prob; label=[&quot;rabbits&quot; &quot;foxes&quot;])</code></pre><h2 id="Open-CPG"><a class="docs-heading-anchor" href="#Open-CPG">Open CPG</a><a id="Open-CPG-1"></a><a class="docs-heading-anchor-permalink" href="#Open-CPG" title="Permalink"></a></h2><pre><code class="language-julia hljs">using AlgebraicDynamics.CPortGraphDynam
 using AlgebraicDynamics.CPortGraphDynam: barbell</code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rabbitfox_pattern = barbell(1)
 
-rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">b1b31cf7 </span>of type <span class="sgr32">GraphicalAgent </span>
+rabbitfox_system = ⊕(rabbit, fox; diagram=rabbitfox_pattern, name=&quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">04496310 </span>of type <span class="sgr32">GraphicalAgent </span>
    custom properties:
    <span class="sgr3">model: </span>
    <span class="sgr3">ports: String[]
    <span class="sgr1">inner agents: </span></span>
-    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">0cdd11be </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">5cae4179 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]
-    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">d0eb5110 </span>of type <span class="sgr32">GraphicalAgent </span>
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">920e90f6 </span>of type <span class="sgr32">GraphicalAgent </span>
        custom properties:
        <span class="sgr3">model: </span>
        <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
@@ -185,4 +185,4 @@ params = LVector(α=.3, β=0.015, γ=0.015, δ=0.7)
 tspan = (0.0, 100.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, 100.0)</code></pre><pre><code class="language- hljs"># convert the system to a problem
 prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre><code class="language- hljs"># solve the problem
 simulate(prob)</code></pre><pre><code class="language- hljs"># plot
-draw(prob; label=[&quot;rabbits&quot; &quot;foxes&quot;])</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../sciml/sciml.html">« SciML Integration</a><a class="docs-footer-nextpage" href="../stochastic_simulation/anderson.html">Simulating Stochastic Reaction Systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 5 March 2026 13:45">Thursday 5 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+draw(prob; label=[&quot;rabbits&quot; &quot;foxes&quot;])</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../sciml/sciml.html">« SciML Integration</a><a class="docs-footer-nextpage" href="../stochastic_simulation/anderson.html">Simulating Stochastic Reaction Systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 18 March 2026 00:05">Wednesday 18 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
