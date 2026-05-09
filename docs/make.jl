@@ -30,6 +30,15 @@ open(joinpath(dirname(@__FILE__), "src/design_mmd.md"), "w") do io
 end
 # end required for mmd
 
+# Stage top-level CONTRIBUTING.md into the docs so it is rendered in-site.
+let contributing_src = joinpath(@__DIR__, "..", "CONTRIBUTING.md"),
+    contributing_dst = joinpath(@__DIR__, "src", "contributing.md")
+    body = read(contributing_src, String)
+    open(contributing_dst, "w") do io
+        write(io, "# Contributing\n\n", body)
+    end
+end
+
 # Literate for tutorials
 const literate_dir = joinpath(@__DIR__, "..", "tutorials")
 const generated_dir = joinpath(@__DIR__, "src", "sketches")
@@ -50,9 +59,9 @@ for (root, dirs, files) in walkdir(literate_dir)
 end
 
 pages = [
-    "index.md",
-    "design_mmd.md",
-    "integrations.md",
+    "Home" => "index.md",
+    "Framework design" => "design_mmd.md",
+    "Integrations" => "integrations.md",
     "Sketches" => [
         "sketches/agents/agents.md",
         "sketches/molecules/molecules.md",
@@ -61,6 +70,8 @@ pages = [
         "sketches/stochastic_simulation/anderson.md",
         "sketches/relations/relations.md",
     ],
+    "API reference" => "api.md",
+    "Contributing" => "contributing.md",
 ]
 
 makedocs(sitename = "AlgebraicAgents.jl",
@@ -70,3 +81,4 @@ makedocs(sitename = "AlgebraicAgents.jl",
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
 
 rm(joinpath(dirname(@__FILE__), "src/design_mmd.md"))
+rm(joinpath(dirname(@__FILE__), "src/contributing.md"))

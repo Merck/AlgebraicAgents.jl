@@ -1,6 +1,6 @@
 AlgebraicAgents.jl depends on third-party Julia packages which may be distributed under different licenses. We have listed all of these third party packages and their licenses below. For the most up-to-date information, see `Project.toml`.
 
-You must agree to the terms of these licenses, in addition to the OperadicAgents.jl source code license, in order to use this software.
+You must agree to the terms of these licenses, in addition to the AlgebraicAgents.jl source code license, in order to use this software.
 
 --------------------------------------------------
 Third party software listed by License type

@@ -37,6 +37,8 @@ This challenge decomposes into three sub-problems:
 - **Hierarchical modularity.** Subsystems should support independent development, validation, and reuse as building blocks within larger models.
 - **Semantic transparency.** Visualizing and querying information flows across models should support both validation and explainability.
 
+AlgebraicAgents.jl is intended for Julia modelers composing heterogeneous dynamical systems across modeling formalisms — users of ecosystems and frameworks such as SciML, Agents.jl, and AlgebraicDynamics.jl coupling existing models, and practitioners wrapping models built outside these frameworks. Primary applications lie in pharmaceutical value-chain modeling, systems biology, and multi-physics engineering.
+
 # State of the Field
 
 Prior work addresses aspects of this challenge. The Functional Mock-up Interface [@Blochwitz2011] standardizes co-simulation of black-box models but imposes protocol overhead suited to industrial interoperability rather than rapid prototyping. Meta-modeling frameworks like the Generic Modeling Environment [@Ledeczi2001] operate at a higher abstraction, enabling construction of domain-specific formalisms. The Ptolemy project [@Ptolemy] and Lingua Franca [@Menard2023] provide principled foundations for heterogeneous component interaction across concurrent, real-time, and distributed settings.
@@ -142,7 +144,7 @@ The integration contract is minimal: in general, any third-party dynamical syste
 
 ## Availability and Documentation
 
-AlgebraicAgents.jl is registered in Julia's General registry. [API documentation](https://merck.github.io/AlgebraicAgents.jl/stable/) and a [comprehensive example](https://merck.github.io/AlgebraicAgents.jl/stable/sketches/molecules/molecules.html)—a synthetic pharmaceutical company model—are available online. Contributions welcome via [GitHub](https://github.com/Merck/AlgebraicAgents.jl/). The framework is licensed as MIT license.
+AlgebraicAgents.jl is MIT-licensed and registered in Julia's General registry; it is installed with Julia's built-in package manager via `Pkg.add("AlgebraicAgents")` (see the [Pkg.jl documentation](https://pkgdocs.julialang.org/v1/managing-packages/#Adding-packages)). [Documentation](https://merck.github.io/AlgebraicAgents.jl/stable/) includes installation, tutorials, a [comprehensive example](https://merck.github.io/AlgebraicAgents.jl/stable/sketches/molecules/molecules.html) modeling a synthetic pharmaceutical company, and an API reference. Contributions are welcome via [GitHub](https://github.com/Merck/AlgebraicAgents.jl/).
 
 # AI Usage Disclosure
 

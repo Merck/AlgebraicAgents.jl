@@ -2,6 +2,8 @@
 
 <p align="center">
   <a href="#about">About</a> |
+  <a href="#intended-audience">Intended Audience</a> |
+  <a href="#installation">Installation</a> |
   <a href="#context-dynamics-of-value-evolution-dyve">Context</a> |
   <a href="#a-single-sketch">A Single Sketch</a> |
   <a href="https://merck.github.io/AlgebraicAgents.jl/stable">Documentation</a>
@@ -36,6 +38,21 @@ The dynamical systems are organized into **hierarchies**. That is, a dynamical s
 
 The underlying concept of a **sum** (a join) of dynamical systems is manifested at two distinct levels: first, the dynamical systems are **implicitly coupled** as they generally observe (and interact with) each other's state. Second, a structural sum **⊕** operator is provided; this outputs another dynamical system which usually contains the summands within a hierarchy of embedded systems. Importantly, using Julia's **dynamic dispatch**, it is possible to fully customize this behavior for user-defined dynamical system classes.
 
+## Intended Audience
+
+AlgebraicAgents.jl is intended for Julia modelers composing heterogeneous dynamical systems across modeling formalisms — users of ecosystems and frameworks such as SciML, Agents.jl, and AlgebraicDynamics.jl coupling existing models, and practitioners wrapping models built outside these frameworks. Primary applications lie in pharmaceutical value-chain modeling, systems biology, and multi-physics engineering.
+
+## Installation
+
+AlgebraicAgents.jl is registered in the Julia General registry, so it can be installed with Julia's built-in package manager [Pkg.jl](https://pkgdocs.julialang.org/v1/managing-packages/#Adding-packages):
+
+```julia
+using Pkg
+Pkg.add("AlgebraicAgents")
+```
+
+Third-party integrations (DifferentialEquations.jl, Agents.jl, AlgebraicDynamics.jl) load automatically when the corresponding package is available in your environment.
+
 ## Context: Dynamics of Value Evolution (DyVE)
  
 The package is an integral part of the **Dynamics of Value Evolution (DyVE)** computational framework for learning, designing, integrating, simulating, and optimizing R&D process models, to better inform strategic decisions in science and business.
@@ -51,6 +68,26 @@ Another package is **[GeneratedExpressions.jl](https://github.com/Merck/Generate
 ## A Single Sketch
 
 ## Integrating a Custom Dynamical System
+
+The snippets below illustrate the flow of defining a custom agent type, adding an
+SDE-based agent, entangling them into a hierarchy, and simulating. The complete
+runnable example is available in the
+[documentation](https://merck.github.io/AlgebraicAgents.jl/stable/sketches/molecules/molecules.html).
+
+We begin by loading the packages used throughout the example and declaring an
+abstract `Molecule` supertype that shares interface methods across concrete
+molecule types:
+
+```julia
+using AlgebraicAgents
+using DataFrames
+
+# shared supertype for concrete molecule agent types
+abstract type Molecule <: AbstractAlgebraicAgent end
+
+# dimensionality of the molecule profile vector
+const N = 3
+```
 
 ```julia
 # drug entity, lives in a therapeutic area
