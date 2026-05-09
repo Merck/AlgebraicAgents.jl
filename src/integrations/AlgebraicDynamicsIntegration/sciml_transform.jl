@@ -2,11 +2,15 @@ import .DifferentialEquations
 import .DifferentialEquations: OrdinaryDiffEq
 
 function _get_problem_type(system::GraphicalModelType)
-    if typeof(system) <: Union{AlgebraicDynamics.DWDDynam.ContinuousMachine,
-        AlgebraicDynamics.UWDDynam.ContinuousResourceSharer}
+    return if typeof(system) <: Union{
+            AlgebraicDynamics.DWDDynam.ContinuousMachine,
+            AlgebraicDynamics.UWDDynam.ContinuousResourceSharer,
+        }
         OrdinaryDiffEq.ODEProblem
-    elseif typeof(system) <: Union{AlgebraicDynamics.DWDDynam.DiscreteMachine,
-        AlgebraicDynamics.UWDDynam.DiscreteResourceSharer}
+    elseif typeof(system) <: Union{
+            AlgebraicDynamics.DWDDynam.DiscreteMachine,
+            AlgebraicDynamics.UWDDynam.DiscreteResourceSharer,
+        }
         OrdinaryDiffEq.DiscreteProblem
     else
         OrdinaryDiffEq.DDEProblem
@@ -25,8 +29,10 @@ DiffEqAgent(system, u0, tspan, params)
 DiffEqAgent(system, u0, tspan, params; alg=Tsit5())
 ```
 """
-function DiffEqAgent(agent::GraphicalAgent, args...;
-        alg = nothing, kwargs...)
+function DiffEqAgent(
+        agent::GraphicalAgent, args...;
+        alg = nothing, kwargs...
+    )
     # get DEProblem
     prob = _get_problem_type(agent.system)(agent.system, args...)
     # get alg
@@ -38,5 +44,5 @@ function DiffEqAgent(agent::GraphicalAgent, args...;
     @info "disentangling root `GraphicalAgent`"
     foreach(a -> entangle!(agent_, a), inner_agents)
 
-    agent_
+    return agent_
 end

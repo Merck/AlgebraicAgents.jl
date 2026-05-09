@@ -46,7 +46,7 @@ function add_concept!(system::Union{AbstractAlgebraicAgent, Opera}, concept::Con
     opera = system isa Opera ? system : getopera(system)
     concept.opera = opera
 
-    push!(opera.concepts, concept)
+    return push!(opera.concepts, concept)
 end
 
 """
@@ -59,7 +59,8 @@ function remove_concept!(system::Union{AbstractAlgebraicAgent, Opera}, concept::
     # Remove relations involving the concept.
     filter!(
         x -> getuuid(x.from) != getuuid(concept) &&
-             getuuid(x.to) != getuuid(concept), opera.relations)
+            getuuid(x.to) != getuuid(concept), opera.relations
+    )
     # Remove concept.
     deleteat!(opera.concepts, findfirst(x -> getuuid(x) == getuuid(concept), opera.concepts))
 
@@ -115,11 +116,14 @@ function remove_relation!(from, to, relation = nothing)
         # Remove all relations between from and to
         filter!(
             x -> !(x.from == from && x.to == to) &&
-                 !(x.from == to && x.to == from), opera.relations)
+                !(x.from == to && x.to == from), opera.relations
+        )
     else
         # Remove specific relation
-        filter!(x -> !(x.from == from && x.to == to && x.relation == relation),
-            opera.relations)
+        filter!(
+            x -> !(x.from == from && x.to == to && x.relation == relation),
+            opera.relations
+        )
     end
 
     return opera.relations
@@ -137,12 +141,15 @@ function get_relations(entity::RelatableType, relation = nothing)
     end
 
     if isnothing(relation)
-        return filter(x -> x.from == entity || x.to == entity,
-            opera.relations)
+        return filter(
+            x -> x.from == entity || x.to == entity,
+            opera.relations
+        )
     else
         return filter(
             x -> (x.from == entity || x.to == entity) &&
-                 x.relation == relation, opera.relations)
+                x.relation == relation, opera.relations
+        )
     end
 end
 
@@ -168,7 +175,7 @@ If `relation` is not provided, all related entities are returned.
 """
 function get_related_entities(entity::RelatableType, relation = nothing)
     all_relations = isnothing(relation) ? get_relations(entity) :
-                    get_relations(entity, relation)
+        get_relations(entity, relation)
 
     related_entities = Set{RelatableType}()
     for r in all_relations
@@ -194,9 +201,11 @@ function print_concept(io::IO, ::MIME"text/plain", c::AbstractConcept)
     indent = get(io, :indent, 0)
 
     # Header line
-    print(io, "^"^indent, "concept ", crayon"bold cyan", getname(c), crayon"reset",
+    print(
+        io, "^"^indent, "concept ", crayon"bold cyan", getname(c), crayon"reset",
         " with uuid ", crayon"cyan", string(getuuid(c))[1:8], crayon"reset",
-        " of type ", crayon"cyan", typeof(c), crayon"reset")
+        " of type ", crayon"cyan", typeof(c), crayon"reset"
+    )
 
     # List all related entities
     for rel in get_relations(c)
@@ -219,18 +228,23 @@ function print_concept(io::IO, ::MIME"text/plain", c::AbstractConcept)
         end
 
         # Print relation line
-        print(io, "\n", " "^(indent+2), arrow, " ", name_str, " ", crayon"magenta",
-            Symbol(rel.relation), crayon"reset", " ", type_label)
+        print(
+            io, "\n", " "^(indent + 2), arrow, " ", name_str, " ", crayon"magenta",
+            Symbol(rel.relation), crayon"reset", " ", type_label
+        )
     end
+    return
 end
 
 function print_concept(io::IO, c::AbstractConcept)
     indent = get(io, :indent, 0)
     related_entities = join([getname(o.from == c ? o.to : o.from) for o in get_relations(c)], ", ")
 
-    print(io,
+    return print(
+        io,
         " "^indent *
-        "$(typeof(c)){name=$(getname(c)), uuid=$(string(getuuid(c))[1:8]), related_entities=$(related_entities)}")
+            "$(typeof(c)){name=$(getname(c)), uuid=$(string(getuuid(c))[1:8]), related_entities=$(related_entities)}"
+    )
 end
 
 # Override Base.show for Concepts
@@ -252,10 +266,12 @@ function print_relation(io::IO, ::MIME"text/plain", r::ConceptRelation)
     to_type = r.to isa AbstractConcept ? "concept" : "agent"
     to_name = getname(r.to)
     relation_symbol = string(r.relation)
-    print(io, "^"^indent, "relation ", crayon"bold cyan",
+    return print(
+        io, "^"^indent, "relation ", crayon"bold cyan",
         from_name, crayon"reset", " [$from_type] ",
         crayon"magenta", relation_symbol, crayon"reset", " ", crayon"bold cyan",
-        to_name, crayon"reset", " [$to_type]")
+        to_name, crayon"reset", " [$to_type]"
+    )
 end
 
 function print_relation(io::IO, r::ConceptRelation)
@@ -263,9 +279,11 @@ function print_relation(io::IO, r::ConceptRelation)
     from_name = getname(r.from)
     to_name = getname(r.to)
 
-    print(io,
+    return print(
+        io,
         " "^indent *
-        "$(typeof(r)){from=$(from_name), relation=$(r.relation), to=$(to_name)}")
+            "$(typeof(r)){from=$(from_name), relation=$(r.relation), to=$(to_name)}"
+    )
 end
 
 # Override Base.show for ConceptRelation
@@ -349,26 +367,32 @@ function concept_graph(entities::Vector{RelatableType})
     relations = filter(x -> x.from in entities && x.to in entities, opera.relations)
 
     io = IOBuffer()
-    print(io, """
+    print(
+        io, """
         digraph \"algagents_relations\" {
             rankdir=LR;
             node [fontsize=10];
-        """)
+        """
+    )
 
     # Emit concept nodes
     for c in concepts
         id = string(getuuid(c))[1:8]
-        label = replace(c.name, '"' => "\\\"")# make transparent stroke
-        println(io,
-            "  \"$id\" [label=\"$label\", shape=circle, style=filled, fontsize=7.0, width=0.5, height=0.5, fillcolor=lightblue, color=\"transparent\"];")
+        label = replace(c.name, '"' => "\\\"") # make transparent stroke
+        println(
+            io,
+            "  \"$id\" [label=\"$label\", shape=circle, style=filled, fontsize=7.0, width=0.5, height=0.5, fillcolor=lightblue, color=\"transparent\"];"
+        )
     end
 
     # Emit agent nodes (if Opera stores them)
     for a in agents
         id = string(getuuid(a))[1:8]
         name = replace(getname(a), '"' => "\\\"")
-        println(io,
-            "  \"$id\" [label=\"$name\", color=Teal, fontsize=7.0, width=0.5, height=0.5, shape=circle];")
+        println(
+            io,
+            "  \"$id\" [label=\"$name\", color=Teal, fontsize=7.0, width=0.5, height=0.5, shape=circle];"
+        )
     end
 
     # Emit edges for all relations
@@ -376,12 +400,14 @@ function concept_graph(entities::Vector{RelatableType})
         src = rel.from
         dst = rel.to
         src_id = isa(src, AbstractConcept) ? string(getuuid(src))[1:8] :
-                 string(getuuid(src))[1:8]
+            string(getuuid(src))[1:8]
         dst_id = isa(dst, AbstractConcept) ? string(getuuid(dst))[1:8] :
-                 string(getuuid(dst))[1:8]
+            string(getuuid(dst))[1:8]
         lbl = string(rel.relation)
-        println(io,
-            "  \"$src_id\" -> \"$dst_id\" [label=\"$lbl\", fontsize=5, penwidth=0.5, arrowsize=0.4];")
+        println(
+            io,
+            "  \"$src_id\" -> \"$dst_id\" [label=\"$lbl\", fontsize=5, penwidth=0.5, arrowsize=0.4];"
+        )
     end
 
     println(io, "}")

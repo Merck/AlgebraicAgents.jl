@@ -203,37 +203,47 @@ end
     joint_system = ⊕(alice, bob, name = "joint system")
 
     # Add wires.
-    add_wire!(joint_system;
+    add_wire!(
+        joint_system;
         from = alice,
         to = bob,
         from_var_name = "alice_x",
-        to_var_name = "bob_x")
-    add_wire!(joint_system;
+        to_var_name = "bob_x"
+    )
+    add_wire!(
+        joint_system;
         from = bob,
         to = alice,
         from_var_name = "bob_y",
-        to_var_name = "alice_y")
+        to_var_name = "alice_y"
+    )
 
-    add_wire!(joint_system;
+    add_wire!(
+        joint_system;
         from = alice,
         to = alice1,
         from_var_name = "alice_x",
-        to_var_name = "alice1_x")
-    add_wire!(joint_system;
+        to_var_name = "alice1_x"
+    )
+    add_wire!(
+        joint_system;
         from = bob,
         to = bob1,
         from_var_name = "bob_x",
-        to_var_name = "bob1_x")
+        to_var_name = "bob1_x"
+    )
 
     # Test mixed types of agents.
     free_agent = FreeAgent("free_agent")
     entangle!(joint_system, free_agent)
 
-    add_wire!(joint_system;
+    add_wire!(
+        joint_system;
         from = free_agent,
         to = alice,
         from_var_name = "free_agent_z",
-        to_var_name = "alice_z")
+        to_var_name = "alice_z"
+    )
 
     # Show wires.
     @test length(get_wires_from(alice)) == 2
@@ -260,7 +270,8 @@ end
     # ----- Communication wires -----
 
     # Client sends a request to Server
-    add_wire!(network_system;
+    add_wire!(
+        network_system;
         from = client,
         to = server,
         from_var_name = "request_payload",
@@ -268,7 +279,8 @@ end
     )
 
     # Server sends a response back to Client
-    add_wire!(network_system;
+    add_wire!(
+        network_system;
         from = server,
         to = client,
         from_var_name = "response_payload",

@@ -39,15 +39,15 @@ function sir(;
         death_rate = 0.02,
         Is = [zeros(Int, length(Ns) - 1)..., 1],
         seed = 19
-)
+    )
     rng = Xoshiro(seed)
     migration_rates = zeros(C, C)
     @assert length(Ns) ==
-            length(Is) ==
-            length(β_und) ==
-            length(β_det) ==
-            size(migration_rates, 1) "length of Ns, Is, and B, and number of rows/columns in migration_rates should be the same "
-    @assert size(migration_rates, 1)==size(migration_rates, 2) "migration_rates rates should be a square matrix"
+        length(Is) ==
+        length(β_und) ==
+        length(β_det) ==
+        size(migration_rates, 1) "length of Ns, Is, and B, and number of rows/columns in migration_rates should be the same "
+    @assert size(migration_rates, 1) == size(migration_rates, 2) "migration_rates rates should be a square matrix"
 
     for c in 1:C
         for c2 in 1:C
@@ -102,13 +102,13 @@ function sir_agent_step!(agent, model)
     sir_migrate!(agent, model)
     sir_transmit!(agent, model)
     sir_update!(agent, model)
-    sir_recover_or_die!(agent, model)
+    return sir_recover_or_die!(agent, model)
 end
 
 function sir_migrate!(agent, model)
     pid = agent.pos
     m = sample(abmrng(model), 1:(model.C), Weights(model.migration_rates[pid, :]))
-    if m ≠ pid
+    return if m ≠ pid
         move_agent!(agent, m, model)
     end
 end
@@ -127,18 +127,19 @@ function sir_transmit!(agent, model)
     for contactID in ids_in_position(agent, model)
         contact = model[contactID]
         if contact.status == :S ||
-           (contact.status == :R && rand(abmrng(model)) ≤ model.reinfection_probability)
+                (contact.status == :R && rand(abmrng(model)) ≤ model.reinfection_probability)
             contact.status = :I
             n -= 1
             n <= 0 && return
         end
     end
+    return
 end
 
 sir_update!(agent, model) = agent.status == :I && (agent.days_infected += 1)
 
 function sir_recover_or_die!(agent, model)
-    if agent.days_infected ≥ model.infection_period
+    return if agent.days_infected ≥ model.infection_period
         if rand(abmrng(model)) ≤ model.death_rate
             remove_agent!(agent, model)
         else

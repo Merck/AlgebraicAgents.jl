@@ -31,13 +31,15 @@ function agent_step!(agent, model)
     sir_migrate!(agent, model)
     sir_transmit!(agent, model)
     sir_update!(agent, model)
-    sir_recover_or_die!(agent, model)
+    return sir_recover_or_die!(agent, model)
 end
 
 @testset "Agents.jl and AlgebraicAgents.jl solution are equal" begin
     Random.seed!(1)
-    abm_algebraic_wrap = ABMAgent("sir_model", abm_algebraic;
-        tspan = (0.0, 10.0), adata = to_collect)
+    abm_algebraic_wrap = ABMAgent(
+        "sir_model", abm_algebraic;
+        tspan = (0.0, 10.0), adata = to_collect
+    )
     simulate(abm_algebraic_wrap)
     data_algebraic = abm_algebraic_wrap.df_agents
 
@@ -51,8 +53,10 @@ end
 end
 
 @testset "plotting for ABM wraps" begin
-    abm_algebraic_wrap = ABMAgent("sir_model", abm_algebraic;
-        tspan = (0.0, 10.0), adata = to_collect)
+    abm_algebraic_wrap = ABMAgent(
+        "sir_model", abm_algebraic;
+        tspan = (0.0, 10.0), adata = to_collect
+    )
     simulate(abm_algebraic_wrap)
 
     @test draw(abm_algebraic_wrap) isa Plots.Plot

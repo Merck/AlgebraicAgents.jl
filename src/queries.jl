@@ -8,7 +8,7 @@ function interpolate_underscores(s, __module__ = AlgebraicAgents)::Expr
     ex = MacroTools.prewalk(x -> x == :_ ? sym : x, ex)
     ex = Expr(:(->), sym, ex)
 
-    Expr(:escape, Expr(:call, GlobalRef(Core, :eval), __module__, Expr(:quote, ex)))
+    return Expr(:escape, Expr(:call, GlobalRef(Core, :eval), __module__, Expr(:quote, ex)))
 end
 
 "Supertype of queries."
@@ -46,7 +46,7 @@ i = 1; filter(agents, f"_.age > \$i && _.name ∈ ['a', 'b']")
 ```
 """
 macro f_str(query)
-    :(FilterQuery($(interpolate_underscores(query))))
+    return :(FilterQuery($(interpolate_underscores(query))))
 end
 
 """
@@ -64,7 +64,7 @@ macro filter(query)
         Expr(:escape, query)
     end
 
-    quote
+    return quote
         query = $(query)
         a -> filter(a, query)
     end
@@ -84,8 +84,10 @@ function Base.filter(a::AbstractAlgebraicAgent, queries::Vararg{FilterQuery})
     return filter(collect(values(flatten_hierarchy(a))), queries...)
 end
 
-function Base.filter(agents::Vector{<:AbstractAlgebraicAgent},
-        queries::Vararg{FilterQuery})
+function Base.filter(
+        agents::Vector{<:AbstractAlgebraicAgent},
+        queries::Vararg{FilterQuery}
+    )
     filtered = AbstractAlgebraicAgent[]
     for a in agents
         if all(q -> _filter(a, q), queries)
@@ -127,10 +129,14 @@ struct TransformQuery{F <: Function} <: AbstractQuery
     name::Symbol
     query::F
 
-    function TransformQuery(name::T,
-            query::F) where {T <: Union{Symbol, AbstractString},
-            F <: Function}
-        new{F}(Symbol(name), query)
+    function TransformQuery(
+            name::T,
+            query::F
+        ) where {
+            T <: Union{Symbol, AbstractString},
+            F <: Function,
+        }
+        return new{F}(Symbol(name), query)
     end
 end
 
@@ -144,12 +150,15 @@ macro transform(exs...)
     n_noname::Int = 0
     queries = map(
         ex -> Meta.isexpr(ex, :(=)) ? (ex.args[1], ex.args[2]) :
-              (n_noname += 1; ("query_$n_noname", ex)),
-        exs)
+            (n_noname += 1; ("query_$n_noname", ex)),
+        exs
+    )
     names, queries = map(x -> x[1], queries), map(x -> x[2], queries)
-    quote
-        queries = TransformQuery.($(names),
-            [$(interpolate_underscores.(queries)...)])
+    return quote
+        queries = TransformQuery.(
+            $(names),
+            [$(interpolate_underscores.(queries)...)]
+        )
 
         a -> transform(a, queries...)
     end
@@ -171,11 +180,13 @@ agent |> @transform(name=_.name, _.age)
 ```
 """
 function transform(a::AbstractAlgebraicAgent, queries::Vararg{TransformQuery})
-    transform(collect(values(flatten_hierarchy(a))), queries...)
+    return transform(collect(values(flatten_hierarchy(a))), queries...)
 end
 
-function transform(a::Vector{<:AbstractAlgebraicAgent},
-        queries::Vararg{TransformQuery})
+function transform(
+        a::Vector{<:AbstractAlgebraicAgent},
+        queries::Vararg{TransformQuery}
+    )
     results = []
     for a in a
         try
@@ -185,5 +196,5 @@ function transform(a::Vector{<:AbstractAlgebraicAgent},
         end
     end
 
-    results
+    return results
 end

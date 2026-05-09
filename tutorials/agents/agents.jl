@@ -32,14 +32,15 @@ function model_initiation(;
         detection_time = 14,
         death_rate = 0.02,
         Is = [zeros(Int, length(Ns) - 1)..., 1],
-        seed = 0)
+        seed = 0
+    )
     rng = MersenneTwister(seed)
-    @assert length(Ns)==
-            length(Is)==
-            length(β_und)==
-            length(β_det)==
-            size(migration_rates, 1) "length of Ns, Is, and B, and number of rows/columns in migration_rates should be the same "
-    @assert size(migration_rates, 1)==size(migration_rates, 2) "migration_rates rates should be a square matrix"
+    @assert length(Ns) ==
+        length(Is) ==
+        length(β_und) ==
+        length(β_det) ==
+        size(migration_rates, 1) "length of Ns, Is, and B, and number of rows/columns in migration_rates should be the same "
+    @assert size(migration_rates, 1) == size(migration_rates, 2) "migration_rates rates should be a square matrix"
 
     C = length(Ns)
     ## normalize migration_rates
@@ -48,7 +49,8 @@ function model_initiation(;
         migration_rates[c, :] ./= migration_rates_sum[c]
     end
 
-    properties = @dict(Ns,
+    properties = @dict(
+        Ns,
         Is,
         β_und,
         β_det,
@@ -59,7 +61,8 @@ function model_initiation(;
         reinfection_probability,
         detection_time,
         C,
-        death_rate)
+        death_rate
+    )
     space = GraphSpace(complete_digraph(C))
     model = StandardABM(PoorSoul, space; properties, rng, model_step! = identity)
 
@@ -89,7 +92,8 @@ function create_params(;
         detection_time = 14,
         death_rate = 0.02,
         Is = [zeros(Int, C - 1)..., 1],
-        seed = 19)
+        seed = 19
+    )
     Random.seed!(seed)
     Ns = rand(50:5000, C)
     β_und = rand(0.3:0.02:0.6, C)
@@ -106,7 +110,8 @@ function create_params(;
     migration_rates = (migration_rates .* max_travel_rate) ./ maxM
     migration_rates[diagind(migration_rates)] .= 1.0
 
-    params = @dict(Ns,
+    params = @dict(
+        Ns,
         β_und,
         β_det,
         migration_rates,
@@ -114,7 +119,8 @@ function create_params(;
         reinfection_probability,
         detection_time,
         death_rate,
-        Is)
+        Is
+    )
 
     return params
 end
@@ -127,14 +133,14 @@ function agent_step!(agent, model)
     migrate!(agent, model)
     transmit!(agent, model)
     update!(agent, model)
-    recover_or_die!(agent, model)
+    return recover_or_die!(agent, model)
 end
 
 function migrate!(agent, model)
     pid = agent.pos
     d = DiscreteNonParametric(1:(model.C), model.migration_rates[pid, :])
     m = rand(model.rng, d)
-    if m ≠ pid
+    return if m ≠ pid
         move_agent!(agent, m, model)
     end
 end
@@ -154,18 +160,19 @@ function transmit!(agent, model)
     for contactID in ids_in_position(agent, model)
         contact = model[contactID]
         if contact.status == :S ||
-           (contact.status == :R && rand(model.rng) ≤ model.reinfection_probability)
+                (contact.status == :R && rand(model.rng) ≤ model.reinfection_probability)
             contact.status = :I
             n -= 1
             n == 0 && return
         end
     end
+    return
 end
 
 update!(agent, model) = agent.status == :I && (agent.days_infected += 1)
 
 function recover_or_die!(agent, model)
-    if agent.days_infected ≥ model.infection_period
+    return if agent.days_infected ≥ model.infection_period
         if rand(model.rng) ≤ model.death_rate
             @a kill_agent!(agent, model)
         else
@@ -178,7 +185,7 @@ end
 # That's it!
 #
 # ## Simulation Using AlgebraicAgents.jl
-# 
+#
 # We instantiate a sample `ABM` model:
 
 ## create a sample agent based model
@@ -199,6 +206,6 @@ m = ABMAgent("sir_model", abm; tspan = (0.0, 100.0), adata = to_collect)
 
 simulate(m)
 
-# 
+#
 
 draw(m)

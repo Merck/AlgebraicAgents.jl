@@ -24,8 +24,10 @@ mutable struct FreeAgent <: AbstractAlgebraicAgent
     FreeAgent("agent", [agent1, agent2])
     ```
     """
-    function FreeAgent(name::AbstractString,
-            agents::Vector{<:AbstractAlgebraicAgent} = AbstractAlgebraicAgent[])
+    function FreeAgent(
+            name::AbstractString,
+            agents::Vector{<:AbstractAlgebraicAgent} = AbstractAlgebraicAgent[]
+        )
         m = new()
         m.uuid = uuid4()
         m.name = name
@@ -38,7 +40,7 @@ mutable struct FreeAgent <: AbstractAlgebraicAgent
             entangle!(m, a)
         end
 
-        m
+        return m
     end
 end
 
@@ -68,7 +70,7 @@ Set agent's parent.
 """
 function setparent!(a::AbstractAlgebraicAgent, p::Union{AbstractAlgebraicAgent, Nothing})
     !isnothing(getparent(a)) && pop!(inners(getparent(a)), getname(a))
-    a.parent = p
+    return a.parent = p
 end
 
 """
@@ -89,7 +91,7 @@ function getparameters(a::AbstractAlgebraicAgent, path = ".", dict = Dict{String
         getparameters(a, normpath(joinpath(path, getname(a), ".")), dict)
     end
 
-    dict
+    return dict
 end
 
 """
@@ -118,7 +120,7 @@ function _setparameters!(a::AbstractAlgebraicAgent, parameters)
         error("type $(typeof(a)) doesn't implement `_setparameters!`")
     end
 
-    params
+    return params
 end
 
 """
@@ -140,7 +142,7 @@ function setparameters!(a::AbstractAlgebraicAgent, parameters, path = ".")
         setparameters!(a, parameters, normpath(joinpath(path, getname(a), ".")))
     end
 
-    a
+    return a
 end
 
 """
@@ -161,7 +163,7 @@ function simulate(a::AbstractAlgebraicAgent, max_t = Inf)
         ret = step!(a)
     end
 
-    a
+    return a
 end
 
 """
@@ -200,7 +202,7 @@ function step!(a::AbstractAlgebraicAgent, t = projected_to(a); isroot = true)
         execute_controls!(getopera(a), t)
     end
 
-    ret
+    return ret
 end
 
 """
@@ -220,7 +222,7 @@ function projected_to(a::AbstractAlgebraicAgent; isroot = true)
         end
     end
 
-    ret
+    return ret
 end
 
 "Return time to which agent's evolution was projected."
@@ -232,7 +234,7 @@ _projected_to(::FreeAgent) = nothing
 
 "Step an agent forward (call only if its projected time is equal to the least projected time, among all agents in the hierarchy)."
 function _step!(a::AbstractAlgebraicAgent)
-    @error "agent $(typeof(a)) doesn't implement `_step!`"
+    return @error "agent $(typeof(a)) doesn't implement `_step!`"
 end
 _step!(::FreeAgent) = nothing
 
@@ -257,7 +259,7 @@ function reinit!(a::AbstractAlgebraicAgent)
         reinit!(a)
     end
 
-    a
+    return a
 end
 
 "Reinitialize the state of an agent."
@@ -277,7 +279,7 @@ myagent[:]
 
 Base.getindex(a::AbstractAlgebraicAgent, key::AbstractString) = getindex(inners(a), key)
 function Base.getindex(a::AbstractAlgebraicAgent, I::AbstractVector{<:AbstractString})
-    getindex.(Ref(inners(a)), [I...])
+    return getindex.(Ref(inners(a)), [I...])
 end
 Base.getindex(a::AbstractAlgebraicAgent, ::Colon) = collect(values(inners(a)))
 function Base.getindex(::AbstractAlgebraicAgent, args...)
@@ -295,12 +297,12 @@ getobservable(getagent(agent, "../model"), 1)
 ```
 """
 function getobservable(a::AbstractAlgebraicAgent, args...)
-    @error "agent $(typeof(a)) doesn't implement `getobservable`"
+    return @error "agent $(typeof(a)) doesn't implement `getobservable`"
 end
 
 "Get agent's observable at a given time."
 function gettimeobservable(a::AbstractAlgebraicAgent, ::Number, ::Any)
-    @error "agent $(typeof(a)) doesn't implement `gettimeobservable`"
+    return @error "agent $(typeof(a)) doesn't implement `gettimeobservable`"
 end
 
 """
@@ -308,7 +310,7 @@ end
 Return a list of observables (explicitly) exported by an agent. Use [`getobservable`](@ref) to retrieve the observable's value.
 """
 function observables(a::AbstractAlgebraicAgent)
-    @error "agent $(typeof(a)) doesn't implement `observables`"
+    return @error "agent $(typeof(a)) doesn't implement `observables`"
 end
 
 "Get the [`Opera`](@ref) attached to an agent or a concept."
@@ -331,37 +333,45 @@ function print_header(io::IO, ::MIME"text/plain", a::AbstractAlgebraicAgent)
 
     print(io, " "^indent, "agent ", crayon"bold green", getname(a), " ", crayon"reset")
     print(io, "with uuid ", crayon"green", string(getuuid(a))[1:8], " ", crayon"reset")
-    print(io, "of type ", crayon"green", typeof(a), " ", crayon"reset")
+    return print(io, "of type ", crayon"green", typeof(a), " ", crayon"reset")
 end
 
 function print_header(io::IO, a::AbstractAlgebraicAgent)
     indent = get(io, :indent, 0)
-    print(io,
+    return print(
+        io,
         " "^indent *
-        "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}")
+            "$(typeof(a)){name=$(getname(a)), uuid=$(string(getuuid(a))[1:8]), parent=$(getparent(a))}"
+    )
 end
 
 "Pretty-print agent's parent and inners. Optionally specify indent."
-function print_neighbors(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
-        expand_inners = true)
+function print_neighbors(
+        io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
+        expand_inners = true
+    )
     indent = get(io, :indent, 0)
 
     expand_inners && !isnothing(getparent(a)) &&
-        print(io, "\n", " "^(indent + 3), crayon"bold", "parent: ", crayon"reset",
-            crayon"green", getname(getparent(a)), crayon"reset")
+        print(
+        io, "\n", " "^(indent + 3), crayon"bold", "parent: ", crayon"reset",
+        crayon"green", getname(getparent(a)), crayon"reset"
+    )
     !isempty(values(inners(a))) &&
         print(io, "\n", " "^(indent + 3), crayon"bold", "inner agents: ", crayon"reset")
 
     max_inners = get(io, :max_list_length, 5)
-    if expand_inners
+    return if expand_inners
         iio = IOContext(io, :indent => get(io, :indent, 0) + 4)
         for a in first(values(inners(a)), max_inners)
             print(io, "\n")
             show(iio, m, a, false)
         end
-        (length(inners(a)) > max_inners) && print(io,
+        (length(inners(a)) > max_inners) && print(
+            io,
             "\n" * " "^(indent + 4) *
-            "$(length(inners(a))-max_inners) more agent(s) not shown ...")
+                "$(length(inners(a)) - max_inners) more agent(s) not shown ..."
+        )
     else
         print(io, join([getname(a) for a in values(inners(a))], ", "))
     end
@@ -376,17 +386,22 @@ function print_custom(io::IO, ::MIME"text/plain", a::AbstractAlgebraicAgent)
 
     print(io, "\n", " "^(indent + 3), "custom properties:")
     for field in extra_fields
-        print(io, "\n", " "^(indent + 3), AlgebraicAgents.crayon"italics", field, ": ",
-            AlgebraicAgents.crayon"reset", getproperty(a, field))
+        print(
+            io, "\n", " "^(indent + 3), AlgebraicAgents.crayon"italics", field, ": ",
+            AlgebraicAgents.crayon"reset", getproperty(a, field)
+        )
     end
+    return
 end
 
 # specialize show method
-function Base.show(io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
-        expand_inners = true)
+function Base.show(
+        io::IO, m::MIME"text/plain", a::AbstractAlgebraicAgent,
+        expand_inners = true
+    )
     print_header(io, m, a)
     print_custom(io, m, a)
-    print_neighbors(io, m, a, expand_inners)
+    return print_neighbors(io, m, a, expand_inners)
 end
 
 Base.show(io::IO, a::AbstractAlgebraicAgent) = print_header(io, a)
@@ -400,12 +415,12 @@ Retrieve an agent from its relative path, and plot its state.
 Reduces to [`_draw`](@ref).
 """
 function draw(a::AbstractAlgebraicAgent, path = ".", args...; kwargs...)
-    _draw(getagent(a, path), args...; kwargs...)
+    return _draw(getagent(a, path), args...; kwargs...)
 end
 
 "Return plot of an agent's state. Defaults to `nothing`."
 function _draw(a::AbstractAlgebraicAgent)
-    @warn "`_draw` for agent type $(typeof(a)) not implemented. For plotting an `ABMAgent`, as a part of `Agents.jl` integration, kindly load package `Plots`"
+    return @warn "`_draw` for agent type $(typeof(a)) not implemented. For plotting an `ABMAgent`, as a part of `Agents.jl` integration, kindly load package `Plots`"
 end
 
 """
@@ -449,19 +464,23 @@ end
     _load(type, hierarchy; eval_scope=@__MODULE__)
 This is a low-level method used for instantiating an agent of the specified `type`. It also instantiates all the inner sub-agents found within the given `hierarchy` dictionary. 
 """
-function _load(type::Type{T},
+function _load(
+        type::Type{T},
         hierarchy::AbstractDict;
-        eval_scope = @__MODULE__) where {T <: AbstractAlgebraicAgent}
-    agent = type(hierarchy["name"],
+        eval_scope = @__MODULE__
+    ) where {T <: AbstractAlgebraicAgent}
+    agent = type(
+        hierarchy["name"],
         values(get(hierarchy, "parameters", Dict()))...;
-        get(hierarchy, "keyword_arguments", [])...)
+        get(hierarchy, "keyword_arguments", [])...
+    )
     foreach(i -> entangle!(agent, load(i; eval_scope)), get(hierarchy, "inners", []))
 
     # load interactions into Opera
     haskey(hierarchy, "opera") &&
         load_opera!(getopera(agent), hierarchy["opera"]; eval_scope)
 
-    agent
+    return agent
 end
 
 """
@@ -469,8 +488,12 @@ end
 Return a dictionary with extra fields of an agent, excluding common interface properties.
 """
 function get_parameters(a::AbstractAlgebraicAgent)
-    Dict{String, Any}([string(k) => getproperty(a, k)
-                       for k in setdiff(propertynames(a), common_fields_agent)])
+    return Dict{String, Any}(
+        [
+            string(k) => getproperty(a, k)
+                for k in setdiff(propertynames(a), common_fields_agent)
+        ]
+    )
 end
 
 """
@@ -506,7 +529,9 @@ function save(agent::AbstractAlgebraicAgent)
     if isempty(inners(agent))
         return agent_args
     else
-        return merge(agent_args,
-            Dict("inners" => map(i -> save(i), values(inners(agent)))))
+        return merge(
+            agent_args,
+            Dict("inners" => map(i -> save(i), values(inners(agent))))
+        )
     end
 end

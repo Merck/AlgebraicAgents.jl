@@ -16,7 +16,7 @@ function interpolate_underscores_sucessor(s, __module__ = AlgebraicAgents)::Expr
 
     ex = Expr(:(->), sym, ex)
 
-    Expr(:escape, Expr(:call, GlobalRef(Core, :eval), __module__, Expr(:quote, ex)))
+    return Expr(:escape, Expr(:call, GlobalRef(Core, :eval), __module__, Expr(:quote, ex)))
 end
 
 """
@@ -33,5 +33,5 @@ filter(agents, p\"""_ ≺ "parent" \""")
 ```
 """
 macro p_str(query)
-    :(FilterQuery($(interpolate_underscores_sucessor(query))))
+    return :(FilterQuery($(interpolate_underscores_sucessor(query))))
 end

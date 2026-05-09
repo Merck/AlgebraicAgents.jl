@@ -51,13 +51,16 @@ Add a wire connecting two agents.
 add_wire!(joint_system; from=alice, to=bob, from_var_name="alice_x", to_var_name="bob_x")
 ```
 """
-function add_wire!(a::AbstractAlgebraicAgent;
+function add_wire!(
+        a::AbstractAlgebraicAgent;
         from::T1,
         to::T2,
         from_var_name = nothing,
-        to_var_name = nothing) where {
+        to_var_name = nothing
+    ) where {
         T1, T2 <:
-            Union{AbstractAlgebraicAgent, AbstractString, UUID}}
+        Union{AbstractAlgebraicAgent, AbstractString, UUID},
+    }
     from, to = to_agent(a, from), to_agent(a, to)
     from_var_name = something(from_var_name, to_var_name)
     to_var_name = something(to_var_name, from_var_name)
@@ -79,12 +82,16 @@ delete_wires!(joint_system; from=alice, to=bob)
 delete_wires!(joint_system; from=alice, to=bob, from_var_name="alice_x", to_var_name="bob_x")
 ```
 """
-function delete_wires!(a::AbstractAlgebraicAgent;
+function delete_wires!(
+        a::AbstractAlgebraicAgent;
         from::T,
         to::T,
         from_var_name = nothing,
-        to_var_name = nothing) where {T <:
-                                      Union{AbstractAlgebraicAgent, AbstractString, UUID}}
+        to_var_name = nothing
+    ) where {
+        T <:
+        Union{AbstractAlgebraicAgent, AbstractString, UUID},
+    }
     from, to = to_agent(a, from), to_agent(a, to)
 
     ixs = findall(x -> x.from == from && x.to == to, getopera(a).wires)
@@ -140,16 +147,20 @@ function wiring_diagram(agent::AbstractAlgebraicAgent; kwargs...)
     return wiring_diagram(all_agents; kwargs...)
 end
 
-function wiring_diagram(agents::Vector{T};
+function wiring_diagram(
+        agents::Vector{T};
         parentship_edges = true,
-        wires = true) where {T <: AbstractAlgebraicAgent}
-    wiring_diagram([agents]; parentship_edges, wires)
+        wires = true
+    ) where {T <: AbstractAlgebraicAgent}
+    return wiring_diagram([agents]; parentship_edges, wires)
 end
 
-function wiring_diagram(groups;
+function wiring_diagram(
+        groups;
         group_labels = nothing,
         parentship_edges = true,
-        wires = true)
+        wires = true
+    )
     nodes = build_nodes(groups; group_labels)
     edges_parentship, edges_wires = build_edges(vcat(groups...))
 
@@ -181,16 +192,20 @@ function build_nodes(groups; group_labels = nothing)
         subgraphs = []
         j = 0
         for (i_group, group) in enumerate(groups)
-            nodes = ["""$(j+i) [label="$(getname(a))"]""" for (i, a) in enumerate(group)]
+            nodes = ["""$(j + i) [label="$(getname(a))"]""" for (i, a) in enumerate(group)]
 
-            push!(subgraphs,
+            push!(
+                subgraphs,
                 """
                 subgraph cluster_$i_group {\n
                 """ *
-                (!isnothing(group_labels) ? """label="$(group_labels[i_group])" \n""" :
-                 "") *
-                join(nodes, "\n") *
-                "\n}")
+                    (
+                    !isnothing(group_labels) ? """label="$(group_labels[i_group])" \n""" :
+                        ""
+                ) *
+                    join(nodes, "\n") *
+                    "\n}"
+            )
             j += length(group)
         end
 
@@ -214,8 +229,10 @@ function build_edges(all_agents)
         if !isnothing(parents[i])
             p = parents[i]
             ix1, ix2 = findfirst(==(p), all_agents), findfirst(==(a), all_agents)
-            push!(edges_parentship,
-                "$ix1 -> $ix2 [len=1, penwidth=0.5, arrowsize=0.4, arrowtype=normal, style=dashed, fontsize=5.0, color=grey]")
+            push!(
+                edges_parentship,
+                "$ix1 -> $ix2 [len=1, penwidth=0.5, arrowsize=0.4, arrowtype=normal, style=dashed, fontsize=5.0, color=grey]"
+            )
         end
     end
 
@@ -226,8 +243,10 @@ function build_edges(all_agents)
 
         oriented_wires_between = get_wires_from(a) ∩ get_wires_to(b)
         for wire in oriented_wires_between
-            push!(edges_wires,
-                "$ix1 -> $ix2 [len=1, headlabel=$(wire.to_var_name), taillabel=$(wire.from_var_name), arrowsize=0.3, arrow=normal, fontsize=7.0]")
+            push!(
+                edges_wires,
+                "$ix1 -> $ix2 [len=1, headlabel=$(wire.to_var_name), taillabel=$(wire.from_var_name), arrowsize=0.3, arrow=normal, fontsize=7.0]"
+            )
         end
     end
 

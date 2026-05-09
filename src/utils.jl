@@ -2,7 +2,7 @@ using InteractiveUtils: subtypes
 
 "Return code propagation."
 macro ret(old, ret)
-    quote
+    return quote
         ret = $(esc(ret))
         old = $(esc(old))
         val = if isnothing(old)
@@ -29,11 +29,13 @@ function yield_aargs(a::AbstractAlgebraicAgent, aargs...)
     for (path, aarg) in aargs
         uuid_ = uuid(getagent(a, path))
 
-        push!(naargs,
-            uuid_ => (args = get(aarg, :args, ()), kwargs = get(aarg, :kwargs, ())))
+        push!(
+            naargs,
+            uuid_ => (args = get(aarg, :args, ()), kwargs = get(aarg, :kwargs, ()))
+        )
     end
 
-    naargs
+    return naargs
 end
 
 """
@@ -47,7 +49,7 @@ function flatten_hierarchy(a::AbstractAlgebraicAgent)
         push!(flat_repr, p => dir[v])
     end
 
-    flat_repr
+    return flat_repr
 end
 
 """
@@ -63,10 +65,10 @@ o(Dict("agent" => [1., 2.]))
 ```
 """
 function objective(agent::AbstractAlgebraicAgent, max_t = Inf)
-    function (params)
+    return function (params)
         setparameters!(reinit!(agent), params)
 
-        simulate(agent, max_t)
+        return simulate(agent, max_t)
     end
 end
 
@@ -82,7 +84,7 @@ function args_kwargs(args)
         end
     end
 
-    filtered_args, filtered_kwargs
+    return filtered_args, filtered_kwargs
 end
 
 """
@@ -136,8 +138,10 @@ currently support "." characters in class names.
 print(join(typetree_mmd(Integer), ""))
 ```
 """
-function typetree_mmd(T::Type, TT::S = nothing;
-        rem = false) where {S <: Union{Type, Nothing}}
+function typetree_mmd(
+        T::Type, TT::S = nothing;
+        rem = false
+    ) where {S <: Union{Type, Nothing}}
     ret = Vector{String}()
     if isnothing(TT)
         append!(ret, ["classDiagram\n"])
@@ -153,7 +157,7 @@ function typetree_mmd(T::Type, TT::S = nothing;
     for i in eachindex(sub_types)
         append!(ret, typetree_mmd(sub_types[i], T; rem))
     end
-    ret
+    return ret
 end
 
 """
@@ -188,7 +192,7 @@ function agent_hierarchy_mmd(a::T; use_uuid::Int = 0) where {T <: AbstractAlgebr
     hierarchy_mmd = prewalk_ret(a -> _agent_hierarchy_mmd(a; use_uuid), a)
     pushfirst!(hierarchy_mmd, "classDiagram\n")
 
-    vcat(hierarchy_mmd...)
+    return vcat(hierarchy_mmd...)
 end
 
 """
@@ -206,12 +210,12 @@ function _agent_hierarchy_mmd(a::T; use_uuid::Int = 0) where {T <: AbstractAlgeb
         a_name = a_name * "_" * string(getuuid(a).value)[(end - (use_uuid - 1)):end]
     end
     append!(ret, ["class $(a_name)\n"])
-    append!(ret, ["<<$(rem_module(typeof(a),true))>> $(a_name)\n"])
+    append!(ret, ["<<$(rem_module(typeof(a), true))>> $(a_name)\n"])
     if !isnothing(getparent(a))
         a_par_name = getname(getparent(a))
         if use_uuid > 0
             a_par_name = a_par_name * "_" *
-                         string(getuuid(getparent(a)).value)[(end - (use_uuid - 1)):end]
+                string(getuuid(getparent(a)).value)[(end - (use_uuid - 1)):end]
         end
         append!(ret, ["$(a_par_name) <|-- $(a_name)\n"])
     end

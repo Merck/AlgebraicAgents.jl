@@ -16,15 +16,18 @@ or for the `Graphviz_jll` package to be installed and loaded before calling this
 See [`wiring_diagram`](@ref) to obtain the Graphviz wiring diagram for an agent hierarchy.
 """
 function run_graphviz(
-        io::IO, graph::AbstractString; prog::Symbol = :dot, format::String = "svg")
+        io::IO, graph::AbstractString; prog::Symbol = :dot, format::String = "svg"
+    )
     prog = gv_backend(:graphviz_jll, prog)
 
     return open(gv -> print(gv, graph), `$prog -T$format`, io, write = true)
 end
 
-function run_graphviz(path::AbstractString, graph::AbstractString;
-        prog::Symbol = :dot, format::String = "svg")
-    open(path, "w+") do io
+function run_graphviz(
+        path::AbstractString, graph::AbstractString;
+        prog::Symbol = :dot, format::String = "svg"
+    )
+    return open(path, "w+") do io
         run_graphviz(io, graph; prog, format)
     end
 end

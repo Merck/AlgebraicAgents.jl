@@ -50,9 +50,11 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
     df_model::DataFrames.DataFrame
 
     ## implement constructor
-    function ABMAgent(name::AbstractString, abm::Agents.AgentBasedModel;
+    function ABMAgent(
+            name::AbstractString, abm::Agents.AgentBasedModel;
             when = true, when_model = when, step_size = 1.0,
-            tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...)
+            tspan::NTuple{2, Float64} = (0.0, Inf), kwargs...
+        )
 
         # initialize wrap
         i = new()
@@ -78,13 +80,15 @@ mutable struct ABMAgent <: AbstractAlgebraicAgent
             entangle!(i, AAgent(string(id)))
         end
 
-        i
+        return i
     end
 end
 
-function wrap_system(name::AbstractString, abm::Agents.AgentBasedModel, args...;
-        kwargs...)
-    ABMAgent(name, abm, args...; kwargs...)
+function wrap_system(
+        name::AbstractString, abm::Agents.AgentBasedModel, args...;
+        kwargs...
+    )
+    return ABMAgent(name, abm, args...; kwargs...)
 end
 
 ## implement common interface
@@ -92,9 +96,9 @@ function _step!(a::ABMAgent)
     t = projected_to(a)
     step_size = a.step_size isa Number ? a.step_size : a.step_size(a.abm, t)
     collect_agents = a.when isa AbstractVector ? (t ∈ a.when) :
-                     a.when isa Bool ? a.when : a.when(a.abm, t)
+        a.when isa Bool ? a.when : a.when(a.abm, t)
     collect_model = a.when_model isa AbstractVector ? (t ∈ a.when_model) :
-                    a.when isa Bool ? a.when : a.when_model(a.abm, t)
+        a.when isa Bool ? a.when : a.when_model(a.abm, t)
 
     df_agents, df_model = Agents.run!(a.abm, 1.0; a.kwargs...)
 
@@ -116,12 +120,12 @@ function _step!(a::ABMAgent)
         end
     end
 
-    a.t += step_size
+    return a.t += step_size
 end
 
 # if step is a float, need to retype the dataframe
 function fix_float!(df, val)
-    if eltype(df[!, :time]) <: Int && !isa(val, Int)
+    return if eltype(df[!, :time]) <: Int && !isa(val, Int)
         df[!, :time] = convert.(Float64, df[!, :time])
     end
 end
@@ -129,7 +133,7 @@ end
 _projected_to(a::ABMAgent) = a.tspan[2] <= a.t ? true : a.t
 
 function getobservable(a::ABMAgent, obs)
-    getproperty(abmproperties(a.abm), Symbol(obs))
+    return getproperty(abmproperties(a.abm), Symbol(obs))
 end
 
 function gettimeobservable(a::ABMAgent, t::Float64, obs)
@@ -137,7 +141,7 @@ function gettimeobservable(a::ABMAgent, t::Float64, obs)
     @assert ("time" ∈ names(df)) && (string(obs) ∈ names(df))
 
     # query dataframe
-    df[df.time .== Int(t), obs] |> first
+    return df[df.time .== Int(t), obs] |> first
 end
 
 function _reinit!(a::ABMAgent)
@@ -146,7 +150,7 @@ function _reinit!(a::ABMAgent)
     empty!(a.df_agents)
     empty!(a.df_model)
 
-    a
+    return a
 end
 
 # algebraic wrappers for AbstractAgent type
@@ -157,7 +161,7 @@ end
 Base.propertynames(::AAgent) = fieldnames(AAgent) ∪ [:agent]
 
 function Base.getproperty(a::AAgent, prop::Symbol)
-    if prop == :agent
+    return if prop == :agent
         (getparent(a).abm)[parse(Int, getname(a))]
     else
         getfield(a, prop)
@@ -169,7 +173,7 @@ _step!(::AAgent) = nothing
 _projected_to(::AAgent) = nothing
 
 function getobservable(a::AAgent, obs)
-    getproperty(a.agent, Symbol(obs))
+    return getproperty(a.agent, Symbol(obs))
 end
 
 function gettimeobservable(a::AAgent, t::Float64, obs)
@@ -177,7 +181,7 @@ function gettimeobservable(a::AAgent, t::Float64, obs)
     @assert ("time" ∈ names(df)) && (string(obs) ∈ names(df))
 
     # query df
-    df[(df.time .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
+    return df[(df.time .== Int(t)) .& (df.id .== a.agent.id), obs] |> first
 end
 
 function print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)
@@ -186,25 +190,29 @@ function print_custom(io::IO, mime::MIME"text/plain", a::ABMAgent)
     print(io, " "^(indent + 3), crayon"italics", "abm", ": ", crayon"reset", "\n")
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.abm)
 
-    print(io, "\n" * " "^(indent + 3), crayon"italics", "df_agents", ": ", crayon"reset",
-        "\n")
+    print(
+        io, "\n" * " "^(indent + 3), crayon"italics", "df_agents", ": ", crayon"reset",
+        "\n"
+    )
     show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.df_model)
 
-    print(io, "\n" * " "^(indent + 3), crayon"italics", "df_model", ": ", crayon"reset",
-        "\n")
-    show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.df_agents)
+    print(
+        io, "\n" * " "^(indent + 3), crayon"italics", "df_model", ": ", crayon"reset",
+        "\n"
+    )
+    return show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.df_agents)
 end
 
 function print_custom(io::IO, mime::MIME"text/plain", a::AAgent)
     indent = get(io, :indent, 0)
     print(io, "\n", " "^(indent + 3), "custom properties:\n")
     print(io, " "^(indent + 3), crayon"italics", "agent", ": ", crayon"reset", "\n")
-    show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.agent)
+    return show(IOContext(io, :indent => get(io, :indent, 0) + 4), mime, a.agent)
 end
 
 # retrieve algebraic agent as a property of the core dynamical system
 function extract_agent(model::Agents.ABM, agent::Agents.AbstractAgent)
-    abmproperties(model)[:__aagent__].inners[string(agent.id)]
+    return abmproperties(model)[:__aagent__].inners[string(agent.id)]
 end
 
 """
@@ -217,7 +225,7 @@ algebraic_model = @get_model abm_model
 ```
 """
 macro get_model(model)
-    :(abmproperties($(esc(model)))[:__aagent__])
+    return :(abmproperties($(esc(model)))[:__aagent__])
 end
 
 # macros to add, kill agents
@@ -226,7 +234,7 @@ function get_model(args...; kwargs...)
     ix = findfirst(i -> vals[i] isa Agents.AgentBasedModel, eachindex(vals))
     @assert !isnothing(ix)
 
-    vals[ix]
+    return vals[ix]
 end
 
 """
@@ -244,7 +252,7 @@ macro a(call)
     model_call = deepcopy(call)
     model_call.args[1] = :(AlgebraicAgents.get_model)
 
-    if call.args[1] == :add_agent!
+    return if call.args[1] == :add_agent!
         quote
             model = $(esc(model_call))
             omodel = model isa ABMAgent ? model : abmproperties(model)[:__aagent__]

@@ -13,7 +13,7 @@ preclinical = Preclinical("preclinical", 3.0, t0; queries_reject = q)
 superassay = entangle!(preclinical, FreeAgent("assays"))
 N_assays = 5;
 for i in 1:N_assays
-    entangle!(superassay, Assay("assay_$i", Week(rand([1, 2, 3])), 10e3 * rand(), rand(10.0:20.0), t0))
+    entangle!(superassay, Assay("assay_$i", Week(rand([1, 2, 3])), 10.0e3 * rand(), rand(10.0:20.0), t0))
 end;
 
 # discovery: emits candidate molecules
@@ -36,5 +36,5 @@ pharma_model |> @filter(p"""_ ≺ "parent_$($i)" """)
 i = 2;
 pharma_model |> @filter(f"length(_.path)>$i");
 ### remove candidate molecules with more than two parents
-pharma_model |> @filter(length(_.path)>$i) |> @filter(_.decision_time===missing) .|>
-disentangle!
+pharma_model |> @filter(length(_.path) > $i) |> @filter(_.decision_time === missing) .|>
+    disentangle!

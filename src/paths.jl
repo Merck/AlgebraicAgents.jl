@@ -5,12 +5,12 @@ macro glob_str(pattern, flags...)
         flags = setdiff!(collect(flags), ("s",))
     end
 
-    Glob.FilenameMatch(pattern, flags...)
+    return Glob.FilenameMatch(pattern, flags...)
 end
 
 "Returns UUID object given a uuid string."
 macro uuid_str(uuid)
-    :(UUID($uuid))
+    return :(UUID($uuid))
 end
 
 "Retrieve an agent at `path`, relatively to `agent`."
@@ -27,7 +27,7 @@ getagent(a, uuid"2a634aad-0fbe-4a91-a605-bfbef4d57f95")
 ```
 """
 function getagent(a::AbstractAlgebraicAgent, uuid::UUID)
-    if haskey(getdirectory(a), uuid)
+    return if haskey(getdirectory(a), uuid)
         getdirectory(a)[uuid]
     else
         @error "agent with uuid $uuid not found!"
@@ -48,7 +48,7 @@ function getagent(agent::AbstractAlgebraicAgent, path::AbstractString)
     isabspath(path) && return getagent(topmost(agent), path)
 
     path = normpath(joinpath(path, "."))
-    if haskey(relpathrefs(agent), path)
+    return if haskey(relpathrefs(agent), path)
         # lookup in the relpathrefs
         getagent(agent, relpathrefs(agent)[path])
     else
@@ -89,7 +89,7 @@ function getagent(agent::AbstractAlgebraicAgent, path::Union{Glob.FilenameMatch,
     end
 
     # project uuids
-    getagent.(Ref(agent), refs)
+    return getagent.(Ref(agent), refs)
 end
 
 "With respect to `agent`, memoize relative relpath references of agents in the hiearchy."
@@ -98,7 +98,7 @@ function get_relpathrefs!(agent::AbstractAlgebraicAgent)
         push!(relpathrefs(agent), path => getuuid(agent_))
     end
 
-    relpathrefs(agent)
+    return relpathrefs(agent)
 end
 
 # insert, remove agent
@@ -119,7 +119,7 @@ function entangle!(parent::AbstractAlgebraicAgent, agent::AbstractAlgebraicAgent
     # sync directories and operas
     prewalk(agent -> sync_opera!(agent, getopera(parent)), agent)
 
-    agent
+    return agent
 end
 
 "
@@ -170,7 +170,7 @@ function disentangle!(agent::AbstractAlgebraicAgent; remove_relpathrefs = true)
 
     setparent!(agent, nothing) # detach for external structure (parent agent)
 
-    agent
+    return agent
 end
 
 "Construct a hierarchy of agents from a dictionary of `path => agent` pairs."
@@ -191,7 +191,7 @@ function construct(hierarchy::Dict{String, AbstractAlgebraicAgent})
         entangle!(getagent(top, dirname(path)), agent)
     end
 
-    top
+    return top
 end
 
 """
@@ -204,7 +204,7 @@ function by_name(agent::AbstractAlgebraicAgent, name::AbstractString; inners_onl
     agents = []
     prewalk(a -> (getname(a) == name) && push!(agents, a), agent)
 
-    agents
+    return agents
 end
 
 """
@@ -212,11 +212,13 @@ end
 Return agents in the hierarchy whose names match the given wildcard.
 If `inners_only==true`, consider descendants of `agent` only.
 """
-function by_name(agent::AbstractAlgebraicAgent, name::Union{Glob.FilenameMatch, Regex};
-        inners_only = false)
+function by_name(
+        agent::AbstractAlgebraicAgent, name::Union{Glob.FilenameMatch, Regex};
+        inners_only = false
+    )
     agent = inners_only ? agent : topmost(agent)
     agents = []
     prewalk(a -> (occursin(name, getname(a))) && push!(agents, a), agent)
 
-    agents
+    return agents
 end

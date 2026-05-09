@@ -49,7 +49,7 @@ function define_agent(base_type, super_type, type, __module, constructor)
 
     # The struct is already defined. Return @__doc__ for documentation support.
     # No world-age issue: the binding was created during macro expansion (earlier world).
-    quote
+    return quote
         Core.@__doc__ $(esc(namified))
         nothing
     end
@@ -104,15 +104,15 @@ MyAgent{Float64, Int}("myagent", 1, 2)
 ```
 """
 macro aagent(type)
-    aagent(FreeAgent, AbstractAlgebraicAgent, type, __module__)
+    return aagent(FreeAgent, AbstractAlgebraicAgent, type, __module__)
 end
 
 macro aagent(base_type, type)
-    aagent(base_type, AbstractAlgebraicAgent, type, __module__)
+    return aagent(base_type, AbstractAlgebraicAgent, type, __module__)
 end
 
 macro aagent(base_type, super_type, type)
-    aagent(base_type, super_type, type, __module__)
+    return aagent(base_type, super_type, type, __module__)
 end
 
 const common_fields_agent = (:uuid, :name, :parent, :inners, :relpathrefs, :opera)
@@ -122,44 +122,56 @@ function aagent(base_type, super_type, type, __module)
     tname, param_tnames_constraints = get_param_tnames(type)
     tname_plain = tname isa Symbol ? tname : tname.args[1]
 
-    define_agent(base_type, super_type, type, __module,
+    return define_agent(
+        base_type, super_type, type, __module,
         quote
-            function $(tname)(name::AbstractString,
-                    args...) where {
+            function $(tname)(
+                    name::AbstractString,
+                    args...
+                ) where {
                     $(param_tnames_constraints...),
-            }
+                }
                 uuid = AlgebraicAgents.uuid4()
                 inners = Dict{String, AbstractAlgebraicAgent}()
-                relpathrefs = Dict{AbstractString,
-                    AlgebraicAgents.UUID}()
+                relpathrefs = Dict{
+                    AbstractString,
+                    AlgebraicAgents.UUID,
+                }()
                 opera = AlgebraicAgents.Opera()
 
                 # if an extra field is missing, provide better error message
-                extra_fields = setdiff(fieldnames($tname_plain),
-                    $common_fields_agent)
+                extra_fields = setdiff(
+                    fieldnames($tname_plain),
+                    $common_fields_agent
+                )
                 if length(args) != length(extra_fields)
-                    error("""the agent type $($tname_plain) default constructor `$($tname_plain)(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
+                    error(
+                        """the agent type $($tname_plain) default constructor `$($tname_plain)(name, args...)` expects $(length(extra_fields)) arguments for custom fields $extra_fields, but $(length(args)) arguments were given.
 
-                          If you intended to call a custom constructor and you passed a string as the first variable, please check that the custom constructor declares the type of the first positional argument to be `AbstractString` (so that dynamic dispatch works).
-                          """)
+                        If you intended to call a custom constructor and you passed a string as the first variable, please check that the custom constructor declares the type of the first positional argument to be `AbstractString` (so that dynamic dispatch works).
+                        """
+                    )
                 end
 
                 # initialize agent
-                agent = new(uuid, name, nothing, inners, relpathrefs,
-                    opera, args...)
+                agent = new(
+                    uuid, name, nothing, inners, relpathrefs,
+                    opera, args...
+                )
                 # push ref to opera
                 push!(agent.opera.directory, agent.uuid => agent)
 
-                agent
+                return agent
             end
-        end)
+        end
+    )
 end
 
 # by @slwu89, issue #3
 "Extract type names and type constraints from struct definition."
 function get_param_tnames(type)
     name = type.args[2]
-    if name isa Symbol
+    return if name isa Symbol
         name, []
     else
         param_tnames = map(name.args[2:end]) do x
@@ -170,7 +182,7 @@ function get_param_tnames(type)
             end
         end # like T,L
 
-        param_tnames_constraints = name.args[2:end]# like T<:Number,L<:Real
+        param_tnames_constraints = name.args[2:end] # like T<:Number,L<:Real
         tname = :($(name.args[1]){$(param_tnames...)})
 
         tname, param_tnames_constraints
@@ -187,5 +199,5 @@ function setup_agent!(agent::AbstractAlgebraicAgent, name::AbstractString)
     agent.relpathrefs = Dict{AbstractString, AlgebraicAgents.UUID}()
     agent.opera = AlgebraicAgents.Opera(agent.uuid => agent)
 
-    agent
+    return agent
 end

@@ -17,12 +17,14 @@ abstract type SuperAgent end
 
     @test BaseAgent <: AbstractAlgebraicAgent
     @test fieldnames(BaseAgent) ==
-          (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1, :mutable2)
+        (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1, :mutable2)
     @test fieldtype(BaseAgent, :mutable2) == Int
 
     @test fieldnames(DerivedAgent) ==
-          (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
-        :mutable2, :mutable3, :mutable4)
+        (
+        :uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
+        :mutable2, :mutable3, :mutable4,
+    )
 
     @test fieldtype(DerivedAgent, :mutable2) == Int
     @test fieldtype(DerivedAgent, :mutable4) == Int
@@ -52,16 +54,20 @@ abstract type SuperAgent end
 
             @test BaseAgent_w_immutables <: AbstractAlgebraicAgent
             @test fieldnames(BaseAgent_w_immutables) ==
-                  (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
-                :mutable2, :immutable1, :immutable2)
+                (
+                :uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
+                :mutable2, :immutable1, :immutable2,
+            )
             @test isconst(BaseAgent_w_immutables, :immutable1)
             @test !isconst(BaseAgent_w_immutables, :mutable1)
             @test fieldtype(BaseAgent_w_immutables, :mutable2) == Int
 
             @test fieldnames(DerivedAgent_w_immutables) ==
-                  (:uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
+                (
+                :uuid, :name, :parent, :inners, :relpathrefs, :opera, :mutable1,
                 :mutable2, :immutable1, :immutable2, :mutable3, :mutable4, :immutable3,
-                :immutable4)
+                :immutable4,
+            )
             @test isconst(DerivedAgent_w_immutables, :immutable1)
             @test !isconst(DerivedAgent_w_immutables, :mutable1)
             @test fieldtype(DerivedAgent_w_immutables, :mutable2) == Int
@@ -100,15 +106,22 @@ end
     system = MyAgentLoadsave("agent1", 1) ⊕ MyAgentLoadsave("agent2", 2)
     system_dump = AlgebraicAgents.save(system)
 
-    @test system_dump == Dict{String, Any}("name" => "diagram",
+    @test system_dump == Dict{String, Any}(
+        "name" => "diagram",
         "inners" => Dict{String, Any}[
-            Dict("name" => "agent1",
+            Dict(
+                "name" => "agent1",
                 "parameters" => Dict("field" => 1),
-                "type" => MyAgentLoadsave),
-            Dict("name" => "agent2", "parameters" => Dict("field" => 2),
-                "type" => MyAgentLoadsave)],
+                "type" => MyAgentLoadsave
+            ),
+            Dict(
+                "name" => "agent2", "parameters" => Dict("field" => 2),
+                "type" => MyAgentLoadsave
+            ),
+        ],
         "parameters" => Dict(),
-        "type" => FreeAgent)
+        "type" => FreeAgent
+    )
 
     system_reloaded = AlgebraicAgents.load(system_dump; eval_scope = @__MODULE__)
 
@@ -129,10 +142,11 @@ end
 
     opera_dump = Dict(
         "instantious" => [
-            Dict("call" => () -> println("instantious interaction"))
+            Dict("call" => () -> println("instantious interaction")),
         ],
         "futures" => [Dict("time" => 2.0, "call" => () -> println("future"))],
-        "controls" => [Dict("call" => () -> println("control"))])
+        "controls" => [Dict("call" => () -> println("control"))]
+    )
     push!(system_dump, "opera" => opera_dump)
     system_reloaded = AlgebraicAgents.load(system_dump; eval_scope = @__MODULE__)
 

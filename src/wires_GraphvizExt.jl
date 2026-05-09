@@ -3,7 +3,7 @@
 using .Graphviz_jll
 
 function gv_backend(::Type{Val{:graphviz_jll}}, prog)
-    getfield(Graphviz_jll, Symbol(prog))(identity)
+    return getfield(Graphviz_jll, Symbol(prog))(identity)
 end
 
 let cfg = joinpath(Graphviz_jll.artifact_dir, "lib", "graphviz", "config6")

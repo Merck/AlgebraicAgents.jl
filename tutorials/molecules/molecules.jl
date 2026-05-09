@@ -3,7 +3,7 @@
 # We implement a toy pharma model. To that end, we have the following type hierarchy:
 #
 #  - overarching **pharma model** (represented by a `FreeAgent` span type),
-#  - **therapeutic area** (represented by a `FreeAgent`), 
+#  - **therapeutic area** (represented by a `FreeAgent`),
 #  - **molecules** (small, large - to demonstrate dynamic dispatch; alternatively, marketed drugs; a drug may drop out from the system),
 #  - **discovery unit** (per therapeutic area); these generate new molecules according to a Poisson counting process,
 #  - **market demand**; this will be represented by a stochastic differential equation implemented in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl).
@@ -25,7 +25,7 @@ abstract type Molecule <: AbstractAlgebraicAgent end
 ## molecule params granularity
 const N = 3;
 
-## drug entity, lives in a therapeutic area 
+## drug entity, lives in a therapeutic area
 "Parametrized drug entity, lives in a therapeutic area."
 @aagent FreeAgent Molecule struct SmallMolecule
     age::Float64
@@ -80,8 +80,10 @@ end
 function Discovery(name, rate_small, rate_large, t = 0.0; dt = 2.0)
     df_output = DataFrame(time = Float64[], small = Int[], large = Int[], removed = Int[])
 
-    Discovery(name, rate_small, rate_large, 0.0, t, dt, t, Tuple{String, Float64}[],
-              df_output)
+    return Discovery(
+        name, rate_small, rate_large, 0.0, t, dt, t, Tuple{String, Float64}[],
+        df_output
+    )
 end
 
 # ## Stepping Functions
@@ -108,10 +110,10 @@ function AlgebraicAgents._step!(mol::SmallMolecule)
     mol.age += 1
     mol.sales *= sales_decay_small
 
-    if (mol.sales <= 10) || (rand() >= exp(-0.2 * mol.age))
+    return if (mol.sales <= 10) || (rand() >= exp(-0.2 * mol.age))
         mol.time_removed = t
         push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
-                        
+
         ## move to removed candidates
         rm_mols = getagent(mol, "../removed-molecules")
         disentangle!(mol)
@@ -128,10 +130,10 @@ function AlgebraicAgents._step!(mol::LargeMolecule)
     mol.age += 1
     mol.sales *= sales_decay_large
 
-    if (mol.sales <= 10) || (rand() >= exp(-0.3 * mol.age))
+    return if (mol.sales <= 10) || (rand() >= exp(-0.3 * mol.age))
         mol.time_removed = t
         push!(getagent(mol, "../dx").removed_mols, (mol.mol, t))
-                
+
         ## move to removed candidates
         rm_mols = getagent(mol, "../removed-molecules")
         disentangle!(mol)
@@ -168,13 +170,15 @@ function AlgebraicAgents._step!(dx::Discovery)
         entangle!(getparent(dx), mol)
     end
 
-    dx.t += dx.dt
+    return dx.t += dx.dt
 end
 
 "Initialize a new molecule."
 function release_molecule(mol, profile, t, ::Type{T}) where {T <: Molecule}
-    T(mol, 0.0, t, Inf, mol, profile, sales0_from_params(profile),
-      DataFrame(time = Float64[], sales = Float64[]))
+    return T(
+        mol, 0.0, t, Inf, mol, profile, sales0_from_params(profile),
+        DataFrame(time = Float64[], sales = Float64[])
+    )
 end
 
 # We provide additional interface methods, such as [`AlgebraicAgents._reinit!`](@ref) and [`AlgebraicAgents._projected_to`](@ref).
@@ -186,11 +190,11 @@ function AlgebraicAgents._reinit!(dx::Discovery)
     dx.discovery_intensity = 0.0
     empty!(dx.df_output)
 
-    dx
+    return dx
 end
 
 function AlgebraicAgents._projected_to(mol::Molecule)
-    if mol.time_removed < Inf
+    return if mol.time_removed < Inf
         ## candidate removed, do not step further
         true
     else
@@ -206,7 +210,7 @@ AlgebraicAgents._projected_to(dx::Discovery) = dx.t
 AlgebraicAgents.@draw_df Discovery df_output
 
 # ## Model Instantiation
-# 
+#
 # Next step is to instantiate a dynamical system.
 
 ## define therapeutic areas
@@ -214,34 +218,34 @@ therapeutic_area1 = FreeAgent("therapeutic_area1")
 therapeutic_area2 = FreeAgent("therapeutic_area2")
 
 ## join therapeutic models into a pharma model
-pharma_model = ⊕(therapeutic_area1, therapeutic_area2; name="pharma_model")
+pharma_model = ⊕(therapeutic_area1, therapeutic_area2; name = "pharma_model")
 
 ## initialize and push discovery units to therapeutic areas
 ## discovery units evolve at different pace
-entangle!(therapeutic_area1, Discovery("dx", 5.2, 10.; dt=3.))
-entangle!(therapeutic_area2, Discovery("dx", 6., 8.; dt=5.))
+entangle!(therapeutic_area1, Discovery("dx", 5.2, 10.0; dt = 3.0))
+entangle!(therapeutic_area2, Discovery("dx", 6.0, 8.0; dt = 5.0))
 ## log removed candidates
 entangle!(therapeutic_area1, FreeAgent("removed-molecules"))
 entangle!(therapeutic_area2, FreeAgent("removed-molecules"))
 
 # ### Integration with SciML
-# 
+#
 # Let's define toy market demand model and represent this as a stochastic differential equation defined in `DifferentialEquations.jl`
 
 ## add SDE models for drug demand in respective areas
 using DifferentialEquations
 
-dt = 1//2^(4); tspan = (0.0,100.)
-f(u,p,t) = p[1]*u; g(u,p,t) = p[2]*u
+dt = 1 // 2^(4); tspan = (0.0, 100.0)
+f(u, p, t) = p[1] * u; g(u, p, t) = p[2] * u
 
-prob_1 = SDEProblem(f,g,.9,tspan,[.01, .01])
-prob_2 = SDEProblem(f,g,1.2,tspan,[.01, .01])
+prob_1 = SDEProblem(f, g, 0.9, tspan, [0.01, 0.01])
+prob_2 = SDEProblem(f, g, 1.2, tspan, [0.01, 0.01])
 
 # Internally, a discovery unit will adjust the candidate generating process intensity according to the observed market demand:
 
 ## add SDE models for drug demand in respective areas
-demand_model_1 = DiffEqAgent("demand", prob_1, EM(); observables=Dict("demand" => 1), dt)
-demand_model_2 = DiffEqAgent("demand", prob_2, EM(); observables=Dict("demand" => 1), dt)
+demand_model_1 = DiffEqAgent("demand", prob_1, EM(); observables = Dict("demand" => 1), dt)
+demand_model_2 = DiffEqAgent("demand", prob_2, EM(); observables = Dict("demand" => 1), dt)
 
 ## push market demand units to therapeutic areas
 entangle!(therapeutic_area1, demand_model_1)
@@ -255,12 +259,12 @@ getobservable(getagent(pharma_model, "therapeutic_area1/demand"), "demand")
 ## show the model
 pharma_model
 
-# 
+#
 
 getagent(pharma_model, glob"therapeutic_area?/")
 
 # ## Simulating the System
-# 
+#
 # Let's next evolve the composite model over a hundred time units. The last argument is optional here; see `?simulate` for the details.
 
 ## let the problem evolve
@@ -271,7 +275,7 @@ getagent(pharma_model, "therapeutic_area1/dx")
 getagent(pharma_model, "therapeutic_area1/demand")
 
 # ## Plotting
-# 
+#
 # We draw the statistics of a Discovery unit in Therapeutic Area 1:
 
 draw(getagent(pharma_model, "therapeutic_area1/dx"))
@@ -279,7 +283,7 @@ draw(getagent(pharma_model, "therapeutic_area1/dx"))
 # ## Queries
 #
 # Let's now query the simulated system.
-# 
+#
 # To find out which molecules were discovered after time `t=10` and removed from the track before time `t=30`, write
 
 pharma_model |> @filter(_.birth_time > 10 && _.time_removed < 30)
@@ -296,7 +300,7 @@ removed_molecules = pharma_model |> @filter(f"_.time_removed < Inf")
 ## calculate `time_removed - birth_time`
 ## we iterate over `removed_molecules`, and apply the (named) transform function on each agent
 ## a given agent is referenced to as `_`
-life_times = removed_molecules |> @transform(area = getname(getagent(_, "../..")), time=(_.time_removed - _.birth_time))
+life_times = removed_molecules |> @transform(area = getname(getagent(_, "../..")), time = (_.time_removed - _.birth_time))
 
 using Statistics: mean
 avg_life_time = mean(x -> x.time, life_times)

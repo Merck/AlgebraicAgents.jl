@@ -13,7 +13,7 @@ function plot_df(df::DataFrames.DataFrame, t_ix::Int = 1)
     data_ = @view data[:, setdiff(1:size(data, 2), (t_ix,))]
     colnames = reshape(DataFrames.names(df)[setdiff(1:size(data, 2), (t_ix,))], 1, :)
 
-    Plots.plot(t, data_, labels = colnames, xlabel = "t")
+    return Plots.plot(t, data_, labels = colnames, xlabel = "t")
 end
 
 """
@@ -28,10 +28,10 @@ Requires `DataFrames` and `Plots` to be available.
 ```
 """
 macro draw_df(T, field)
-    quote
+    return quote
         function AlgebraicAgents._draw(a::$T)
             df = getproperty(a, $(QuoteNode(field)))
-            AlgebraicAgents.plot_df(df)
+            return AlgebraicAgents.plot_df(df)
         end
     end |> esc
 end

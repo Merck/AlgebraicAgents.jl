@@ -19,7 +19,7 @@ function ⊕(models::Vararg{AbstractAlgebraicAgent, N}; name = "diagram") where 
         entangle!(diagram, model)
     end
 
-    diagram
+    return diagram
 end
 
 "
@@ -33,5 +33,5 @@ Perform an algebraic sum of algebraic models (flatten_hierarchy arguments to ⊕
 ```
 "
 macro sum(models...)
-    :(⊕($(esc.(models)...)))
+    return :(⊕($(esc.(models)...)))
 end

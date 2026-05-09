@@ -19,14 +19,14 @@ m3 = DiffEqAgent("model3", prob)
 push!(observables(m3), "o1" => 1, "o2" => 1)
 
 ## simple function, calls to which will be scheduled during the model integration
-custom_function(agent, t) = 1#println(name(agent), " ", t)
+custom_function(agent, t) = 1 #println(name(agent), " ", t)
 
-## a bit more intricate logic - 
+## a bit more intricate logic -
 function f_(u, p, t)
     # access the wrapping agent (hierarchy bond)
     agent = extract_agent(p)
 
-    ## access observables 
+    ## access observables
     o1 = getobservable(getagent(agent, "../model3"), "o1")
     o2 = getobservable(getagent(agent, "../model3"), "o2")
     ## fetch observable's value at **a given time point in the past**
@@ -40,7 +40,7 @@ function f_(u, p, t)
     ## this will be expanded to a call f(agent, args...)
     @call agent custom_function(agent, t)
 
-    min(2.0, 1.01 * u + o1 + o2 + o3)
+    return min(2.0, 1.01 * u + o1 + o2 + o3)
 end
 
 ## yet another atomic model
@@ -92,8 +92,8 @@ end
     py = (β = 1.2,)
     y0 = [1.0]
 
-    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px), Euler(), dt = 1e-4)
-    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py), Euler(), dt = 1e-4)
+    agent_x = DiffEqAgent("agent_x", ODEProblem(ẋ, x0, tspan, px), Euler(), dt = 1.0e-4)
+    agent_y = DiffEqAgent("agent_y", ODEProblem(ẏ, y0, tspan, py), Euler(), dt = 1.0e-4)
 
     push!(observables(agent_x), "x" => 1)
     push!(observables(agent_y), "y" => 1)
@@ -110,8 +110,8 @@ end
 
     zt = exp(A * tspan[2]) * z0
 
-    @test isapprox(zt[1], x, rtol = 1e-2)
-    @test isapprox(zt[2], y, rtol = 1e-2)
+    @test isapprox(zt[1], x, rtol = 1.0e-2)
+    @test isapprox(zt[2], y, rtol = 1.0e-2)
 end
 
 @testset "integrators stay in sync during longer runs" begin
@@ -144,6 +144,6 @@ end
     sol = AlgebraicAgents.simulate(joint_system)
 
     @test getagent(joint_system, "agent_y").integrator.t ==
-          getagent(joint_system, "agent_x").integrator.t
+        getagent(joint_system, "agent_x").integrator.t
     @test getagent(joint_system, "agent_y").integrator.t == tspan[2]
 end

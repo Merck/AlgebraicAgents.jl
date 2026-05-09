@@ -22,7 +22,7 @@ abstract type AbstractMolecule <: AbstractAlgebraicAgent end
 const N = 5
 # if `belief ∉ [uncertainty_threshold, 1-uncertainty_threshold]`, terminate experiments
 const uncertainty_threshold = 0.2
-# in-silico belief 
+# in-silico belief
 const init_belief_generator = (r = rand(N); r ./ sum(r))
 
 # candidate molecule
@@ -87,26 +87,32 @@ end
 # constructors
 "Generate a candidate molecule."
 function Molecule(mol::AbstractString, fingerprint, t, path = AbstractString[])
-    Molecule(mol, t, nothing, fingerprint, path, false, init_belief_from_fingerprint(fingerprint), [])
+    return Molecule(mol, t, nothing, fingerprint, path, false, init_belief_from_fingerprint(fingerprint), [])
 end
 
 "Initialize a discovery unit, parametrized by molecule production rate."
 function Discovery(name::AbstractString, rate, t::Date; dt::Period = Week(1))
-    Discovery(name, rate, t, dt, t)
+    return Discovery(name, rate, t, dt, t)
 end
 
 "Initialize an assay, parametrized by duration, cost, capacity, and a belief model."
-function Assay(name::AbstractString, duration::Period, cost::Float64, capacity::Float64, t::Date,
-               belief_model = tuple(rand(-1:1, 5)...))
-    Assay(name, duration, cost, capacity, belief_model,
-          Vector{AlgebraicAgents.UUID}(undef, 0), Vector{AlgebraicAgents.UUID}(undef, 0),
-          t, t)
+function Assay(
+        name::AbstractString, duration::Period, cost::Float64, capacity::Float64, t::Date,
+        belief_model = tuple(rand(-1:1, 5)...)
+    )
+    return Assay(
+        name, duration, cost, capacity, belief_model,
+        Vector{AlgebraicAgents.UUID}(undef, 0), Vector{AlgebraicAgents.UUID}(undef, 0),
+        t, t
+    )
 end
 
 "Initialize a preclinical unit comprising candidate molecules and parametrized by removal queries."
-function Preclinical(name::AbstractString, perturb_rate::Float64, t::Date; dt::Period=Week(1),
-                     queries_accept=AlgebraicAgents.AbstractQuery[],
-                     queries_reject=AlgebraicAgents.AbstractQuery[])
+function Preclinical(
+        name::AbstractString, perturb_rate::Float64, t::Date; dt::Period = Week(1),
+        queries_accept = AlgebraicAgents.AbstractQuery[],
+        queries_reject = AlgebraicAgents.AbstractQuery[]
+    )
     p = Preclinical(name, queries_accept, queries_reject, 0.0, perturb_rate, t, t, dt)
 
     # candidates and accepted, rejected candidates
@@ -114,7 +120,7 @@ function Preclinical(name::AbstractString, perturb_rate::Float64, t::Date; dt::P
     entangle!(p, FreeAgent("accepted"))
     entangle!(p, FreeAgent("rejected"))
 
-    p
+    return p
 end
 
 # implement common interface
@@ -128,12 +134,12 @@ function AlgebraicAgents._step!(dx::Discovery)
         entangle!(getagent(getparent(dx), "preclinical/candidates"), mol)
     end
 
-    dx.t += dx.dt
+    return dx.t += dx.dt
 end
 
 function AlgebraicAgents._reinit!(dx::Discovery)
     dx.t = dx.t0
-    dx
+    return dx
 end
 
 AlgebraicAgents._projected_to(dx::Discovery) = dx.t
@@ -155,7 +161,7 @@ function AlgebraicAgents._step!(a::Assay)
     append!(a.allocated, a.planned)
     empty!(a.planned)
 
-    a.t += a.duration
+    return a.t += a.duration
 end
 
 AlgebraicAgents._projected_to(a::Assay) = a.t
@@ -163,7 +169,7 @@ AlgebraicAgents._projected_to(a::Assay) = a.t
 ## belief updating
 ### output in-silico belief
 function init_belief_from_fingerprint(fingerprint)
-    init_belief_generator' * collect(fingerprint)
+    return init_belief_generator' * collect(fingerprint)
 end
 
 ### update belief (in vitro/vivo), update trace
@@ -171,15 +177,17 @@ function update_belief!(mol::Molecule, assay::Assay)
     # dummy readout
     push!(mol.trace, (; name = getname(assay), readout = rand(), t = assay.t))
     # shift, clamp belief
-    mol.belief = clamp(mol.belief + collect(assay.belief_model)' * collect(mol.fingerprint),
-                       0, 1)
+    mol.belief = clamp(
+        mol.belief + collect(assay.belief_model)' * collect(mol.fingerprint),
+        0, 1
+    )
 
-    mol
+    return mol
 end
 
 ### information measure
 function uncertainty_reduction(mol::Molecule, assay::Assay)
-    abs(collect(assay.belief_model)' * collect(mol.fingerprint))
+    return abs(collect(assay.belief_model)' * collect(mol.fingerprint))
 end
 
 ## preclinical units
@@ -240,15 +248,19 @@ function AlgebraicAgents._step!(a::Preclinical)
 
     # add perturbed candidates (from accepted)
     if !isempty(inners(getagent(a, "accepted")))
-        for c in rand(collect(values(inners(getagent(a, "accepted")))),
-                      rand(Poisson(Day(a.dt).value * a.perturb_rate)))
-            mol = Molecule(randstring(5), c.fingerprint .+ 0.1 .* Tuple(rand(N)), t,
-                           [c.path; "parent_$(rand(1:2))"; c.name])
+        for c in rand(
+                collect(values(inners(getagent(a, "accepted")))),
+                rand(Poisson(Day(a.dt).value * a.perturb_rate))
+            )
+            mol = Molecule(
+                randstring(5), c.fingerprint .+ 0.1 .* Tuple(rand(N)), t,
+                [c.path; "parent_$(rand(1:2))"; c.name]
+            )
             entangle!(getagent(a, "candidates"), mol)
         end
     end
 
-    a.t += a.dt
+    return a.t += a.dt
 end
 
 AlgebraicAgents._projected_to(a::Preclinical) = a.t
@@ -258,5 +270,5 @@ function AlgebraicAgents._reinit!(a::Assay)
     a.t = a.t0; a.total_costs = 0.0
     empty!(a.allocated)
 
-    a
+    return a
 end

@@ -1,8 +1,8 @@
 using Test, AlgebraicAgents
 
 module MyModule
-abstract type MySuperType end
-abstract type MySubType <: MySuperType end
+    abstract type MySuperType end
+    abstract type MySubType <: MySuperType end
 end
 
 @testset "typetree_mmd" begin
@@ -14,7 +14,7 @@ end
     @test tt1[2] == "Integer <|-- Int64\n"
 
     typetree_mmd(MyModule.MySuperType, rem = false)[6] ==
-    "MyModule.MySuperType <|-- MyModule.MySubType\n"
+        "MyModule.MySuperType <|-- MyModule.MySubType\n"
     typetree_mmd(MyModule.MySuperType, rem = true)[6] == "MySuperType <|-- MySubType\n"
 end
 
@@ -61,15 +61,17 @@ end
     filter1 = filter(container, f"_.property > 2", f"_.property < 9")
     @test length(filter1) == 6
 
-    filter2 = container |> @filter(_.property<3) |> @filter(f"_.property > 1")
+    filter2 = container |> @filter(_.property < 3) |> @filter(f"_.property > 1")
     @test only(filter2) == agents[2]
 
-    transform1 = transform(container, TransformQuery("query", a -> a.name),
-        TransformQuery("index", a -> a.property))
+    transform1 = transform(
+        container, TransformQuery("query", a -> a.name),
+        TransformQuery("index", a -> a.property)
+    )
     @test all(x -> keys(x) == (:uuid, :query, :index), transform1)
     @test sort(map(x -> x.index, transform1)) == collect(1:10)
 
-    transform2 = container |> @transform(_.name, index=_.property)
+    transform2 = container |> @transform(_.name, index = _.property)
     @test all(x -> keys(x) == (:uuid, :query_1, :index), transform2)
     @test sort(map(x -> x.index, transform2)) == collect(1:10)
 end

@@ -32,7 +32,7 @@ end
 
 # Stage top-level CONTRIBUTING.md into the docs so it is rendered in-site.
 let contributing_src = joinpath(@__DIR__, "..", "CONTRIBUTING.md"),
-    contributing_dst = joinpath(@__DIR__, "src", "contributing.md")
+        contributing_dst = joinpath(@__DIR__, "src", "contributing.md")
     body = read(contributing_src, String)
     open(contributing_dst, "w") do io
         write(io, "# Contributing\n\n", body)
@@ -50,11 +50,13 @@ for (root, dirs, files) in walkdir(literate_dir)
     end
     out_dir = joinpath(generated_dir, relpath(root, literate_dir))
     for file in files
-      f,l = splitext(file)
-      if l == ".jl" && !startswith(f, "_")
-        Literate.markdown(joinpath(root, file), out_dir;
-          documenter=true, credit=false)
-      end
+        f, l = splitext(file)
+        if l == ".jl" && !startswith(f, "_")
+            Literate.markdown(
+                joinpath(root, file), out_dir;
+                documenter = true, credit = false
+            )
+        end
     end
 end
 
@@ -74,9 +76,11 @@ pages = [
     "Contributing" => "contributing.md",
 ]
 
-makedocs(sitename = "AlgebraicAgents.jl",
-         format = Documenter.HTML(prettyurls = false, edit_link = "main"),
-         ; pages)
+makedocs(
+    sitename = "AlgebraicAgents.jl",
+    format = Documenter.HTML(prettyurls = false, edit_link = "main"),
+    ; pages
+)
 
 deploydocs(repo = "github.com/Merck/AlgebraicAgents.jl.git")
 

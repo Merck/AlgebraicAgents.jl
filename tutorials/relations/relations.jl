@@ -13,12 +13,13 @@ client = FreeAgent("client")
 server = FreeAgent("server")
 
 # Create a system (the “universe” in which they interact)
-system = ⊕(client, server, name="System")
+system = ⊕(client, server, name = "System")
 
 # ## Communication wires
 
 # Client sends a request to Server
-add_wire!(system;
+add_wire!(
+    system;
     from = client,
     to = server,
     from_var_name = "request_payload",
@@ -26,7 +27,8 @@ add_wire!(system;
 )
 
 # Server sends a response back to Client
-add_wire!(system;
+add_wire!(
+    system;
     from = server,
     to = client,
     from_var_name = "response_payload",
@@ -52,11 +54,11 @@ add_relation!(c_response, c_data, :is_a)
 # ## Set up Agent–Concept relations
 
 # Client produces requests and consumes responses
-add_relation!(client, c_request,  :produces)
+add_relation!(client, c_request, :produces)
 add_relation!(client, c_response, :consumes)
 
 # Server consumes requests and produces responses
-add_relation!(server, c_request,  :consumes)
+add_relation!(server, c_request, :consumes)
 add_relation!(server, c_response, :produces)
 
 # Print out the concepts.
