@@ -1,5 +1,5 @@
 import .DifferentialEquations
-import .DifferentialEquations: DiffEqBase, SciMLBase, OrdinaryDiffEq
+import .DifferentialEquations: SciMLBase
 
 # wrap problem, integrator, solution type; DiffEq agents supertype
 export DiffEqAgent
@@ -23,13 +23,13 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
     relpathrefs::Dict{AbstractString, UUID}
     opera::Opera
 
-    integrator::DiffEqBase.DEIntegrator
+    integrator::SciMLBase.DEIntegrator
 
     observables::Dict{Any, Int}
 
     function DiffEqAgent(
-            name, problem::DiffEqBase.DEProblem,
-            alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = DifferentialEquations.AutoFiniteDiff()), args...;
+            name, problem::SciMLBase.DEProblem,
+            alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = SciMLBase.ADTypes.AutoFiniteDiff()), args...;
             observables = Dict{Any, Int}(), kwargs...
         )
         problem = DifferentialEquations.remake(
@@ -41,7 +41,7 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
         i = new()
         setup_agent!(i, name)
 
-        i.integrator = DiffEqBase.init(problem, alg, args...; kwargs...)
+        i.integrator = SciMLBase.init(problem, alg, args...; kwargs...)
         i.observables = observables
         i.integrator.p.agent = i
 
@@ -71,8 +71,8 @@ end
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
 function wrap_system(
-        name::AbstractString, problem::DiffEqBase.DEProblem, args...;
-        alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = DifferentialEquations.AutoFiniteDiff()),
+        name::AbstractString, problem::SciMLBase.DEProblem, args...;
+        alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = SciMLBase.ADTypes.AutoFiniteDiff()),
         kwargs...
     )
     return DiffEqAgent(name, problem, alg, args...; kwargs...)
@@ -93,7 +93,7 @@ end
 
 # implement internal step function
 function _step!(a::DiffEqAgent)
-    ret = DiffEqBase.step!(a.integrator)
+    ret = SciMLBase.step!(a.integrator)
     return ret == true && return true
 end
 

@@ -92,7 +92,7 @@ end
 Typically, the function will dispatch on the type of `system` and initialise an algebraic agent which wraps the core dynamical system.
 This allows you to specify the core dynamics directly using a third-party package syntax and hide the internals on this package's side from the user.
 
-For instance, you may define a method `wrap_system(name, prob::DiffEqBase.DEProblem)`, which internally will invoke the constructor of `DiffEqAgent`.
+For instance, you may define a method `wrap_system(name, prob::SciMLBase.DEProblem)`, which internally will invoke the constructor of `DiffEqAgent`.
 
 # Examples
 ```julia
