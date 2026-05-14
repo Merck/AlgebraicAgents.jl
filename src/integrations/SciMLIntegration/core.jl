@@ -28,7 +28,7 @@ mutable struct DiffEqAgent <: AbstractAlgebraicAgent
     observables::Dict{Any, Int}
 
     function DiffEqAgent(
-            name, problem::SciMLBase.DEProblem,
+            name, problem::SciMLBase.AbstractDEProblem,
             alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = SciMLBase.ADTypes.AutoFiniteDiff()), args...;
             observables = Dict{Any, Int}(), kwargs...
         )
@@ -71,7 +71,7 @@ end
 Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
 function wrap_system(
-        name::AbstractString, problem::SciMLBase.DEProblem, args...;
+        name::AbstractString, problem::SciMLBase.AbstractDEProblem, args...;
         alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = SciMLBase.ADTypes.AutoFiniteDiff()),
         kwargs...
     )
