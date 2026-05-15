@@ -234,6 +234,7 @@ entangle!(therapeutic_area2, FreeAgent("removed-molecules"))
 
 ## add SDE models for drug demand in respective areas
 using DifferentialEquations
+using StochasticDiffEq: EM
 
 dt = 1 // 2^(4); tspan = (0.0, 100.0)
 f(u, p, t) = p[1] * u; g(u, p, t) = p[2] * u

@@ -5,7 +5,8 @@ docs/build*/
 docs/site/
 tmp.gif
 gks.*
-Manifest.toml
+/Manifest.toml
+tutorials/wires/graph5.svg
 .vscode/
 LocalPreferences.toml
 .DS_Store
