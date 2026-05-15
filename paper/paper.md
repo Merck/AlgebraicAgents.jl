@@ -43,9 +43,9 @@ AlgebraicAgents.jl is intended for Julia modelers composing heterogeneous dynami
 
 Prior work addresses aspects of this challenge. The Functional Mock-up Interface [@Blochwitz2011] standardizes co-simulation of black-box models but imposes protocol overhead suited to industrial interoperability rather than rapid prototyping. Meta-modeling frameworks like the Generic Modeling Environment [@Ledeczi2001] operate at a higher abstraction, enabling construction of domain-specific formalisms. The Ptolemy project [@Ptolemy] and Lingua Franca [@Menard2023] provide principled foundations for heterogeneous component interaction across concurrent, real-time, and distributed settings.
 
-Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @DifferentialEquations2017], and its commercial extension, JuliaHub's Dyad, excel at symbolic-numeric modeling and equation-based composition but do not naturally accommodate discrete or agent-based dynamics. AlgebraicDynamics.jl [@Brown2022; @Baez2023] brings categorical semantics to dynamical systems yet enforces strict interface typing that constrains exploratory work.
+Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @DifferentialEquations2017] and its commercial extension, JuliaHub's Dyad, target symbolic-numeric modeling and equation-based composition. Catalyst.jl [@Catalyst2023] builds on ModelingToolkit.jl with hierarchical subsystem composition for chemical reaction networks. All require components expressible as equations or as a symbolic intermediate representation, which limits their ability to accommodate discrete or agent-based dynamics. AlgebraicDynamics.jl [@Brown2022; @Baez2023] supplies categorical semantics for dynamical systems but imposes strict interface typing that constrains exploratory work. Agents.jl [@Agents2022], despite the similar name, solves a complementary problem: it provides a performant runtime for individual agent-based models, whereas AlgebraicAgents.jl coordinates such models alongside other formalisms within a hierarchy.
 
-AlgebraicAgents.jl relaxes formalism and shifts focus towards compositional flexibility. Any agent can access any other agent's state, and synchronization is temporal rather than type-enforced. This design prioritizes iteration speed and introspection over type-enforced interface contracts, a trade-off suited to exploratory modeling, where specifications evolve alongside understanding.
+AlgebraicAgents.jl relaxes these requirements in favor of compositional flexibility. Components are black boxes: no equation, symbolic representation, or typed interface contract is required; an agent need only expose an internal clock and an incremental stepping rule. Any agent can access any other agent's state, and synchronization is temporal rather than type-enforced. The design prioritizes iteration speed and introspection over interface contracts, a trade-off suited to exploratory modeling, where specifications evolve alongside understanding.
 
 # Software Design
 
@@ -75,17 +75,22 @@ This mechanism is exemplified below for the case of three agents A, B, and C.
 | 4           | **3**          | 3                | 3              | 3              | A       |
 | 5           | **4**          | **4.5**          | **6**          | 4              | A, B, C |
 
-Formally, the single step of the simulator is defined as follows.
+Table: Stepping mechanism for three agents with step sizes Δt = 1, 1.5, 3. Columns 2--4 show each agent's projected time after each simulator step. Bold entries mark the agents that advanced in that step. Only agents at the minimum projected time—the frontier—step, and the rest remain projected ahead and are read when queried.
+
+Pseudocode for a single simulator step is sketched below.
 
 ```julia
 function step!(a::Agent, t=projected_to(a))
     # Recurse depth-first.
-    t_min = minimum(step!(c, t) for c in children(a); init=nothing)
-    
+    t_min = minimum(
+        (step!(c, t) for c in children(a));
+        init = projected_to(a),
+    )
+
     # Step only agents at the time frontier.
     projected_to(a) == t && _step!(a)
-    
-    return something(t_min, projected_to(a))
+
+    return min(t_min, projected_to(a))
 end
 ```
 
@@ -113,7 +118,7 @@ add_wire!(full_system;
         from_var_name="output_volume", to_var_name="incoming_stock")
 ```
 
-![Visualization of agent hierarchy and information flows. Grey dashed arrows represent parent-to-child edges and solid black arrows represent information flows. Black rectangles group related agents.](assets/wires.svg)
+![Agent hierarchy and information flows. Teal-outlined circles denote agents, each labeled with its hierarchy path. Black-bordered rectangles group children under their parent. Solid black arrows show declared information flows, each annotated with the source variable on the producing agent and the destination variable on the consuming agent.](assets/wires.svg)
 
 *Concepts* represent atemporal notions—resources, constraints, abstractions—that participate in relations alongside agents. This enables modeling of "what" (materials, approvals, markets) separate from "how" (processes), supporting dependency queries and ontological visualization. Both agents and concepts belong to the union type `RelatableType`, enabling *relations* to connect any pair with typed labels:
 
@@ -122,7 +127,7 @@ c_finished_good = Concept("FinishedGood", Dict(:type => "product"))
 add_relation!(factory_a, c_finished_good, :produces)
 ```
 
-![Diagram of concepts and relations. Blue filled circles denote Concepts and green outlined circles denote Agents. Directed arrows indicate relations between two relatable types.](assets/concepts.svg)
+![Diagram of concepts and relations. Blue filled circles denote concepts and teal-outlined circles denote agents. Directed arrows indicate typed relations between any two relatable elements; arrow labels give the relation kind (e.g. `produces`, `consumes`, `is_a`).](assets/concepts.svg)
 
 These semantic annotations support Graphviz visualization and structured queries over model architecture.
 
