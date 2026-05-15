@@ -133,7 +133,7 @@ end
 _projected_to(a::ABMAgent) = a.tspan[2] <= a.t ? true : a.t
 
 function getobservable(a::ABMAgent, obs)
-    return getproperty(abmproperties(a.abm), Symbol(obs))
+    return getproperty(Agents.abmproperties(a.abm), Symbol(obs))
 end
 
 function gettimeobservable(a::ABMAgent, t::Float64, obs)
@@ -212,7 +212,7 @@ end
 
 # retrieve algebraic agent as a property of the core dynamical system
 function extract_agent(model::Agents.ABM, agent::Agents.AbstractAgent)
-    return abmproperties(model)[:__aagent__].inners[string(agent.id)]
+    return Agents.abmproperties(model)[:__aagent__].inners[string(agent.id)]
 end
 
 """
@@ -225,7 +225,7 @@ algebraic_model = @get_model abm_model
 ```
 """
 macro get_model(model)
-    return :(abmproperties($(esc(model)))[:__aagent__])
+    return :(Agents.abmproperties($(esc(model)))[:__aagent__])
 end
 
 # macros to add, kill agents
@@ -248,14 +248,15 @@ Algebraic extension of `add_agent!`, `kill_agent!`.
 ```
 """
 macro a(call)
-    @assert Meta.isexpr(call, :call) && (call.args[1] ∈ [:kill_agent!, :add_agent!])
+    @assert Meta.isexpr(call, :call) &&
+        (call.args[1] ∈ [:kill_agent!, :remove_agent!, :add_agent!])
     model_call = deepcopy(call)
     model_call.args[1] = :(AlgebraicAgents.get_model)
 
     return if call.args[1] == :add_agent!
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : abmproperties(model)[:__aagent__]
+            omodel = model isa ABMAgent ? model : Agents.abmproperties(model)[:__aagent__]
             agent = $(esc(call))
 
             entangle!(omodel, ABAModel(string(agent.id), a))
@@ -264,7 +265,7 @@ macro a(call)
         agent = model_call.args[2]
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : abmproperties(model)[:__aagent__]
+            omodel = model isa ABMAgent ? model : Agents.abmproperties(model)[:__aagent__]
 
             agent = $(esc(agent))
             agent = agent isa Number ? string(agent) : string(agent.id)

@@ -14,6 +14,7 @@ using Agents.DataFrames, Agents.Graphs
 using Distributions: Poisson, DiscreteNonParametric
 using DrWatson: @dict
 using Plots
+using Agents: abmproperties, abmrng
 
 @agent struct PoorSoul(GraphAgent)
     days_infected::Int  ## number of days since is infected
@@ -64,7 +65,7 @@ function model_initiation(;
         death_rate
     )
     space = GraphSpace(complete_digraph(C))
-    model = StandardABM(PoorSoul, space; properties, rng, model_step! = identity)
+    model = StandardABM(PoorSoul, space; agent_step!, properties, rng, model_step! = identity)
 
     ## Add initial individuals
     for city in 1:C, n in 1:Ns[city]
@@ -139,7 +140,7 @@ end
 function migrate!(agent, model)
     pid = agent.pos
     d = DiscreteNonParametric(1:(model.C), model.migration_rates[pid, :])
-    m = rand(model.rng, d)
+    m = rand(abmrng(model), d)
     return if m ≠ pid
         move_agent!(agent, m, model)
     end
@@ -154,13 +155,13 @@ function transmit!(agent, model)
     end
 
     d = Poisson(rate)
-    n = rand(model.rng, d)
+    n = rand(abmrng(model), d)
     n == 0 && return
 
     for contactID in ids_in_position(agent, model)
         contact = model[contactID]
         if contact.status == :S ||
-                (contact.status == :R && rand(model.rng) ≤ model.reinfection_probability)
+                (contact.status == :R && rand(abmrng(model)) ≤ model.reinfection_probability)
             contact.status = :I
             n -= 1
             n == 0 && return
@@ -173,8 +174,8 @@ update!(agent, model) = agent.status == :I && (agent.days_infected += 1)
 
 function recover_or_die!(agent, model)
     return if agent.days_infected ≥ model.infection_period
-        if rand(model.rng) ≤ model.death_rate
-            @a kill_agent!(agent, model)
+        if rand(abmrng(model)) ≤ model.death_rate
+            @a remove_agent!(agent, model)
         else
             agent.status = :R
             agent.days_infected = 0
@@ -206,6 +207,17 @@ m = ABMAgent("sir_model", abm; tspan = (0.0, 100.0), adata = to_collect)
 
 simulate(m)
 
+# Print the data collected during the simulation:
+
+println(m.df_agents)
+
 #
 
-draw(m)
+display(draw(m))
+
+# When running as a script, wait for the user before exiting so the plot window stays open.
+
+if !isinteractive()
+    print("Press return to finish the tutorial.")
+    readline()
+end
