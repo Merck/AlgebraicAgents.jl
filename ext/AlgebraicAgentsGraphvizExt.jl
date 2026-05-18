@@ -1,8 +1,11 @@
+module AlgebraicAgentsGraphvizExt
+
 # see https://github.com/AlgebraicJulia/Catlab.jl/blob/8d35ef724f0f0864ecdccef173eec958329f43e5/ext/CatlabGraphvizExt.jl
 
-using .Graphviz_jll
+using AlgebraicAgents
+import Graphviz_jll
 
-function gv_backend(::Type{Val{:graphviz_jll}}, prog)
+function AlgebraicAgents.gv_backend(::Type{Val{:graphviz_jll}}, prog)
     return getfield(Graphviz_jll, Symbol(prog))(identity)
 end
 
@@ -11,3 +14,5 @@ let cfg = joinpath(Graphviz_jll.artifact_dir, "lib", "graphviz", "config6")
         Graphviz_jll.dot(path -> run(`$path -c`))
     end
 end
+
+end # module

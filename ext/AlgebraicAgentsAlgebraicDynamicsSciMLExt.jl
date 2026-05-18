@@ -1,7 +1,13 @@
-import .DifferentialEquations
-import .DifferentialEquations: OrdinaryDiffEq
+module AlgebraicAgentsAlgebraicDynamicsSciMLExt
 
-function _get_problem_type(system::GraphicalModelType)
+using AlgebraicAgents
+using AlgebraicAgents: AbstractAlgebraicAgent, entangle!, disentangle!, inners
+
+import DifferentialEquations
+import DifferentialEquations: OrdinaryDiffEq
+import AlgebraicDynamics
+
+function _get_problem_type(system)
     return if typeof(system) <: Union{
             AlgebraicDynamics.DWDDynam.ContinuousMachine,
             AlgebraicDynamics.UWDDynam.ContinuousResourceSharer,
@@ -29,8 +35,8 @@ DiffEqAgent(system, u0, tspan, params)
 DiffEqAgent(system, u0, tspan, params; alg=Tsit5())
 ```
 """
-function DiffEqAgent(
-        agent::GraphicalAgent, args...;
+function AlgebraicAgents.DiffEqAgent(
+        agent::AlgebraicAgents.GraphicalAgent, args...;
         alg = nothing, kwargs...
     )
     # get DEProblem
@@ -38,7 +44,7 @@ function DiffEqAgent(
     # get alg
     alg = !isnothing(alg) ? alg : DifferentialEquations.default_algorithm(prob)[1]
     # wrap, entangle
-    agent_ = DiffEqAgent(agent.name, prob; kwargs...)
+    agent_ = AlgebraicAgents.DiffEqAgent(agent.name, prob; kwargs...)
     inner_agents = values(inners(agent))
     disentangle!(agent)
     @info "disentangling root `GraphicalAgent`"
@@ -46,3 +52,5 @@ function DiffEqAgent(
 
     return agent_
 end
+
+end # module

@@ -1,7 +1,5 @@
 module AlgebraicAgents
 
-using Requires
-
 using Glob
 using UUIDs
 using MacroTools
@@ -20,7 +18,7 @@ export getagent, by_name, entangle!, disentangle!
 # dynamic structure to store priority queue of algebraic interactions
 # and and which contains a directory of algebraic integrators
 include("opera.jl")
-export AgentCall, Opera
+export Opera
 # Opera interface
 export add_instantious!, poke, @call
 export add_future!, @future
@@ -33,8 +31,6 @@ include("utils.jl")
 export @derived
 ## flat representation of agent hierarchy
 export flatten_hierarchy
-## instantiate an integration and add it to Julia's load path
-export add_integration_to_path, @integration
 ## return a function which maps params to simulation results
 export objective
 ## wrap a dynamical system as an agent, extract agent as the system's property
@@ -95,6 +91,27 @@ export @transform, transform
 include("graphviz.jl")
 export run_graphviz
 
-include("requires.jl")
+# Third-party integration types. The concrete behavior (constructors,
+# stepping, plotting, etc.) is provided by package extensions in `ext/` that
+# are loaded automatically once the corresponding third-party packages are
+# available in the user's environment. The types below intentionally live in
+# the main module so that users can reference them by name (e.g. as field
+# types or in dispatch) without first loading the extension.
+include("integrations/sciml.jl")
+export DiffEqAgent
+
+include("integrations/agents.jl")
+export ABMAgent, AAgent
+export @get_model, @a
+
+include("integrations/algebraicdynamics.jl")
+export GraphicalAgent
+
+# Hooks shared between extensions; methods are added by the extensions.
+"Plot a `DataFrame` (loaded by the `Plots`/`DataFrames` extension)."
+function plot_df end
+
+include("integrations/draw_df.jl")
+export @draw_df
 
 end
