@@ -10,8 +10,10 @@ tags:
 authors:
   - name: Jan Bíma
     affiliation: 1
+    orcid: 0009-0001-9829-6828
   - name: Sean L. Wu
     affiliation: 2
+    orcid: 0000-0002-5781-9493
   - name: Otto Ritter
     affiliation: 1
 affiliations:
@@ -25,7 +27,7 @@ bibliography: paper.bib
 
 # Summary
 
-AlgebraicAgents.jl is a Julia framework for hierarchical dynamical systems modeling that treats formalism as a per-node choice rather than a global constraint. Differential equations, discrete-event systems, and agent-based models coexist within a single hierarchy, coupled through a minimal stepping interface. The framework supports annotation of information flows between components, visualizing model architecture, and querying relationship structure. Native wrappers for Julia's scientific computing ecosystem enable practitioners to compose domain-specific models into representations of complex dynamics.
+AlgebraicAgents.jl is a Julia framework for hierarchical dynamical systems modeling that treats formalism as a per-node choice rather than a global constraint. Differential equations, discrete-event systems, and agent-based models coexist within a single hierarchy, coupled through a minimal stepping interface. The framework supports annotating information flows between components, visualizing model architecture, and querying relationship structure. Native wrappers for Julia's scientific computing ecosystem enable practitioners to compose domain-specific models into representations of complex dynamics.
 
 # Statement of Need
 
@@ -37,13 +39,13 @@ This challenge decomposes into three sub-problems:
 - **Hierarchical modularity.** Subsystems should support independent development, validation, and reuse as building blocks within larger models.
 - **Semantic transparency.** Visualizing and querying information flows across models should support both validation and explainability.
 
-AlgebraicAgents.jl is intended for Julia modelers composing heterogeneous dynamical systems across modeling formalisms — users of ecosystems and frameworks such as SciML, Agents.jl, and AlgebraicDynamics.jl coupling existing models, and practitioners wrapping models built outside these frameworks. Primary applications lie in pharmaceutical value-chain modeling, systems biology, and multi-physics engineering.
+AlgebraicAgents.jl is intended for Julia modelers composing heterogeneous dynamical systems across modeling formalisms — users of ecosystems and frameworks such as SciML, Agents.jl, and AlgebraicDynamics.jl, coupling existing models, and practitioners wrapping models built outside these frameworks. Primary applications lie in pharmaceutical value-chain modeling, systems biology, and multi-physics engineering.
 
 # State of the Field
 
 Prior work addresses aspects of this challenge. The Functional Mock-up Interface [@Blochwitz2011] standardizes co-simulation of black-box models but imposes protocol overhead suited to industrial interoperability rather than rapid prototyping. Meta-modeling frameworks like the Generic Modeling Environment [@Ledeczi2001] operate at a higher abstraction, enabling construction of domain-specific formalisms. The Ptolemy project [@Ptolemy] and Lingua Franca [@Menard2023] provide principled foundations for heterogeneous component interaction across concurrent, real-time, and distributed settings.
 
-Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @DifferentialEquations2017] and its commercial extension, JuliaHub's Dyad, target symbolic-numeric modeling and equation-based composition. Catalyst.jl [@Catalyst2023] builds on ModelingToolkit.jl with hierarchical subsystem composition for chemical reaction networks. All require components expressible as equations or as a symbolic intermediate representation, which limits their ability to accommodate discrete or agent-based dynamics. AlgebraicDynamics.jl [@Brown2022; @Baez2023] supplies categorical semantics for dynamical systems but imposes strict interface typing that constrains exploratory work. Agents.jl [@Agents2022], despite the similar name, solves a complementary problem: it provides a performant runtime for individual agent-based models, whereas AlgebraicAgents.jl coordinates such models alongside other formalisms within a hierarchy.
+Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @DifferentialEquations2017] and its commercial extension, JuliaHub's Dyad, target symbolic-numeric modeling and equation-based composition. Catalyst.jl [@Catalyst2023] builds on ModelingToolkit.jl with hierarchical subsystem composition for chemical reaction networks. All require components expressible as equations or as a symbolic intermediate representation, which limits their ability to accommodate discrete or agent-based dynamics. AlgebraicDynamics.jl [@Brown2022; @Baez2023] supplies categorical semantics for dynamical systems but imposes strict interface typing that constrains exploratory work. Agents.jl [@Agents2022], despite its similar name, solves a complementary problem: it provides a performant runtime for individual agent-based models, whereas AlgebraicAgents.jl coordinates such models alongside other formalisms within a hierarchy.
 
 AlgebraicAgents.jl relaxes these requirements in favor of compositional flexibility. Components are black boxes: no equation, symbolic representation, or typed interface contract is required; an agent need only expose an internal clock and an incremental stepping rule. Any agent can access any other agent's state, and synchronization is temporal rather than type-enforced. The design prioritizes iteration speed and introspection over interface contracts, a trade-off suited to exploratory modeling, where specifications evolve alongside understanding.
 
@@ -64,7 +66,7 @@ end
 
 Each agent implements `_step!`, which advances its state and returns the time on its internal clock, that is, the furthest point for which its trajectory has been computed. The simulation loop coordinates agents by identifying the minimum projected time across the hierarchy and stepping only those agents at that frontier.
 
-This mechanism is exemplified below for the case of three agents A, B, and C.
+We illustrate this mechanism with three agents A, B, and C.
 
 | Global Step | Agent A (Δt=1) | Agent B (Δt=1.5) | Agent C (Δt=3) | Frontier (min) | Stepped |
 |:-----------:|:--------------:|:----------------:|:--------------:|:--------------:|:-------:|
@@ -75,7 +77,7 @@ This mechanism is exemplified below for the case of three agents A, B, and C.
 | 4           | **3**          | 3                | 3              | 3              | A       |
 | 5           | **4**          | **4.5**          | **6**          | 4              | A, B, C |
 
-Table: Stepping mechanism for three agents with step sizes Δt = 1, 1.5, 3. Columns 2--4 show each agent's projected time after each simulator step. Bold entries mark the agents that advanced in that step. Only agents at the minimum projected time—the frontier—step, and the rest remain projected ahead and are read when queried.
+Table: Stepping mechanism for three agents with step sizes Δt = 1, 1.5, 3. Columns 2--4 show each agent's projected time after each simulator step. Bold entries mark the agents that advanced in that step. Only agents at the minimum projected time—the frontier—step, and the rest stay at their projected times and are read when queried.
 
 Pseudocode for a single simulator step is sketched below.
 
@@ -96,7 +98,7 @@ end
 
 For models where an agent with a shorter step queries another agent already projected further ahead, *observables* mitigate temporal inconsistency. Agents expose state variables through `gettimeobservable`, which can implement interpolation or extrapolation logic.
 
-We note that during the evolutionary step, any agent in the system can be accessed and modified.
+We note that during a stepping update, any agent in the system can be accessed and modified.
 
 Beyond evolutionary stepping, the framework supports three callback types:
 
@@ -143,9 +145,9 @@ The framework was presented at JuliaCon 2023 [@Bima2023JuliaCon] and has since b
 
 ## Third-Party Package Integrations
 
-AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps `DEProblem` instances from DifferentialEquations.jl, enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns.
+AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps DifferentialEquations.jl problems (any `SciMLBase.AbstractDEProblem`), enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns.
 
-The integration contract is minimal: in general, any third-party dynamical system framework that provides an integrator with a clock and an incremental step can be wrapped as an agent within AlgebraicAgents.jl. These correspond to the two required interface methods, `_step!` and `_projected_to`. Contributors can expose simulation state through these methods to integrate new solver backends; see [Contributing](https://github.com/Merck/AlgebraicAgents.jl#contributing-ov-file).
+The integration contract is minimal: in general, any third-party dynamical system framework that provides an integrator with a clock and an incremental step can be wrapped as an agent within AlgebraicAgents.jl. These correspond to the two required interface methods, `_step!` and `_projected_to`. Contributors can expose simulation state through these methods to integrate new solver backends; see [Contributing](https://github.com/Merck/AlgebraicAgents.jl/blob/main/CONTRIBUTING.md).
 
 ## Availability and Documentation
 
@@ -153,6 +155,6 @@ AlgebraicAgents.jl is MIT-licensed and registered in Julia's General registry; i
 
 # AI Usage Disclosure
 
-The authors used GitHub Copilot for inline code suggestions and Claude Opus 4.5 (Anthropic) for editorial refinement of the manuscript. The authors reviewed and validated all AI-suggested edits and bear full responsibility for the final work.
+The authors used GitHub Copilot for inline code suggestions and Claude Opus 4.5 and 4.7 (Anthropic) for editorial refinement of the manuscript. The authors reviewed and validated all AI-suggested edits and bear full responsibility for the final work.
 
 # References
