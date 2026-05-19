@@ -21,7 +21,6 @@ affiliations:
    index: 1
  - name: DSSI Decision Science, Merck & Co., Inc., Rahway, NJ, USA
    index: 2
-date: 1 January 2026
 bibliography: paper.bib
 ---
 
