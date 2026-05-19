@@ -12,7 +12,7 @@ import DifferentialEquations: SciMLBase
 function AlgebraicAgents.DiffEqAgent(
         name::AbstractString,
         problem::SciMLBase.AbstractDEProblem,
-        alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = SciMLBase.ADTypes.AutoFiniteDiff()),
+        alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = DifferentialEquations.ADTypes.AutoFiniteDiff()),
         args...;
         observables = Dict{Any, Int}(), kwargs...
     )
@@ -52,7 +52,7 @@ Base.setindex!(p::Params, v, i::Int) = getfield(p, :params)[i] = v
 
 function AlgebraicAgents.wrap_system(
         name::AbstractString, problem::SciMLBase.AbstractDEProblem, args...;
-        alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = SciMLBase.ADTypes.AutoFiniteDiff()),
+        alg = DifferentialEquations.DefaultODEAlgorithm(autodiff = DifferentialEquations.ADTypes.AutoFiniteDiff()),
         kwargs...
     )
     return AlgebraicAgents.DiffEqAgent(name, problem, alg, args...; kwargs...)

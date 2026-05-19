@@ -213,11 +213,4 @@ println(m.df_agents)
 
 #
 
-display(draw(m))
-
-# When running as a script, wait for the user before exiting so the plot window stays open.
-
-if !isinteractive()
-    print("Press return to finish the tutorial.")
-    readline()
-end
+draw(m)
