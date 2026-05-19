@@ -177,7 +177,7 @@ recovered(x) = count(i == :R for i in x)
 to_collect = [(:status, f) for f in (infected, recovered, length)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Tuple{Symbol, Function}}:
  (:status, Main.infected)
  (:status, Main.recovered)
- (:status, length)</code></pre><p>We wrap the model as an agent:</p><pre><code class="language-julia hljs">m = ABMAgent(&quot;sir_model&quot;, abm; tspan = (0.0, 100.0), adata = to_collect)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">f773bb8f </span>of type <span class="sgr32">ABMAgent </span>
+ (:status, length)</code></pre><p>We wrap the model as an agent:</p><pre><code class="language-julia hljs">m = ABMAgent(&quot;sir_model&quot;, abm; tspan = (0.0, 100.0), adata = to_collect)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">sir_model </span></span>with uuid <span class="sgr32">dc5bff70 </span>of type <span class="sgr32">ABMAgent </span>
    custom properties:
    <span class="sgr3">abm: </span>
 StandardABM with 28540 agents of type PoorSoul
@@ -190,24 +190,24 @@ StandardABM with 28540 agents of type PoorSoul
    <span class="sgr3">df_model: </span>
 0×0 DataFrame
    <span class="sgr1">inner agents: </span>
-    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">2b1be7ef </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">5461 </span></span>with uuid <span class="sgr32">f80e76a7 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(5461, 2, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">4b7873c5 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">23986 </span></span>with uuid <span class="sgr32">ec569499 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(23986, 7, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">ea68906d </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">10467 </span></span>with uuid <span class="sgr32">069764d1 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(10467, 3, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">c5f736f6 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">18565 </span></span>with uuid <span class="sgr32">5bfde6e8 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(18565, 5, 0, :S)
-    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">a2ec0910 </span>of type <span class="sgr32">AAgent </span>
+    agent <span class="sgr32"><span class="sgr1">26767 </span></span>with uuid <span class="sgr32">2bb52d82 </span>of type <span class="sgr32">AAgent </span>
        custom properties:
        <span class="sgr3">agent: </span>
 Main.PoorSoul(26767, 7, 0, :S)
-    28535 more agent(s) not shown ...</code></pre><p>And we simulate the dynamics:</p><pre><code class="language- hljs">simulate(m)</code></pre><p>Print the data collected during the simulation:</p><pre><code class="language-julia hljs">println(m.df_agents)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0×0 DataFrame</code></pre><pre><code class="language-julia hljs">draw(m)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../integrations.html">« Integrations</a><a class="docs-footer-nextpage" href="../molecules/molecules.html">A Toy Pharma Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 19 May 2026 16:19">Tuesday 19 May 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    28535 more agent(s) not shown ...</code></pre><p>And we simulate the dynamics:</p><pre><code class="language- hljs">simulate(m)</code></pre><p>Print the data collected during the simulation:</p><pre><code class="language-julia hljs">println(m.df_agents)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0×0 DataFrame</code></pre><pre><code class="language-julia hljs">draw(m)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../integrations.html">« Integrations</a><a class="docs-footer-nextpage" href="../molecules/molecules.html">A Toy Pharma Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 19 May 2026 16:23">Tuesday 19 May 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
