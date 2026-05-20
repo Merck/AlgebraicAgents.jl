@@ -51,7 +51,7 @@ using Pkg
 Pkg.add("AlgebraicAgents")
 ```
 
-Third-party integrations (DifferentialEquations.jl, Agents.jl, AlgebraicDynamics.jl) load automatically when the corresponding package is available in your environment.
+Third-party integrations (DifferentialEquations.jl, Agents.jl, AlgebraicDynamics.jl) ship as [Julia package extensions](https://pkgdocs.julialang.org/v1/creating-packages/#Conditional-loading-of-code-in-packages-(Extensions)) and load automatically once the corresponding package is `using`-imported in your session — no additional setup is required. See [Integrations § How integrations are loaded](https://merck.github.io/AlgebraicAgents.jl/stable/integrations/#How-integrations-are-loaded) for the loading mechanism and the full list of extension triggers.
 
 ## Context: Dynamics of Value Evolution (DyVE)
  

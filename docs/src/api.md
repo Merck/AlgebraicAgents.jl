@@ -42,16 +42,12 @@ Other optional methods include
 
 ## Loading third-party package integrations
 
-Integrations of [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl), [Agents.jl](https://github.com/JuliaDynamics/Agents.jl), and [AlgebraicDynamics.jl](https://github.com/AlgebraicJulia/AlgebraicDynamics.jl) ship with the package as Julia *package extensions* (see [Conditional loading of code in packages](https://pkgdocs.julialang.org/v1/creating-packages/#Conditional-loading-of-code-in-packages-(Extensions))). The corresponding extension is loaded automatically once the third-party package becomes available in the current environment — there is nothing to opt into:
+Integrations of DifferentialEquations.jl, Agents.jl, and AlgebraicDynamics.jl ship as Julia *package extensions* and load automatically once the corresponding third-party package is imported. See [Integrations](integrations.md#How-integrations-are-loaded) for details on the loading mechanism and the full list of extension triggers.
 
 ```@example
 using AlgebraicAgents, DifferentialEquations
 wrap_system("my_model", ODEProblem((u, p, t) -> 1.01*u, [1/2], (0., 10.)))
 ```
-
-The agent types themselves (`DiffEqAgent`, `ABMAgent`/`AAgent`, `GraphicalAgent`) are exported by `AlgebraicAgents` so they are always reachable; their constructors and stepping logic are provided by the extensions and only become callable once the underlying package is loaded.
-
-Plotting is similarly extension-gated: load `Plots` (and `DataFrames`, where applicable) and `draw` will start producing figures.
 
 ## Common interface
 
