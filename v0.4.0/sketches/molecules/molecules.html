@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>A Toy Pharma Model · AlgebraicAgents.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../index.html">AlgebraicAgents.jl</a></span></div><form class="docs-search" action="../../search.html"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../index.html">Home</a></li><li><a class="tocitem" href="../../design_mmd.html">Framework design</a></li><li><a class="tocitem" href="../../integrations.html">Integrations</a></li><li><span class="tocitem">Sketches</span><ul><li><a class="tocitem" href="../agents/agents.html">Agents.jl Integration</a></li><li class="is-active"><a class="tocitem" href="molecules.html">A Toy Pharma Model</a><ul class="internal"><li><a class="tocitem" href="#Agent-Types"><span>Agent Types</span></a></li><li><a class="tocitem" href="#Stepping-Functions"><span>Stepping Functions</span></a></li><li><a class="tocitem" href="#Model-Instantiation"><span>Model Instantiation</span></a></li><li><a class="tocitem" href="#Simulating-the-System"><span>Simulating the System</span></a></li><li><a class="tocitem" href="#Plotting"><span>Plotting</span></a></li><li><a class="tocitem" href="#Queries"><span>Queries</span></a></li></ul></li><li><a class="tocitem" href="../sciml/sciml.html">SciML Integration</a></li><li><a class="tocitem" href="../algebraicdynamics/algebraicdynamics.html">Lotka-Voltera Two Ways</a></li><li><a class="tocitem" href="../stochastic_simulation/anderson.html">Simulating Stochastic Reaction Systems</a></li><li><a class="tocitem" href="../relations/relations.html">Relations and Concepts</a></li></ul></li><li><a class="tocitem" href="../../api.html">API reference</a></li><li><a class="tocitem" href="../../contributing.html">Contributing</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Sketches</a></li><li class="is-active"><a href="molecules.html">A Toy Pharma Model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="molecules.html">A Toy Pharma Model</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Merck/AlgebraicAgents.jl/blob/main/tutorials/molecules/molecules.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="A-Toy-Pharma-Model"><a class="docs-heading-anchor" href="#A-Toy-Pharma-Model">A Toy Pharma Model</a><a id="A-Toy-Pharma-Model-1"></a><a class="docs-heading-anchor-permalink" href="#A-Toy-Pharma-Model" title="Permalink"></a></h1><p>We implement a toy pharma model. To that end, we have the following type hierarchy:</p><ul><li>overarching <strong>pharma model</strong> (represented by a <code>FreeAgent</code> span type),</li><li><strong>therapeutic area</strong> (represented by a <code>FreeAgent</code>),</li><li><strong>molecules</strong> (small, large - to demonstrate dynamic dispatch; alternatively, marketed drugs; a drug may drop out from the system),</li><li><strong>discovery unit</strong> (per therapeutic area); these generate new molecules according to a Poisson counting process,</li><li><strong>market demand</strong>; this will be represented by a stochastic differential equation implemented in <a href="https://github.com/SciML/DifferentialEquations.jl">DifferentialEquations.jl</a>.</li></ul><h2 id="Agent-Types"><a class="docs-heading-anchor" href="#Agent-Types">Agent Types</a><a id="Agent-Types-1"></a><a class="docs-heading-anchor-permalink" href="#Agent-Types" title="Permalink"></a></h2><p>We define the type system and supply the stepping functions.</p><pre><code class="language-julia hljs">using AlgebraicAgents
+
+using DataFrames
+using Distributions, Random
+using Plots
+
+# type hierarchy
+&quot;Drug entity, lives in a therapeutic area.&quot;
+abstract type Molecule &lt;: AbstractAlgebraicAgent end
+
+# molecule params granularity
+const N = 3;
+
+# drug entity, lives in a therapeutic area
+&quot;Parametrized drug entity, lives in a therapeutic area.&quot;
+@aagent FreeAgent Molecule struct SmallMolecule
+    age::Float64
+    birth_time::Float64
+    time_removed::Float64
+
+    mol::AbstractString
+    profile::NTuple{N, Float64}
+
+    sales::Float64
+    df_sales::DataFrame
+end</code></pre><p>Note the use of a conveniency macro <code>@aagent</code> which appends additional fields expected (not required, though) by default interface methods.</p><p>We proceed with other agent types.</p><pre><code class="language-julia hljs"># drug entity, lives in a therapeutic area
+@doc (@doc SmallMolecule)
+@aagent FreeAgent Molecule struct LargeMolecule
+    age::Float64
+    birth_time::Float64
+    time_removed::Float64
+
+    mol::AbstractString
+    profile::NTuple{N, Float64}
+
+    sales::Float64
+    df_sales::DataFrame
+end
+
+# toy discovery unit - outputs small/large molecules to a given therapeutic area
+&quot;Toy discovery unit; outputs small and large molecules.&quot;
+@aagent struct Discovery
+    rate_small::Float64
+    rate_large::Float64
+    discovery_intensity::Float64
+
+    t::Float64
+    dt::Float64
+
+    t0::Float64
+
+    removed_mols::Vector{Tuple{String, Float64}}
+
+    df_output::DataFrame
+end
+
+# `Discovery` constructor
+&quot;Initialize a discovery unit, parametrized by small/large molecules production rate.&quot;
+function Discovery(name, rate_small, rate_large, t = 0.0; dt = 2.0)
+    df_output = DataFrame(time = Float64[], small = Int[], large = Int[], removed = Int[])
+
+    return Discovery(
+        name, rate_small, rate_large, 0.0, t, dt, t, Tuple{String, Float64}[],
+        df_output
+    )
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.Discovery</code></pre><h2 id="Stepping-Functions"><a class="docs-heading-anchor" href="#Stepping-Functions">Stepping Functions</a><a id="Stepping-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Stepping-Functions" title="Permalink"></a></h2><p>Next we provide an evolutionary law for the agent types. This is done by extending the interface function <a href="../../api.html#AlgebraicAgents._step!-Tuple{AbstractAlgebraicAgent}"><code>AlgebraicAgents._step!</code></a>.</p><pre><code class="language-julia hljs"># Return initial sales volume of a molecule.
+function sales0_from_params end
+
+const sales0_factor_small = rand(N)
+const sales0_factor_large = rand(N)
+
+# dispatch on molecule type
+sales0_from_params(profile) = 10^3 * (1 + collect(profile)&#39; * sales0_factor_small)
+sales0_from_params(profile) = 10^5 * (1 + collect(profile)&#39; * sales0_factor_large)
+
+const sales_decay_small = 0.9
+const sales_decay_large = 0.7
+
+# implement evolution
+function AlgebraicAgents._step!(mol::SmallMolecule)
+    t = projected_to(mol)
+    push!(mol.df_sales, (t, mol.sales))
+    mol.age += 1
+    mol.sales *= sales_decay_small
+
+    return if (mol.sales &lt;= 10) || (rand() &gt;= exp(-0.2 * mol.age))
+        mol.time_removed = t
+        push!(getagent(mol, &quot;../dx&quot;).removed_mols, (mol.mol, t))
+
+        # move to removed candidates
+        rm_mols = getagent(mol, &quot;../removed-molecules&quot;)
+        disentangle!(mol)
+        entangle!(rm_mols, mol)
+    end
+end
+
+# implement common interface&quot;
+# molecules&quot;
+function AlgebraicAgents._step!(mol::LargeMolecule)
+    t = projected_to(mol)
+    push!(mol.df_sales, (t, mol.sales))
+
+    mol.age += 1
+    mol.sales *= sales_decay_large
+
+    return if (mol.sales &lt;= 10) || (rand() &gt;= exp(-0.3 * mol.age))
+        mol.time_removed = t
+        push!(getagent(mol, &quot;../dx&quot;).removed_mols, (mol.mol, t))
+
+        # move to removed candidates
+        rm_mols = getagent(mol, &quot;../removed-molecules&quot;)
+        disentangle!(mol)
+        entangle!(rm_mols, mol)
+    end
+end
+
+# discovery
+function AlgebraicAgents._step!(dx::Discovery)
+    t = projected_to(dx)
+    # sync with market demand
+    dx.discovery_intensity = getobservable(getagent(dx, &quot;../demand&quot;), &quot;demand&quot;)
+    ν = dx.discovery_intensity * dx.dt
+    small, large = rand(Poisson(ν * dx.rate_small)), rand(Poisson(ν * dx.rate_large))
+    removeed = 0
+    ix = 1
+    while ix &lt;= length(dx.removed_mols)
+        if (dx.removed_mols[ix][2] &lt; t)
+            removeed += 1
+            deleteat!(dx.removed_mols, ix)
+        else
+            ix += 1
+        end
+    end
+    push!(dx.df_output, (t, small, large, removeed))
+
+    for _ in 1:small
+        mol = release_molecule(randstring(5), Tuple(rand(N)), t, SmallMolecule)
+        entangle!(getparent(dx), mol)
+    end
+
+    for _ in 1:large
+        mol = release_molecule(randstring(5), Tuple(rand(N)), t, LargeMolecule)
+        entangle!(getparent(dx), mol)
+    end
+
+    return dx.t += dx.dt
+end
+
+&quot;Initialize a new molecule.&quot;
+function release_molecule(mol, profile, t, ::Type{T}) where {T &lt;: Molecule}
+    return T(
+        mol, 0.0, t, Inf, mol, profile, sales0_from_params(profile),
+        DataFrame(time = Float64[], sales = Float64[])
+    )
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.release_molecule</code></pre><p>We provide additional interface methods, such as <a href="../../api.html#AlgebraicAgents._reinit!-Tuple{AbstractAlgebraicAgent}"><code>AlgebraicAgents._reinit!</code></a> and <a href="../../api.html#AlgebraicAgents._projected_to-Tuple{AbstractAlgebraicAgent}"><code>AlgebraicAgents._projected_to</code></a>.</p><pre><code class="language-julia hljs">AlgebraicAgents._reinit!(mol::Molecule) = disentangle!(mol)
+
+function AlgebraicAgents._reinit!(dx::Discovery)
+    dx.t = dx.t0
+    dx.discovery_intensity = 0.0
+    empty!(dx.df_output)
+
+    return dx
+end
+
+function AlgebraicAgents._projected_to(mol::Molecule)
+    return if mol.time_removed &lt; Inf
+        # candidate removed, do not step further
+        true
+    else
+        mol.age + mol.birth_time
+    end
+end
+
+AlgebraicAgents._projected_to(dx::Discovery) = dx.t</code></pre><p>We may also provide a custom plotting recipe. As the internal log is modeled as a DataFrame, we want to use <a href="../../api.html#AlgebraicAgents.@draw_df"><code>AlgebraicAgents.@draw_df</code></a> convenience macro.</p><pre><code class="language-julia hljs"># implement plots
+AlgebraicAgents.@draw_df Discovery df_output</code></pre><h2 id="Model-Instantiation"><a class="docs-heading-anchor" href="#Model-Instantiation">Model Instantiation</a><a id="Model-Instantiation-1"></a><a class="docs-heading-anchor-permalink" href="#Model-Instantiation" title="Permalink"></a></h2><p>Next step is to instantiate a dynamical system.</p><pre><code class="language-julia hljs"># define therapeutic areas
+therapeutic_area1 = FreeAgent(&quot;therapeutic_area1&quot;)
+therapeutic_area2 = FreeAgent(&quot;therapeutic_area2&quot;)
+
+# join therapeutic models into a pharma model
+pharma_model = ⊕(therapeutic_area1, therapeutic_area2; name = &quot;pharma_model&quot;)
+
+# initialize and push discovery units to therapeutic areas
+# discovery units evolve at different pace
+entangle!(therapeutic_area1, Discovery(&quot;dx&quot;, 5.2, 10.0; dt = 3.0))
+entangle!(therapeutic_area2, Discovery(&quot;dx&quot;, 6.0, 8.0; dt = 5.0))
+# log removed candidates
+entangle!(therapeutic_area1, FreeAgent(&quot;removed-molecules&quot;))
+entangle!(therapeutic_area2, FreeAgent(&quot;removed-molecules&quot;))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">removed-molecules </span></span>with uuid <span class="sgr32">5843af2e </span>of type <span class="sgr32">FreeAgent </span>
+   <span class="sgr1">parent: </span><span class="sgr32">therapeutic_area2</span></code></pre><h3 id="Integration-with-SciML"><a class="docs-heading-anchor" href="#Integration-with-SciML">Integration with SciML</a><a id="Integration-with-SciML-1"></a><a class="docs-heading-anchor-permalink" href="#Integration-with-SciML" title="Permalink"></a></h3><p>Let&#39;s define toy market demand model and represent this as a stochastic differential equation defined in <code>DifferentialEquations.jl</code></p><pre><code class="language- hljs"># add SDE models for drug demand in respective areas
+using DifferentialEquations
+using StochasticDiffEq: EM
+
+dt = 1 // 2^(4); tspan = (0.0, 100.0)
+f(u, p, t) = p[1] * u; g(u, p, t) = p[2] * u
+
+prob_1 = SDEProblem(f, g, 0.9, tspan, [0.01, 0.01])
+prob_2 = SDEProblem(f, g, 1.2, tspan, [0.01, 0.01])</code></pre><p>Internally, a discovery unit will adjust the candidate generating process intensity according to the observed market demand:</p><pre><code class="language- hljs"># add SDE models for drug demand in respective areas
+demand_model_1 = DiffEqAgent(&quot;demand&quot;, prob_1, EM(); observables = Dict(&quot;demand&quot; =&gt; 1), dt)
+demand_model_2 = DiffEqAgent(&quot;demand&quot;, prob_2, EM(); observables = Dict(&quot;demand&quot; =&gt; 1), dt)
+
+# push market demand units to therapeutic areas
+entangle!(therapeutic_area1, demand_model_1)
+entangle!(therapeutic_area2, demand_model_2)
+
+# sync with market demand
+getobservable(getagent(pharma_model, &quot;therapeutic_area1/demand&quot;), &quot;demand&quot;)</code></pre><p>Let&#39;s inspect the composite model:</p><pre><code class="language-julia hljs"># show the model
+pharma_model</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">pharma_model </span></span>with uuid <span class="sgr32">29ef3a89 </span>of type <span class="sgr32">FreeAgent </span>
+   <span class="sgr1">inner agents: </span>
+    agent <span class="sgr32"><span class="sgr1">therapeutic_area1 </span></span>with uuid <span class="sgr32">2091ce98 </span>of type <span class="sgr32">FreeAgent </span>
+       <span class="sgr1">inner agents: </span>dx, removed-molecules
+    agent <span class="sgr32"><span class="sgr1">therapeutic_area2 </span></span>with uuid <span class="sgr32">f85ac655 </span>of type <span class="sgr32">FreeAgent </span>
+       <span class="sgr1">inner agents: </span>dx, removed-molecules</code></pre><pre><code class="language-julia hljs">getagent(pharma_model, glob&quot;therapeutic_area?/&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{FreeAgent}:
+ FreeAgent{name=therapeutic_area2, uuid=f85ac655, parent=FreeAgent{name=pharma_model, uuid=29ef3a89, parent=nothing}}
+ FreeAgent{name=therapeutic_area1, uuid=2091ce98, parent=FreeAgent{name=pharma_model, uuid=29ef3a89, parent=nothing}}</code></pre><h2 id="Simulating-the-System"><a class="docs-heading-anchor" href="#Simulating-the-System">Simulating the System</a><a id="Simulating-the-System-1"></a><a class="docs-heading-anchor-permalink" href="#Simulating-the-System" title="Permalink"></a></h2><p>Let&#39;s next evolve the composite model over a hundred time units. The last argument is optional here; see <code>?simulate</code> for the details.</p><pre><code class="language- hljs"># let the problem evolve
+simulate(pharma_model, 100)
+
+getagent(pharma_model, &quot;therapeutic_area1/dx&quot;)
+
+getagent(pharma_model, &quot;therapeutic_area1/demand&quot;)</code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>We draw the statistics of a Discovery unit in Therapeutic Area 1:</p><pre><code class="language-julia hljs">draw(getagent(pharma_model, &quot;therapeutic_area1/dx&quot;))</code></pre><img src="data:image/png;base64,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2lWojCAEAHldvnz5s88+U7sKlRGEAID/VVhYmJGRcW97SUlJWlqacnFlcXHxrVu37u1TXFx8586dSi+xEhCEAAAhhOjbt29wcHBYWJifn9/evXuVxoEDB77yyivNmjXr0KHD3bt3P/vsM29v77CwsIEDB4aGhiqTdOfn50+cOLFx48adO3fu3Lnz77//rurzeGTcfgAAajJePWe6c58DrEqhszO0aK/R3f+d//PPP1duGdy9e/ekSZMuXrwohMjLyzt06FB8fHytWrUSExPffPPN48ePBwQEREdH9+rV6/XXXxdCLFiwID8//+LFi3q9/sMPP5wxY0Y1+jJCQRACgLoKTv9akplWRTvTaOz9mumc3e77Q71e//777ycnJxcWFl65ciUnJ0eZcXT8+PG1atUSQuzZsycsLEyZU61nz56NGjVSNvzhhx/+8pe/KF9J7+rqunfv3uo19ShBCABqcokcr3YJQgiRlpbWvn37GTNm9O7dW6/Xr1ixIi8vTwnC2rVrK33y8vKURFRYljMyMs6cOZOenq6sTpkyxWQyVaMJT6pNoQCAyvPrr782a9bsjTfeEEKcOXOmpKTk3j5BQUFffvllaWmpVqvNzMy8cOGC0t6iRYuuXbtOmDChSiu2HYIQACCaNWt24sSJ9evXOzk5ffDBB/c9nuvTp8+///3vwYMHh4WFbdq0yd3dXavVCiHmz58/atSowsLCoKCga9euXbhwoXrNxM1VowAgr4YNG06cOFEI0aJFi7Vr127fvn3r1q2LFy9+4403lE8+R4wYoXwrrxBCq9XGxMQMGjQoPz//888/d3R09PT0FEKEhYXFxMRcu3Zt6dKlJ0+e7N27t4rP6A9g0m38EUz6rC7GX0WST7p96tSpoKAgnU63atWqf/zjH0lJSZYvta9UlTrpNkECALDWN998s3btWpPJ1KhRow0bNlRNClY2ghAAYK2FCxcuXLhQ7SpsjHOEAIAny9tvv12Vs7URhACAJ0tUVFROTk6V7Y4gBACItLS027dvK8s5OTn3nXr72rVrubm5yvLNmzfvPWhLSUkpKCiwZnd3795NSys/n052dvbNmzcfrW5bIAgBQF579uwJCgoaMGBAeHj4f//731u3bvXv3//ZZ58NDw/v2rXrjRs3hBBr167t1q1beHj4gAEDfH19t23bNm7cuF69ejVs2HDJkiXK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4EGTySSE0Gq1D9gQD6UM44PHX1FYWPjNN9+UfYXv379fp9MJIeLj4zt37jxgwICWLVtWfslyqejdyWQyPc6L/0k8IvTy8kpPT7es3rx503Lwp/D09CwtLb1165alg3JEUnZDk8l069atchvCGmWHsbS0NCMj477DuGLFikWLFkVHR1t+qrwLCCG0Wu3w4cNPnDhRNQU/TbRabb169TIyMpTVe1/8osw4azSakSNHKlfqenp6CiEevCEeytPTU6PRWDOMP/74o6ura48ePSwtlt9LmzZtmjZtyrfYV4aK0qFs+x948T+JQdijR48TJ05kZmYKIZKTky9dutS1a1chREFBQW5urhDCzc2tdevWu3btEkKYzebo6OjnnntOCBEaGrp3797i4mIhxL59+zw8PO576T8erOww/vLLL05OTs2bNxdC3L179+7du0qfb7/99q233tq5c2dAQMB9H+T48eMNGjSospqfJqGhocprWwixa9cuy0XkmZmZ9/6fGxcXp4xzrVq12rdvf98NYT2DwdCpU6edO3cqq5ZhLC0tzczMNJeZmXnFihUTJ06877zzt2/fvnr1qq+vb5WULIWcnBzldHiPHj1Onjyp/KeSkpJy4cIFJR1CQ0Pv/a1Z70n8aNTf33/YsGH9+/cfMWLE119/PXHixLp16wohPvjgg3379sXExAgh5syZM3Xq1LS0tJMnT+bk5AwbNkwIER4e7uXlNXjw4LCwsI8//viNN96w8kudUNZzzz3n7+8/aNCg8PDwxYsXv/7668odadOmTdPr9cuWLTt58uSoUaN69OgRFRWlbPLaa681btxYuWTc19f33Llz33333aZNm1R9HtXVq6++GhIS4uDgkJ+f//PPPx87dkwIYTabPTw8jhw50rFjx7lz52ZkZDRq1Ojy5curV69euXKlsuGcOXMmTJiQkZFx9uzZ9PT0kSNHqvo8qqs333xzzJgxWVlZiYmJ169fHzVqlBDi8uXLgYGB6enpderUEUJcuXLlwIEDX331lWWrM2fOzJ49u1OnThqNZs2aNcodLGo9heorMzPzzTffTE9PLywsnDx5ct26defPny+E6Nmz58iRI//617/6+fmNGDGif//+L7744qpVq8aPH698FjJjxoz27du7ubnZ29uvWLHi0KFDj7TfJ/TbJ0pKStatW5eQkNCmTZs//elPyoe/8fHxqampERERSp9ffvllx44dyo1Tbm5uSuPdu3dXrlyZmpoaEhLSu3dv1Z5ANZefn//VV19dv369e/fuffv2VRoPHDig1Wq7deuWmppa7qKsAQMGeHp6njp1KiYmJj093dPTc9CgQXxP0B+WkJDw/fff29nZjRo1yjKMX3zxxaBBg+rUqZOYmLhz587U1NQ6der069evWbNmlg1//fXXrVu3KrfB1a5dW53qq7/Y2NgtW7a4uLiMGTNGSb6cnJxvv/129OjRBoNBCHH+/PkzZ85YLlMUQhQUFGzYsCExMVGr1bZt2zYyMtJyygrWy8vLW7dunWXVxcVFuSj3p59+atSokXLO1WQyrVu37uzZs61btx4+fLhlnC9fvrx27Vqz2TxixIhH/SzwCQ1CAACqBv+zAACkRhACAKRGEAIApEYQAgCkRhACAKRGEAIApEYQAgCkRhAC1cmVK1eWLVuWnZ2tdiHA04MgBKqTuLi4yZMnl513GMBjIggBAFIjCIFq46uvvho7dqwQon379u7u7u7u7hcuXFC7KKDaY65RoNpISUlZtmzZvHnzvvrqK+X7uDt37lyzZk216wKqN76lCKg2fHx8goODhRBdunQJDAxUuxzgKcFHowAAqRGEAACpEYQAAKkRhEB1UqtWLSFEQUGB2oUATw+CEKhOmjdvrtPplixZcujQobi4uMLCQrUrAqo9bp8AqpklS5Z88MEH169fLykpSUhIaN68udoVAdUbQQgAkBofjQIApEYQAgCkRhACAKRGEAIApEYQAgCkRhACAKRGEAIApPb/AIEIlaDhbrJNAAAAAElFTkSuQmCC" /><h2 id="Queries"><a class="docs-heading-anchor" href="#Queries">Queries</a><a id="Queries-1"></a><a class="docs-heading-anchor-permalink" href="#Queries" title="Permalink"></a></h2><p>Let&#39;s now query the simulated system.</p><p>To find out which molecules were discovered after time <code>t=10</code> and removed from the track before time <code>t=30</code>, write</p><pre><code class="language-julia hljs">pharma_model |&gt; @filter(_.birth_time &gt; 10 &amp;&amp; _.time_removed &lt; 30)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractAlgebraicAgent[]</code></pre><p>Equivalently, we could make use of f(ilter)-strings, see <a href="../../api.html#AlgebraicAgents.@f_str"><code>@f_str</code></a>, and write</p><pre><code class="language-julia hljs">from = 10; to = 30
+pharma_model |&gt; @filter(f&quot;_.birth_time &gt; $from &amp;&amp; _.time_removed &lt; $to&quot;);</code></pre><p>Let&#39;s investigate the average life time:</p><pre><code class="language- hljs"># get molecules already removed from the system
+removed_molecules = pharma_model |&gt; @filter(f&quot;_.time_removed &lt; Inf&quot;)
+# calculate `time_removed - birth_time`
+# we iterate over `removed_molecules`, and apply the (named) transform function on each agent
+# a given agent is referenced to as `_`
+life_times = removed_molecules |&gt; @transform(area = getname(getagent(_, &quot;../..&quot;)), time = (_.time_removed - _.birth_time))
+
+using Statistics: mean
+avg_life_time = mean(x -&gt; x.time, life_times)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../agents/agents.html">« Agents.jl Integration</a><a class="docs-footer-nextpage" href="../sciml/sciml.html">SciML Integration »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 20 May 2026 16:38">Wednesday 20 May 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
