@@ -30,7 +30,7 @@ AlgebraicAgents.jl is a Julia framework for hierarchical dynamical systems model
 
 # Statement of Need
 
-Modeling dynamical systems at scale—enterprises with interacting business units, multi-physics engineering systems, coupled socioeconomic networks—requires composing components naturally expressed in different formalisms and operating at different temporal granularities. Continuous dynamics govern reactors, discrete events drive logistics, and agent-based rules capture decisions. These subsystems must integrate while remaining independently developable, often beginning as mockups and refined iteratively as data arrives.
+Modeling dynamical systems at scale — enterprises with interacting business units, multi-physics engineering systems, coupled socioeconomic networks — requires composing components naturally expressed in different formalisms and operating at different temporal granularities. Continuous dynamics govern reactors, discrete events drive logistics, and agent-based rules capture decisions. These subsystems must integrate while remaining independently developable, often beginning as mockups and refined iteratively as data arrives.
 
 This challenge decomposes into three sub-problems:
 
@@ -44,9 +44,9 @@ AlgebraicAgents.jl is intended for Julia modelers composing heterogeneous dynami
 
 Prior work addresses aspects of this challenge. The Functional Mock-up Interface [@Blochwitz2011] standardizes co-simulation of black-box models but imposes protocol overhead suited to industrial interoperability rather than rapid prototyping. Meta-modeling frameworks like the Generic Modeling Environment [@Ledeczi2001] operate at a higher abstraction, enabling construction of domain-specific formalisms. The Ptolemy project [@Ptolemy] and Lingua Franca [@Menard2023] provide principled foundations for heterogeneous component interaction across concurrent, real-time, and distributed settings.
 
-Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @DifferentialEquations2017] and its commercial extension, JuliaHub's Dyad, target symbolic-numeric modeling and equation-based composition. Catalyst.jl [@Catalyst2023] builds on ModelingToolkit.jl with hierarchical subsystem composition for chemical reaction networks. All require components expressible as equations or as a symbolic intermediate representation, which limits their ability to accommodate discrete or agent-based dynamics. AlgebraicDynamics.jl [@Brown2022; @Baez2023] supplies categorical semantics for dynamical systems but imposes strict interface typing that constrains exploratory work. Agents.jl [@Agents2022], despite its similar name, solves a complementary problem: it provides a performant runtime for individual agent-based models, whereas AlgebraicAgents.jl coordinates such models alongside other formalisms within a hierarchy.
+Within the Julia ecosystem [@Julia2017], ModelingToolkit.jl [@Ma2021; @DifferentialEquations2017] and its commercial extension, JuliaHub's Dyad, target symbolic-numeric modeling and equation-based composition. Catalyst.jl [@Catalyst2023] builds on ModelingToolkit.jl with hierarchical subsystem composition for chemical reaction networks. All require components expressible as equations or as a symbolic intermediate representation, which limits their ability to accommodate discrete or agent-based dynamics. AlgebraicDynamics.jl [@Brown2022; @Baez2023] supplies categorical semantics for dynamical systems but imposes strict interface typing that constrains exploratory work. Agents.jl [@Agents2022], despite its similar name, solves a complementary problem: It provides a performant runtime for individual agent-based models, whereas AlgebraicAgents.jl coordinates such models alongside other formalisms within a hierarchy.
 
-AlgebraicAgents.jl relaxes these requirements in favor of compositional flexibility. Components are black boxes: no equation, symbolic representation, or typed interface contract is required; an agent need only expose an internal clock and an incremental stepping rule. Any agent can access any other agent's state, and synchronization is temporal rather than type-enforced. The design prioritizes iteration speed and introspection over interface contracts, a trade-off suited to exploratory modeling, where specifications evolve alongside understanding.
+AlgebraicAgents.jl relaxes these requirements in favor of compositional flexibility. Components are black boxes: No equation, symbolic representation, or typed interface contract is required; an agent need only expose an internal clock and an incremental stepping rule. Any agent can access any other agent's state, and synchronization is temporal rather than type-enforced. The design prioritizes iteration speed and introspection over interface contracts, a trade-off suited to exploratory modeling, where specifications evolve alongside understanding.
 
 # Software Design
 
@@ -76,7 +76,7 @@ We illustrate this mechanism with three agents A, B, and C.
 | 4           | **3**          | 3                | 3              | 3              | A       |
 | 5           | **4**          | **4.5**          | **6**          | 4              | A, B, C |
 
-Table: Stepping mechanism for three agents with step sizes Δt = 1, 1.5, 3. Columns 2--4 show each agent's projected time after each simulator step. Bold entries mark the agents that advanced in that step. Only agents at the minimum projected time—the frontier—step, and the rest stay at their projected times and are read when queried.
+Table: Stepping mechanism for three agents with step sizes Δt = 1, 1.5, 3. Columns 2--4 show each agent's projected time after each simulator step. Bold entries mark the agents that advanced in that step. Only agents at the minimum projected time — the frontier — step, and the rest stay at their projected times and are read when queried.
 
 Pseudocode for a single simulator step is sketched below.
 
@@ -121,7 +121,7 @@ add_wire!(full_system;
 
 ![Agent hierarchy and information flows. Teal-outlined circles denote agents, each labeled with its hierarchy path. Black-bordered rectangles group children under their parent. Solid black arrows show declared information flows, each annotated with the source variable on the producing agent and the destination variable on the consuming agent.](assets/wires.svg)
 
-*Concepts* represent atemporal notions—resources, constraints, abstractions—that participate in relations alongside agents. This enables modeling of "what" (materials, approvals, markets) separate from "how" (processes), supporting dependency queries and ontological visualization. Both agents and concepts belong to the union type `RelatableType`, enabling *relations* to connect any pair with typed labels:
+*Concepts* represent atemporal notions — resources, constraints, abstractions — that participate in relations alongside agents. This enables modeling of "what" (materials, approvals, markets) separate from "how" (processes), supporting dependency queries and ontological visualization. Both agents and concepts belong to the union type `RelatableType`, enabling *relations* to connect any pair with typed labels:
 
 ```julia
 c_finished_good = Concept("FinishedGood", Dict(:type => "product"))
@@ -146,7 +146,7 @@ The framework was presented at JuliaCon 2023 [@Bima2023JuliaCon] and has since b
 
 AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps DifferentialEquations.jl problems (any `SciMLBase.AbstractDEProblem`), enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns.
 
-The integration contract is minimal: in general, any third-party dynamical system framework that provides an integrator with a clock and an incremental step can be wrapped as an agent within AlgebraicAgents.jl. These correspond to the two required interface methods, `_step!` and `_projected_to`. Contributors can expose simulation state through these methods to integrate new solver backends; see [Contributing](https://github.com/Merck/AlgebraicAgents.jl/blob/main/CONTRIBUTING.md).
+The integration contract is minimal. In general, any third-party dynamical system framework that provides an integrator with a clock and an incremental step can be wrapped as an agent within AlgebraicAgents.jl. These correspond to the two required interface methods, `_step!` and `_projected_to`. Contributors can expose simulation state through these methods to integrate new solver backends; see [Contributing](https://github.com/Merck/AlgebraicAgents.jl/blob/main/CONTRIBUTING.md).
 
 ## Availability and Documentation
 
