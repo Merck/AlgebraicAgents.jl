@@ -111,7 +111,7 @@ Beyond evolutionary stepping, the framework supports three callback types:
 
 Each agent occupies a node in a tree topology. Path-based references enable navigation: `getagent(a, "../sibling/child")`. Container agents with trivial evolution organize subsystems into logical compartments, enabling modular development and hierarchical visualization.
 
-Beyond the execution hierarchy, *wires* explicitly declare directed information flows between agents. While agents can programmatically access any other agent's state, declared wires serve as documentation and enable dependency analysis:
+Beyond the containment hierarchy, *wires* explicitly declare directed information flows between agents. While agents can programmatically access any other agent's state, wires promote these dependencies to first-class annotations, enabling visualization and structured queries:
 
 ```julia
 add_wire!(full_system; 
