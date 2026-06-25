@@ -34,7 +34,7 @@ Modeling dynamical systems at scale — enterprises with interacting business un
 
 This challenge decomposes into three sub-problems:
 
-- **Multi-formalism coupling.** Subsystems should be expressible in different formalisms, such as ODEs, discrete-time systems, or agent-based models, at varying granularity, with the framework facilitating their coupling.
+- **Multi-formalism coupling.** Subsystems should be expressible in different formalisms, such as ordinary differential equations (ODEs), discrete-time systems, or agent-based models, at varying granularity, with the framework facilitating their coupling.
 - **Hierarchical modularity.** Subsystems should support independent development, validation, and reuse as building blocks within larger models.
 - **Semantic transparency.** Visualizing and querying information flows across models should support both validation and explainability.
 
@@ -140,11 +140,11 @@ The composability patterns of the framework build on ideas from the AlgebraicJul
 
 ## Applications and Value Modeling Ecosystem
 
-The framework was presented at JuliaCon 2023 [@Bima2023JuliaCon] and has since been applied to develop proprietary pharmaceutical value chain models. Two companion packages by the authors extend this foundation: [ReactiveDynamics.jl](https://github.com/Merck/ReactiveDynamics.jl), providing chemical reaction network–inspired syntax for business process modeling natively compatible with AlgebraicAgents.jl, and [CEEDesigns.jl](https://github.com/Merck/CEEDesigns.jl), implementing Bayesian cost-efficient experimental design for drug discovery. 
+The framework was presented at JuliaCon 2023 [@Bima2023JuliaCon] and has since been applied to develop proprietary pharmaceutical value-chain models. Two companion packages by the authors extend this foundation: ReactiveDynamics.jl [@ReactiveDynamics], providing chemical reaction network–inspired syntax for business process modeling natively compatible with AlgebraicAgents.jl, and CEEDesigns.jl [@CEEDesigns], implementing Bayesian cost-efficient experimental design for drug discovery. 
 
 ## Third-Party Package Integrations
 
-AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps DifferentialEquations.jl problems (any `SciMLBase.AbstractDEProblem`), enabling ODEs, SDEs, DDEs, and DAEs to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns.
+AlgebraicAgents.jl provides native wrappers for Julia's scientific modeling ecosystem. `DiffEqAgent` wraps DifferentialEquations.jl problems (any `SciMLBase.AbstractDEProblem`), enabling ODEs, stochastic differential equations (SDEs), delay differential equations (DDEs), and differential-algebraic equations (DAEs) to participate in hierarchical simulations. Integration with Agents.jl [@Agents2022] allows agent-based models to compose with continuous or discrete dynamical systems. `GraphicalAgent` wraps `AbstractResourceSharer` or `AbstractMachine` from AlgebraicDynamics.jl, providing compatibility with categorical composition patterns.
 
 The integration contract is minimal. In general, any third-party dynamical system framework that provides an integrator with a clock and an incremental step can be wrapped as an agent within AlgebraicAgents.jl. These correspond to the two required interface methods, `_step!` and `_projected_to`. Contributors can expose simulation state through these methods to integrate new solver backends; see [Contributing](https://github.com/Merck/AlgebraicAgents.jl/blob/main/CONTRIBUTING.md).
 
