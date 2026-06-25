@@ -29,7 +29,7 @@ AlgebraicAgentsSciMLExt = "DifferentialEquations"
 AlgebraicAgentsSciMLPlotsExt = ["DifferentialEquations", "Plots"]
 
 [compat]
-Agents = "6"
+Agents = "7"
 AlgebraicDynamics = "0.2"
 Crayons = "4.1"
 DataFrames = "1.7.0"
