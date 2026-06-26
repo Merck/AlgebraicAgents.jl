@@ -76,7 +76,10 @@ algebraic_model = @get_model abm_model
 ```
 """
 macro get_model(model)
-    return :(Agents.abmproperties($(esc(model)))[:__aagent__])
+    # `AlgebraicAgents.get_abm_wrap` is specialized in the Agents extension; we
+    # route through it instead of emitting a bare `Agents.abmproperties` call,
+    # which would resolve `Agents` in this module (a weakdep with no binding here).
+    return :(AlgebraicAgents.get_abm_wrap($(esc(model))))
 end
 
 """
@@ -88,7 +91,7 @@ Requires the `AlgebraicAgentsAgentsExt` extension (i.e. `Agents.jl` loaded).
 # Examples
 ```julia
 @a add_agent!(model, 0.5)
-@a disentangle!(agent, model)
+@a remove_agent!(agent, model)
 ```
 """
 macro a(call)
@@ -100,16 +103,17 @@ macro a(call)
     return if call.args[1] == :add_agent!
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : Agents.abmproperties(model)[:__aagent__]
+            omodel = model isa ABMAgent ? model : AlgebraicAgents.get_abm_wrap(model)
             agent = $(esc(call))
 
-            entangle!(omodel, ABAModel(string(agent.id), a))
+            entangle!(omodel, AAgent(string(agent.id)))
+            agent
         end
     else
         agent = model_call.args[2]
         quote
             model = $(esc(model_call))
-            omodel = model isa ABMAgent ? model : Agents.abmproperties(model)[:__aagent__]
+            omodel = model isa ABMAgent ? model : AlgebraicAgents.get_abm_wrap(model)
 
             agent = $(esc(agent))
             agent = agent isa Number ? string(agent) : string(agent.id)
@@ -122,3 +126,8 @@ end
 
 # helper used by the `@a` macro; the extension specializes its dispatch.
 function get_model end
+
+# retrieves the algebraic wrap stored in an ABM's properties; specialized in the
+# `AlgebraicAgentsAgentsExt` extension. Used by `@get_model` and `@a` so the macros
+# need not reference the `Agents` weakdep directly.
+function get_abm_wrap end

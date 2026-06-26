@@ -173,6 +173,10 @@ function AlgebraicAgents.extract_agent(model::Agents.ABM, agent::Agents.Abstract
     return Agents.abmproperties(model)[:__aagent__].inners[string(agent.id)]
 end
 
+# retrieve the algebraic wrap stored in an ABM's properties (used by `@get_model`, `@a`)
+AlgebraicAgents.get_abm_wrap(model::Agents.AgentBasedModel) =
+    Agents.abmproperties(model)[:__aagent__]
+
 # helper used by the `@a` macro
 function AlgebraicAgents.get_model(args...; kwargs...)
     vals = collect(args)
