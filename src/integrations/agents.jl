@@ -91,7 +91,7 @@ Requires the `AlgebraicAgentsAgentsExt` extension (i.e. `Agents.jl` loaded).
 # Examples
 ```julia
 @a add_agent!(model, 0.5)
-@a disentangle!(agent, model)
+@a remove_agent!(agent, model)
 ```
 """
 macro a(call)
@@ -106,7 +106,8 @@ macro a(call)
             omodel = model isa ABMAgent ? model : AlgebraicAgents.get_abm_wrap(model)
             agent = $(esc(call))
 
-            entangle!(omodel, ABAModel(string(agent.id), a))
+            entangle!(omodel, AAgent(string(agent.id)))
+            agent
         end
     else
         agent = model_call.args[2]

@@ -93,3 +93,34 @@ end
     # removes the infected agents
     @test length(inners(abm_macro_wrap)) == Agents.nagents(abm_macro_wrap.abm) == 0
 end
+
+# `@a add_agent!` spawns a susceptible agent for each infected one, then recovers
+# the infected agent so the spawn happens exactly once per original agent.
+function add_agent_step!(agent, model)
+    @get_model model
+    return if agent.status == :I
+        new = @a add_agent!(agent.pos, model, 0, :S)
+        agent.status = :R
+        new
+    end
+end
+
+@testset "`@a add_agent!` keeps the wrap in sync" begin
+    Random.seed!(1)
+    space = GraphSpace(Agents.Graphs.complete_graph(4))
+    abm_add = StandardABM(
+        PoorSoul, space; agent_step! = add_agent_step!, model_step! = identity,
+        properties = Dict{Symbol, Any}()
+    )
+    for _ in 1:5
+        add_agent!(rand(1:4), abm_add, 0, :I)
+    end
+
+    abm_add_wrap = ABMAgent("add_model", abm_add; tspan = (0.0, 3.0))
+    simulate(abm_add_wrap)
+
+    # the five infected agents each spawned one susceptible agent
+    @test Agents.nagents(abm_add_wrap.abm) == 10
+    # `@a add_agent!` entangled each new agent, so inners track the ABM exactly
+    @test length(inners(abm_add_wrap)) == Agents.nagents(abm_add_wrap.abm)
+end
