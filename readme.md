@@ -1,5 +1,9 @@
 # AlgebraicAgents.jl: <br> Dynamical Systems Co-Integration Framework
 
+<!-- badges: start -->
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.09989/status.svg)](https://doi.org/10.21105/joss.09989)
+<!-- badges: end -->
+
 <p align="center">
   <a href="#about">About</a> |
   <a href="#intended-audience">Intended Audience</a> |
