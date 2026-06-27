@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lotka-Voltera Two Ways · AlgebraicAgents.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../index.html">AlgebraicAgents.jl</a></span></div><form class="docs-search" action="../../search.html"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../index.html">Home</a></li><li><a class="tocitem" href="../../design_mmd.html">Framework design</a></li><li><a class="tocitem" href="../../integrations.html">Integrations</a></li><li><span class="tocitem">Sketches</span><ul><li><a class="tocitem" href="../agents/agents.html">Agents.jl Integration</a></li><li><a class="tocitem" href="../molecules/molecules.html">A Toy Pharma Model</a></li><li><a class="tocitem" href="../sciml/sciml.html">SciML Integration</a></li><li class="is-active"><a class="tocitem" href="algebraicdynamics.html">Lotka-Voltera Two Ways</a><ul class="internal"><li><a class="tocitem" href="#Undirected-Composition"><span>Undirected Composition</span></a></li><li><a class="tocitem" href="#Directed-Composition"><span>Directed Composition</span></a></li><li><a class="tocitem" href="#Open-CPG"><span>Open CPG</span></a></li></ul></li><li><a class="tocitem" href="../stochastic_simulation/anderson.html">Simulating Stochastic Reaction Systems</a></li><li><a class="tocitem" href="../relations/relations.html">Relations and Concepts</a></li></ul></li><li><a class="tocitem" href="../../api.html">API reference</a></li><li><a class="tocitem" href="../../contributing.html">Contributing</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Sketches</a></li><li class="is-active"><a href="algebraicdynamics.html">Lotka-Voltera Two Ways</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="algebraicdynamics.html">Lotka-Voltera Two Ways</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Merck/AlgebraicAgents.jl/blob/main/tutorials/algebraicdynamics/algebraicdynamics.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lotka-Voltera-Two-Ways"><a class="docs-heading-anchor" href="#Lotka-Voltera-Two-Ways">Lotka-Voltera Two Ways</a><a id="Lotka-Voltera-Two-Ways-1"></a><a class="docs-heading-anchor-permalink" href="#Lotka-Voltera-Two-Ways" title="Permalink"></a></h1><p>We demonstrate an integration of <a href="https://github.com/AlgebraicJulia/AlgebraicDynamics.jl">AlgebraicDynamics.jl</a>.</p><p>The tutorial is based on <a href="https://algebraicjulia.github.io/AlgebraicDynamics.jl/dev/examples/Lotka-Volterra/">AlgebraicDynamics.jl: Lotka-Volterra Three Ways</a>.</p><h2 id="Undirected-Composition"><a class="docs-heading-anchor" href="#Undirected-Composition">Undirected Composition</a><a id="Undirected-Composition-1"></a><a class="docs-heading-anchor-permalink" href="#Undirected-Composition" title="Permalink"></a></h2><pre><code class="language-julia hljs">using AlgebraicDynamics
+using AlgebraicDynamics.UWDDynam
+using Catlab.WiringDiagrams, Catlab.Programs
+using LabelledArrays
+using Plots
+
+const UWD = UndirectedWiringDiagram</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Catlab.WiringDiagrams.UndirectedWiringDiagrams.AbstractUWD</code></pre><pre><code class="language-julia hljs">using AlgebraicAgents</code></pre><p>Define the primitive systems</p><pre><code class="language-julia hljs">dotr(u, p, t) = p.α * u
+dotrf(u, p, t) = [-p.β * u[1] * u[2], p.γ * u[1] * u[2]]
+dotf(u, p, t) = -p.δ * u
+
+rabbit_growth = wrap_system(&quot;rabbit_growth&quot;, ContinuousResourceSharer{Float64}(1, dotr))
+rabbitfox_predation = wrap_system(&quot;rabbitfox_predation&quot;, ContinuousResourceSharer{Float64}(2, dotrf))
+fox_decline = wrap_system(&quot;fox_decline&quot;, ContinuousResourceSharer{Float64}(1, dotf))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">9a3335e1 </span>of type <span class="sgr32">GraphicalAgent </span>
+   custom properties:
+   <span class="sgr3">model: </span>
+   <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rf = @relation (rabbits, foxes) begin
+    growth(rabbits)
+    predation(rabbits, foxes)
+    decline(foxes)
+end</code></pre><div class="c-set">
+<span class="c-set-summary">Catlab.WiringDiagrams.RelationDiagrams.UntypedUnnamedRelationDiagram{Symbol, Symbol} {Box:3, Port:4, OuterPort:2, Junction:2, Name:0, VarName:0}</span>
+<table>
+  <thead>
+    <tr class = "header headerLastRow">
+      <th class = "rowLabel" style = "font-weight: bold; text-align: right;">Box</th>
+      <th style = "text-align: right;">name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td>
+      <td style = "text-align: right;">growth</td>
+    </tr>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">2</td>
+      <td style = "text-align: right;">predation</td>
+    </tr>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">3</td>
+      <td style = "text-align: right;">decline</td>
+    </tr>
+  </tbody>
+</table>
+<table>
+  <thead>
+    <tr class = "header headerLastRow">
+      <th class = "rowLabel" style = "font-weight: bold; text-align: right;">Port</th>
+      <th style = "text-align: right;">box</th>
+      <th style = "text-align: right;">junction</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td>
+      <td style = "text-align: right;">1</td>
+      <td style = "text-align: right;">1</td>
+    </tr>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">2</td>
+      <td style = "text-align: right;">2</td>
+      <td style = "text-align: right;">1</td>
+    </tr>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">3</td>
+      <td style = "text-align: right;">2</td>
+      <td style = "text-align: right;">2</td>
+    </tr>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">4</td>
+      <td style = "text-align: right;">3</td>
+      <td style = "text-align: right;">2</td>
+    </tr>
+  </tbody>
+</table>
+<table>
+  <thead>
+    <tr class = "header headerLastRow">
+      <th class = "rowLabel" style = "font-weight: bold; text-align: right;">OuterPort</th>
+      <th style = "text-align: right;">outer_junction</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td>
+      <td style = "text-align: right;">1</td>
+    </tr>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">2</td>
+      <td style = "text-align: right;">2</td>
+    </tr>
+  </tbody>
+</table>
+<table>
+  <thead>
+    <tr class = "header headerLastRow">
+      <th class = "rowLabel" style = "font-weight: bold; text-align: right;">Junction</th>
+      <th style = "text-align: right;">variable</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td>
+      <td style = "text-align: right;">rabbits</td>
+    </tr>
+    <tr>
+      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">2</td>
+      <td style = "text-align: right;">foxes</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit_growth, rabbitfox_predation, fox_decline, diagram = rf, name = &quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">76498a75 </span>of type <span class="sgr32">GraphicalAgent </span>
+   custom properties:
+   <span class="sgr3">model: </span>
+   <span class="sgr3">ports: [&quot;rabbits&quot;, &quot;foxes&quot;]
+   <span class="sgr1">inner agents: </span></span>
+    agent <span class="sgr32"><span class="sgr1">fox_decline </span></span>with uuid <span class="sgr32">9a3335e1 </span>of type <span class="sgr32">GraphicalAgent </span>
+       custom properties:
+       <span class="sgr3">model: </span>
+       <span class="sgr3">ports: [&quot;1&quot;]
+    agent <span class="sgr32"><span class="sgr1">rabbitfox_predation </span></span></span>with uuid <span class="sgr32">e5ab647e </span>of type <span class="sgr32">GraphicalAgent </span>
+       custom properties:
+       <span class="sgr3">model: </span>
+       <span class="sgr3">ports: [&quot;1&quot;, &quot;2&quot;]
+    agent <span class="sgr32"><span class="sgr1">rabbit_growth </span></span></span>with uuid <span class="sgr32">00daea7c </span>of type <span class="sgr32">GraphicalAgent </span>
+       custom properties:
+       <span class="sgr3">model: </span>
+       <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
+params = LVector(α = 0.3, β = 0.015, γ = 0.015, δ = 0.7)
+tspan = (0.0, 100.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, 100.0)</code></pre><pre><code class="language- hljs">import DifferentialEquations
+prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre><code class="language- hljs">sol = simulate(prob)</code></pre><pre><code class="language- hljs">draw(sol; label = [&quot;rabbits&quot; &quot;foxes&quot;])</code></pre><h2 id="Directed-Composition"><a class="docs-heading-anchor" href="#Directed-Composition">Directed Composition</a><a id="Directed-Composition-1"></a><a class="docs-heading-anchor-permalink" href="#Directed-Composition" title="Permalink"></a></h2><pre><code class="language-julia hljs">using AlgebraicDynamics, AlgebraicDynamics.DWDDynam
+using Catlab.WiringDiagrams, Catlab.Programs
+using LabelledArrays
+using Plots</code></pre><pre><code class="language-julia hljs">using AlgebraicAgents, DifferentialEquations</code></pre><p>Define the primitive systems</p><pre><code class="language-julia hljs">dotr(u, x, p, t) = [p.α * u[1] - p.β * u[1] * x[1]]
+dotf(u, x, p, t) = [p.γ * u[1] * x[1] - p.δ * u[1]]
+
+rabbit = wrap_system(&quot;rabbit&quot;, ContinuousMachine{Float64}(1, 1, 1, dotr, (u, p, t) -&gt; u))
+fox = wrap_system(&quot;fox&quot;, ContinuousMachine{Float64}(1, 1, 1, dotf, (u, p, t) -&gt; u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">fox </span></span>with uuid <span class="sgr32">fda6ef34 </span>of type <span class="sgr32">GraphicalAgent </span>
+   custom properties:
+   <span class="sgr3">model: </span>
+   <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rabbitfox_pattern = WiringDiagram([], [:rabbits, :foxes])
+rabbit_box = add_box!(rabbitfox_pattern, Box(:rabbit, [:pop], [:pop]))
+fox_box = add_box!(rabbitfox_pattern, Box(:fox, [:pop], [:pop]))
+
+add_wires!(
+    rabbitfox_pattern, Pair[
+        (rabbit_box, 1) =&gt; (fox_box, 1),
+        (fox_box, 1) =&gt; (rabbit_box, 1),
+        (rabbit_box, 1) =&gt; (output_id(rabbitfox_pattern), 1),
+        (fox_box, 1) =&gt; (output_id(rabbitfox_pattern), 2),
+    ]
+)</code></pre><p>Compose</p><pre><code class="language-julia hljs">rabbitfox_system = ⊕(rabbit, fox; diagram = rabbitfox_pattern, name = &quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">1c7a2d94 </span>of type <span class="sgr32">GraphicalAgent </span>
+   custom properties:
+   <span class="sgr3">model: </span>
+   <span class="sgr3">ports: [&quot;rabbits&quot;, &quot;foxes&quot;]
+   <span class="sgr1">inner agents: </span></span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">8e8ea903 </span>of type <span class="sgr32">GraphicalAgent </span>
+       custom properties:
+       <span class="sgr3">model: </span>
+       <span class="sgr3">ports: [&quot;1&quot;]
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">fda6ef34 </span>of type <span class="sgr32">GraphicalAgent </span>
+       custom properties:
+       <span class="sgr3">model: </span>
+       <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
+params = LVector(α = 0.3, β = 0.015, γ = 0.015, δ = 0.7)
+tspan = (0.0, 100.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, 100.0)</code></pre><pre><code class="language- hljs"># convert the system to a problem
+prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre><code class="language- hljs"># solve the problem
+simulate(prob)</code></pre><pre><code class="language- hljs"># plot
+draw(prob; label = [&quot;rabbits&quot; &quot;foxes&quot;])</code></pre><h2 id="Open-CPG"><a class="docs-heading-anchor" href="#Open-CPG">Open CPG</a><a id="Open-CPG-1"></a><a class="docs-heading-anchor-permalink" href="#Open-CPG" title="Permalink"></a></h2><pre><code class="language-julia hljs">using AlgebraicDynamics.CPortGraphDynam
+using AlgebraicDynamics.CPortGraphDynam: barbell</code></pre><p>Define the composition pattern</p><pre><code class="language-julia hljs">rabbitfox_pattern = barbell(1)
+
+rabbitfox_system = ⊕(rabbit, fox; diagram = rabbitfox_pattern, name = &quot;rabbitfox_system&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent <span class="sgr32"><span class="sgr1">rabbitfox_system </span></span>with uuid <span class="sgr32">b11179a9 </span>of type <span class="sgr32">GraphicalAgent </span>
+   custom properties:
+   <span class="sgr3">model: </span>
+   <span class="sgr3">ports: String[]
+   <span class="sgr1">inner agents: </span></span>
+    agent <span class="sgr32"><span class="sgr1">rabbit </span></span>with uuid <span class="sgr32">8e8ea903 </span>of type <span class="sgr32">GraphicalAgent </span>
+       custom properties:
+       <span class="sgr3">model: </span>
+       <span class="sgr3">ports: [&quot;1&quot;]
+    agent <span class="sgr32"><span class="sgr1">fox </span></span></span>with uuid <span class="sgr32">fda6ef34 </span>of type <span class="sgr32">GraphicalAgent </span>
+       custom properties:
+       <span class="sgr3">model: </span>
+       <span class="sgr3">ports: [&quot;1&quot;]</span></code></pre><p>Solve and plot</p><pre><code class="language-julia hljs">u0 = [10.0, 100.0]
+params = LVector(α = 0.3, β = 0.015, γ = 0.015, δ = 0.7)
+tspan = (0.0, 100.0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, 100.0)</code></pre><pre><code class="language- hljs"># convert the system to a problem
+prob = DiffEqAgent(rabbitfox_system, u0, tspan, params)</code></pre><pre><code class="language- hljs"># solve the problem
+simulate(prob)</code></pre><pre><code class="language- hljs"># plot
+draw(prob; label = [&quot;rabbits&quot; &quot;foxes&quot;])</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../sciml/sciml.html">« SciML Integration</a><a class="docs-footer-nextpage" href="../stochastic_simulation/anderson.html">Simulating Stochastic Reaction Systems »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Saturday 27 June 2026 02:14">Saturday 27 June 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
